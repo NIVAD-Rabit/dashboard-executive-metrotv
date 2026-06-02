@@ -97,17 +97,11 @@ export default function BaseChart<T extends ChartType>({
       let defaultColor = T10_COLORS[index % T10_COLORS.length];
 
       // Ubah warna jadi hijau kalo label datasetnya ada kata "Top PNL" atau "Positif"
-      if (
-        dataset.label?.includes("Top PNL") ||
-        dataset.label?.includes("Positif")
-      )
+      if (dataset.label?.includes("Top") || dataset.label?.includes("Positif"))
         defaultColor = "#2ca02c";
 
       // Ubah warna jadi merah kalo label datasetnya ada kata "Bottom PNL" atau "Negatif"
-      if (
-        dataset.label?.includes("Bottom PNL") ||
-        dataset.label?.includes("Negatif")
-      )
+      if (dataset.label?.includes("Bottom") || dataset.label?.includes("Minus"))
         defaultColor = "#d62728";
 
       // Kalo labenya "Target" atau "Target KPI", kasih warna abu2
