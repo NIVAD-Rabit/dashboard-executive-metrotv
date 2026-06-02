@@ -1,0 +1,53 @@
+"use client";
+
+import { Menu, Sun, Moon, Bell, SunDim } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { toggleSidebar } from "@/store/slices/uiSlice";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+
+export default function Header() {
+  const dispatch = useDispatch();
+  const { theme, setTheme } = useTheme();
+  // Untuk cegah hydration mismatch error antara render server dan client
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <header className="h-16 md:h-20 bg-background/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-30 sticky top-0 border-2 border-amber-500">
+      <div className="flex items-center gap-4">
+        {/* Drawer Menu Mobile */}
+        <button
+          onClick={() => dispatch(toggleSidebar())}
+          className="p-3 ml-3 text-foreground hover:bg-muted rounded-full md:hidden transition-colors cursor-pointer"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+      <div className="flex items-center gap-2 border-2 border-cyan-800">
+        {/* Toggle dark mode */}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors relative cursor-pointer"
+        >
+          {mounted ? (
+            theme === "dark" ? (
+              <Sun size={22} />
+            ) : (
+              <Moon size={22} />
+            )
+          ) : (
+            // Placeholder sebelum mounted icon ke load biar layoutnya ga ke geser
+            <div className="w-[22px] h-[22px]" />
+          )}
+        </button>
+        <div className="ml-2 px-4 w-full h-10 rounded-full bg-secondary text-secondary-foreground border border-border flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+          Mamang Elon Musk
+        </div>
+      </div>
+    </header>
+  );
+}
