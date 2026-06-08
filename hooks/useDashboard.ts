@@ -3,10 +3,39 @@ import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import { ChartData } from "chart.js";
 
 export default function useDashboard() {
+  // Buat tampungan state atau nilai yang diselect berdasarkan kategori
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   // Buat tampungan state atau nilai yang diselect di per program
-  const [selectedProgramId, setSelectedProgramId] = useState<string>(
-    MOCK_PROGRAMS[0].id,
+  const [selectedProgramId, setSelectedProgramId] = useState<string | null>(
+    null,
   );
+
+  // Filter data dinamis berdasarkan kategori
+  const filteredPrograms = useMemo(() => {
+    // Kalo kategorinya ga ada yang diselect kasih MOCK PROGRAMS semuanya
+    if (!selectedCategory) return MOCK_PROGRAMS;
+
+    // Kalo kategorinya ada yang diselect filter berdasarkan katergori
+    return MOCK_PROGRAMS.filter((p) => p.category === selectedCategory);
+  }, [selectedCategory, MOCK_PROGRAMS]);
+
+  // Aktif per program berdasarkan filter kategori diatas
+  const activeProgramId = useMemo(() => {
+    // Kalo ada program yang lagi diselect dan program tersebut ada dikategori yang udah difilter diatas
+    if (
+      selectedProgramId &&
+      // disini some cuma boolean true atau false, bukan array baru kaya filter/find
+      filteredPrograms.some((p) => p.id === selectedProgramId)
+    ) {
+      // Kalo ada, tetep pake program yang diselect
+      return selectedProgramId;
+    }
+
+    // Kalo block if itu false, masuk ke return ini
+    // Ini cuma buat fallback biar ga error
+    // Ambil id program pertama buat fallback atau kasih kosong
+    return filteredPrograms.length > 0 ? filteredPrograms[0].id : "";
+  }, [filteredPrograms, selectedProgramId]);
 
   // PNL All Program
   // Biar optimal dibungkus pake useMemo biar react ga usah render ulang kalo ga ada perubahan di data
@@ -36,9 +65,21 @@ export default function useDashboard() {
       {} as Record<string, number>,
     );
 
+    // Ambil key sebagai labelnya
+    const labels = Object.keys(grouped);
+    // Ambil value sebagai datanya
+    const data = Object.values(grouped);
+    // Buat background pas lagi select kategorinya
+    const bgColors = labels.map((label) =>
+      !selectedCategory || label === selectedCategory
+        ? "#1f77b4"
+        : "rgba(31, 119, 180, 0.15)",
+    );
+
+    // Mapping returnnya
     return {
-      labels: Object.keys(grouped),
-      datasets: [{ label: "Total PNL (Rp)", data: Object.values(grouped) }],
+      labels,
+      datasets: [{ label: "Total PNL (Rp)", data, backgroundColor: bgColors }],
     };
   }, []);
 
@@ -90,12 +131,18 @@ export default function useDashboard() {
     };
   }, []);
 
+  // All Program berdasarkan
+
   return {
     selectedProgramId,
     setSelectedProgramId,
+    selectedCategory,
+    setSelectedCategory,
+    activeProgramId,
     allProgramData,
     detailProgramData,
     topPnlData,
     bottomPnlData,
+    filteredPrograms,
   };
 }

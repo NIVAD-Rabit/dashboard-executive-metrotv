@@ -1,10 +1,10 @@
 import "./globals.css";
 import React from "react";
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 import Sidebar from "@/components/layouts/Sidebar";
 import Header from "@/components/layouts/Header";
 import ReduxProvider from "@/store/ReduxProvider";
-import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   title: "Metro TV Executive",
@@ -26,7 +26,7 @@ export default function RootLayout({
       {/* antialiased: biar pinggiran text alus di layar */}
       <body className="antialiased">
         {/* Bungkus Theme Provider untuk dark mode */}
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <ThemeProvider attribute="class" defaultTheme="system">
           {/* Bungkus redux disini */}
           <ReduxProvider>
             <div className="flex h-screen w-full overflow-hidden relative bg-background text-foreground transition-colors duration-300 border-2 border-amber-500">
