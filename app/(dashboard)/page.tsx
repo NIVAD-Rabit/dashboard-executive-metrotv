@@ -11,6 +11,7 @@ export default function ExecutiveDashboardPage() {
   const {
     allProgramData,
     filteredPrograms,
+    comboTargetActualData,
     detailProgramData,
     topPnlData,
     bottomPnlData,
@@ -176,7 +177,11 @@ export default function ExecutiveDashboardPage() {
         <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-green-500 flex flex-col p-2">
           <BaseChart
             type="bar"
-            title="Top 5 Program (PNL Tertinggi)"
+            title={
+              selectedCategory
+                ? `Top PNL (${selectedCategory})`
+                : "Top 5 Program (PNL Tertinggi)"
+            }
             data={topPnlData}
             options={{ indexAxis: "y" }}
             height={360}
@@ -187,10 +192,29 @@ export default function ExecutiveDashboardPage() {
         <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-yellow-500 flex flex-col p-2">
           <BaseChart
             type="bar"
-            title="Bottom 5 Program (PNL Terendah)"
+            title={
+              selectedCategory
+                ? `Bottom PNL (${selectedCategory})`
+                : "Bottom 5 Program (PNL Terendah)"
+            }
             data={bottomPnlData}
             options={{ indexAxis: "y" }}
             height={360}
+          />
+        </div>
+      </section>
+
+      <section className="bg-card shadow-sm rounded-2xl border-2 border-teal-500 p-2 overflow-x-auto custom-scrollbar">
+        <div className="min-w-[800px]">
+          <BaseChart
+            type="bar"
+            title={
+              selectedCategory
+                ? `Realisasi Target vs Aktual - ${selectedCategory}`
+                : "Realisasi Target vs Aktual (Semua Kategori)"
+            }
+            data={comboTargetActualData}
+            height={400}
           />
         </div>
       </section>

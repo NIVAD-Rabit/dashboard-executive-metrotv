@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
-import { ChartData } from "chart.js";
+import { ChartData, ChartDataset } from "chart.js";
 
 export default function useDashboard() {
   // Buat tampungan state atau nilai yang diselect berdasarkan kategori
@@ -81,7 +81,7 @@ export default function useDashboard() {
       labels,
       datasets: [{ label: "Total PNL (Rp)", data, backgroundColor: bgColors }],
     };
-  }, []);
+  }, [MOCK_PROGRAMS, selectedCategory]);
 
   // Detail Per-Program
   // Pake useMemo juga biar chart donat ini cuma kerender ulang kalo nilai selectedProgramId (dari dropdown) berubah
@@ -90,7 +90,10 @@ export default function useDashboard() {
   // Pake || MOCK_PROGRAMS[0] buat fallback aja misal id-nya ga ketemu, biar chart ga nge-blank atau error
   const detailProgramData = useMemo<ChartData<"doughnut">>(() => {
     const prog =
-      MOCK_PROGRAMS.find((p) => p.id === selectedProgramId) || MOCK_PROGRAMS[0];
+      MOCK_PROGRAMS.find((p) => p.id === activeProgramId) || MOCK_PROGRAMS[0];
+
+    // Kalo prog ga ada balikin label dan datasetnya array kosong []
+    if (!prog) return { labels: [], datasets: [] };
 
     // Balikin format datanya sesuai aturan struktur ChartJS, masukin angka capaian, cost, sama targetnya berurutan sesuai label
     return {
@@ -99,22 +102,24 @@ export default function useDashboard() {
         { data: [prog.revenueCapaian, prog.costDirect, prog.revenueTarget] },
       ],
     };
-  }, [selectedProgramId]);
+  }, [MOCK_PROGRAMS, activeProgramId]);
 
   // Top PNL
   // Dibungkus useMemo dengan dependensi kosong [] soalnya ini datanya statis buat nampilin ranking, biar diitung sekali aja
-  // Pake spread operator [...MOCK_PROGRAMS] buat nge-copy array aslinya dulu
+  // Pake spread operator [...filteredPrograms] buat nge-copy array aslinya dulu
   // Soalnya fungsi .sort() itu ngerubah array aslinya (mutating). Kalo ga dicopy, data utama bakal ikutan berantakan
   const topPnlData = useMemo<ChartData<"bar">>(() => {
     // .sort((a, b) => b.pnl - a.pnl) ini rumus buat ngurutin dari PNL paling gede ke paling kecil (descending)
     // Abis diurutin, arraynya dipotong pake .slice(0, 5) buat ambil 5 data teratas aja
-    const sorted = [...MOCK_PROGRAMS].sort((a, b) => b.pnl - a.pnl).slice(0, 5);
+    const sorted = [...filteredPrograms]
+      .sort((a, b) => b.pnl - a.pnl)
+      .slice(0, 5);
 
     return {
       labels: sorted.map((p) => p.name),
       datasets: [{ label: "PNL Positif (Rp)", data: sorted.map((p) => p.pnl) }],
     };
-  }, []);
+  }, [filteredPrograms]);
 
   // Bottom PNL
   // Konsepnya sama kaya Top PNL, dicopy dulu biar array asli ga mutasi, trus diitung sekali aja pas render pertama
@@ -123,15 +128,46 @@ export default function useDashboard() {
     // .sort((a, b) => a.pnl - b.pnl) ini rumus buat ngurutin dari PNL paling minus ke paling gede (ascending)
     // Jadi urutan program yang paling boncos ada di pucuk atas
     // Trus dipotong pake .slice(0, 5) buat ngambil 5 peringkat paling bawah
-    const sorted = [...MOCK_PROGRAMS].sort((a, b) => a.pnl - b.pnl).slice(0, 5);
+    const sorted = [...filteredPrograms]
+      .sort((a, b) => a.pnl - b.pnl)
+      .slice(0, 5);
 
     return {
       labels: sorted.map((p) => p.name),
       datasets: [{ label: "PNL Minus (Rp)", data: sorted.map((p) => p.pnl) }],
     };
-  }, []);
+  }, [filteredPrograms]);
 
-  // All Program berdasarkan
+  // All Program berdasarkan kategori, chart combo
+  const comboTargetActualData = useMemo<ChartData<"bar">>(() => {
+    return {
+      // Program yang difilter berdasarkan kategori dimap satu2
+      // Urutan labels sama datasets sesuai urutan indeks
+      labels: filteredPrograms.map((p) => p.name),
+      datasets: [
+        {
+          type: "bar",
+          label: "Target Revenue (Rp)",
+          data: filteredPrograms.map((p) => p.revenueTarget),
+          backgroundColor: "#7f7f7f",
+        },
+        {
+          type: "bar",
+          label: "Actual Revenue (Rp)",
+          data: filteredPrograms.map((p) => p.revenueCapaian),
+          backgroundColor: "#1f77b4",
+        },
+        {
+          type: "line",
+          label: "Performa Kinerja (%)",
+          data: filteredPrograms.map((p) => p.performaCapaian * 2000000),
+          borderColor: "#ff7f0e",
+          borderWidth: 3,
+          tension: 0.3,
+        } as unknown as ChartDataset<"bar">,
+      ],
+    };
+  }, [filteredPrograms]);
 
   return {
     selectedProgramId,
@@ -144,5 +180,6 @@ export default function useDashboard() {
     topPnlData,
     bottomPnlData,
     filteredPrograms,
+    comboTargetActualData,
   };
 }
