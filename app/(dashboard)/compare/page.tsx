@@ -61,11 +61,13 @@ export default function CompareProgramPage() {
   const handleSwap = () => {
     // Kalo dua-duanya kosong, gausah ngapa-ngapain
     if (!progAId && !progBId) return;
-    // Pake prevA buat nangkep ID program A saat ini, terus timpa state B pake ID A, dan return state B buat ditimpa ke A
-    setProgAId((prevA) => {
-      setProgBId(prevA);
-      return progBId;
-    });
+  
+    const currentA = progAId;
+    const currentB = progBId;
+
+    // Tuker statenya
+    setProgAId(currentB);
+    setProgBId(currentA);
   };
 
   // Helper buat ngatur warna background card secara otomatis berdasarkan siapa yang nilainya lebih gede
