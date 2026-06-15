@@ -109,73 +109,94 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Detail program data chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-blue-500 flex flex-col p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-blue-500 flex flex-col ">
+          {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h3 className="text-base font-semibold text-foreground">
               Struktur Performa Program
             </h3>
+          </div> */}
 
-            <select
-              value={activeProgramId}
-              onChange={(e) => setSelectedProgramId(e.target.value)}
-              className="bg-muted text-foreground text-sm font-medium rounded-xl focus:ring-2 focus:ring-primary focus:outline-none block px-4 py-2.5 cursor-pointer min-w-[200px] border-none"
-            >
-              {filteredPrograms.map((prog) => (
-                <option key={prog.id} value={prog.id}>
-                  {prog.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 items-center flex-1">
-            <div className="sm:col-span-3 min-h-[220px]">
+          <div className="grid grid-cols-1 sm:grid-cols-10 gap-4 flex-1">
+            <div className="sm:col-span-7 border-2 border-red-700">
               <BaseChart
                 type="doughnut"
+                title="Struktur Performa Program"
                 data={detailProgramData}
-                height={220}
+                height={360}
               />
             </div>
 
-            <div className="sm:col-span-2 p-5 bg-muted rounded-[20px] h-full flex flex-col justify-center border-2 border-purple-500">
+            <div className="sm:col-span-3 p-4 rounded-[20px] bg-muted gap-2 h-full flex flex-col justify-center border-2 border-purple-500">
               {(() => {
                 const p = MOCK_PROGRAMS.find((x) => x.id === activeProgramId);
                 if (!p) return null;
                 return (
                   <>
-                    <div className="text-sm space-y-4">
-                      <div className="flex flex-col border-b border-border/50 pb-3">
-                        <span className="text-muted-foreground font-medium mb-1">
+                    <div className="relative inline-block">
+                      <select
+                        value={activeProgramId}
+                        onChange={(e) => setSelectedProgramId(e.target.value)}
+                        className="appearance-none bg-card text-foreground text-base font-medium rounded-xl focus:ring-2 focus:ring-primary truncate focus:outline-none block pl-4 pr-10 py-2 cursor-pointer border-none w-full"
+                      >
+                        {filteredPrograms.map((prog) => (
+                          <option key={prog.id} value={prog.id}>
+                            {prog.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
+                        <svg
+                          xmlns="http://w3.org"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div className="text-sm space-y-4 rounded-xl">
+                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                        <span className="text-muted-foreground text-lg font-medium mb-1">
                           PNL Bersih
                         </span>
                         <span
-                          className={`font-medium text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
+                          className={`font-semibold text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
                         >
                           Rp {p.pnl.toLocaleString("id-ID")}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-muted-foreground font-medium">
+                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                        <span className="text-muted-foreground text-lg font-medium">
                           Target Capaian
                         </span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-semibold text-xl text-foreground">
                           {p.performaCapaian}% / {p.performaTarget}%
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1 mb-2">
-                        <span className="text-muted-foreground font-medium">
+                      <div className="flex flex-col border-2 border-amber-700 mb-2 p-2">
+                        <span className="text-muted-foreground text-lg font-medium">
                           Status
                         </span>
-                        <span className="font-semibold text-foreground">
+                        <span
+                          className={`font-semibold text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
+                        >
                           {p.keterangan}
                         </span>
                       </div>
                     </div>
                     <button
                       onClick={() => router.push("/compare")}
-                      className="border-2 border-cyan-700 mt-4 flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground py-2 rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                      className="border-2 border-cyan-700 flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground py-2 rounded-xl text-base transition-colors shadow-sm cursor-pointer"
                     >
-                      <GitCompare size={14} /> Compare
+                      <GitCompare size={18} /> Compare
                     </button>
                   </>
                 );
@@ -221,8 +242,8 @@ export default function ExecutiveDashboardPage() {
             type="bar"
             title={
               selectedCategory
-                ? `Realisasi Target vs Aktual - ${selectedCategory}`
-                : "Realisasi Target vs Aktual (Semua Kategori)"
+                ? `Target vs Aktual - ${selectedCategory}`
+                : "Target vs Aktual (Semua Kategori)"
             }
             data={comboTargetActualData}
             height={400}

@@ -156,20 +156,25 @@ export default function BaseChart<T extends ChartType>({
         position: "bottom",
         labels: {
           // Ubah icon kotak bawaan jadi bentuk bulet atao titik tanda datanya
-          usePointStyle: true,
+          usePointStyle: false,
           // Kasih jarak 20px antar item
           padding: 20,
           // Atur font jadi 'Inter', ukurannya 12, tebelnya medium
-          font: { family: "'Inter', sans-serif", size: 12, weight: 500 },
+          // Sebelumnya 12, naik 2 poin jadi 14
+          font: { family: "'Inter', sans-serif", size: 16, weight: 500 },
+          // Warna text
+          color: "#FFFFFF",
+          boxWidth: 15,
+          boxHeight: 15,
         },
       },
       tooltip: {
         // Warna background tooltip hitam transparan (dark mode style)
         backgroundColor: "rgba(28, 27, 31, 0.9)",
         // Ukuran font judul di dalem tooltip
-        titleFont: { size: 13 },
+        titleFont: { size: 16 },
         // Ukuran font isi teks di dalem tooltip
-        bodyFont: { size: 13 },
+        bodyFont: { size: 16 },
         // Jarak bagian dalem (padding) kotak tooltip 12px
         padding: 12,
         // Biki sudut kotak tooltip melengkung 8px
@@ -187,7 +192,10 @@ export default function BaseChart<T extends ChartType>({
             // Ilangin garis grid
             grid: { display: false },
             // Atur font buat teks di sumbu X
-            ticks: { font: { family: "'Inter', sans-serif" } },
+            ticks: {
+              font: { family: "'Inter', sans-serif", size: 16 },
+              color: "#FFFFFF",
+            },
           },
           y: {
             // Konfigurasi sumbu Y
@@ -196,7 +204,10 @@ export default function BaseChart<T extends ChartType>({
             // Kasih warna garis grid abu2 tipis
             grid: { color: "rgba(0, 0, 0, 0.05)" },
             // Atur font buat teks angka di sumbu Y
-            ticks: { font: { family: "'Inter', sans-serif" } },
+            ticks: {
+              font: { family: "'Inter', sans-serif", size: 16 },
+              color: "#FFFFFF",
+            },
           },
         },
     // Type casting konfigurasi ke tipe ChartOptions<T>
@@ -212,7 +223,7 @@ export default function BaseChart<T extends ChartType>({
       {" "}
       {title && (
         // Confitional rendering, kalo ada prop title, render elemen h3 di bawah ini
-        <h3 className="text-base font-semibold text-foreground mb-4">
+        <h3 className="text-2xl font-bold text-foreground mb-4">
           {/* Tampil teks title grafiknya */}
           {title}
         </h3>

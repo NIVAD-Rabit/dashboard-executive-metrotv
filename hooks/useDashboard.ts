@@ -79,7 +79,14 @@ export default function useDashboard() {
     // Mapping returnnya
     return {
       labels,
-      datasets: [{ label: "Total PNL (Rp)", data, backgroundColor: bgColors }],
+      datasets: [
+        {
+          label: "Total PNL (Rp)",
+          data,
+          backgroundColor: bgColors,
+          minBarLength: 15,
+        },
+      ],
     };
   }, [MOCK_PROGRAMS, selectedCategory]);
 
@@ -149,20 +156,18 @@ export default function useDashboard() {
           type: "bar",
           label: "Target Revenue (Rp)",
           data: filteredPrograms.map((p) => p.revenueTarget),
-          backgroundColor: "#7f7f7f",
         },
         {
           type: "bar",
           label: "Actual Revenue (Rp)",
           data: filteredPrograms.map((p) => p.revenueCapaian),
-          backgroundColor: "#1f77b4",
         },
         {
           type: "line",
           label: "Performa Kinerja (%)",
           data: filteredPrograms.map((p) => p.performaCapaian * 2000000),
-          borderColor: "#ff7f0e",
-          borderWidth: 3,
+          borderColor: "#FFFFFF",
+          borderWidth: 2,
           tension: 0.3,
         } as unknown as ChartDataset<"bar">,
       ],

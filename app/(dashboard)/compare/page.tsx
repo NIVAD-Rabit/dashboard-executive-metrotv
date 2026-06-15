@@ -61,7 +61,7 @@ export default function CompareProgramPage() {
   const handleSwap = () => {
     // Kalo dua-duanya kosong, gausah ngapa-ngapain
     if (!progAId && !progBId) return;
-  
+
     const currentA = progAId;
     const currentB = progBId;
 
@@ -73,16 +73,16 @@ export default function CompareProgramPage() {
   // Helper buat ngatur warna background card secara otomatis berdasarkan siapa yang nilainya lebih gede
   // Program A menang = warna biru. Program B menang = warna oranye. Seri = warna standar.
   const getCardStyle = (valA: number, valB: number) => {
-    if (valA > valB) return "bg-blue-500/10 border-blue-500/30";
-    if (valB > valA) return "bg-orange-500/10 border-orange-500/30";
+    if (valA > valB) return "bg-[#1f77b4]/10 border-[#1f77b4]/30";
+    if (valB > valA) return "bg-[#ff7f0e]/10 border-[#ff7f0e]/30";
     // Kalo angkanya persis sama alias Seri / Seimbang
     return "bg-card border-border";
   };
 
   // Helper buat ngatur warna teks tulisan pemenangnya. Logikanya sama plek kaya fungsi di atas.
   const getWinnerTextColor = (valA: number, valB: number) => {
-    if (valA > valB) return "text-blue-600";
-    if (valB > valA) return "text-orange-600";
+    if (valA > valB) return "text-[#1f77b4]";
+    if (valB > valA) return "text-[#ff7f0e]";
     // Seri / Seimbang
     return "text-foreground";
   };
@@ -136,10 +136,9 @@ export default function CompareProgramPage() {
 
   return (
     // Bungkus container paling luar, dikasih max-width biar tampilannya ga melebar sampe mentok di layar gede
-    <div className="p-4 md:p-8 space-y-6 max-w-[1400px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 space-y-6 max-w-[1400px] mx-auto animate-in fade-in duration-300">
       {/* Bagian Header / Judul Halaman */}
-      <div className="flex items-center gap-4 border-b border-border/50 pb-6 border-2 border-slate-300">
-        {/* Kotak icon */}
+      {/* <div className="flex items-center gap-4 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="p-3 bg-secondary text-secondary-foreground rounded-2xl">
           <GitCompare size={28} />
         </div>
@@ -152,29 +151,48 @@ export default function CompareProgramPage() {
             langsung.
           </p>
         </div>
-      </div>
+      </div> */}
 
       {/* AREA FILTER SELECTOR (Bagian milih program) */}
       <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex flex-col md:flex-row items-center gap-6 justify-between">
         {/* Kolom Dropdown Program A */}
         <div className="w-full flex-1">
-          <label className="text-[11px] font-bold text-primary uppercase tracking-wider mb-2 block">
-            Pilih Program A
+          <label className="text-base font-bold text-primary uppercase tracking-wider mb-2 block">
+            Pilih Program
           </label>
           {/* Pas user ganti opsi, masukin ID program yang dipilih ke dalem state progAId */}
-          <select
-            value={progAId}
-            onChange={(e) => setProgAId(e.target.value)}
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">-- Pilih Program Pertama --</option>
-            {/* Looping semua data program dari API buat dijadiin opsi di select */}
-            {programs.map((p) => (
-              <option key={`A-${p.id}`} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative inblock">
+            <select
+              value={progAId}
+              onChange={(e) => setProgAId(e.target.value)}
+              className="appearance-none w-full bg-muted border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- Pilih Program Pertama --</option>
+              {/* Looping semua data program dari API buat dijadiin opsi di select */}
+              {programs.map((p) => (
+                <option key={`A-${p.id}`} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
+              <svg
+                xmlns="http://w3.org"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
 
         {/* Tombol Swap Buat Nuker Posisi Kiri-Kanan */}
@@ -186,25 +204,44 @@ export default function CompareProgramPage() {
           <ArrowRightLeft size={20} />
         </button>
 
-        {/* Kolom Dropdown Program B */}
+        {/* Kolom Dropdown Program kedua */}
         <div className="w-full flex-1">
-          <label className="text-[11px] font-bold text-primary uppercase tracking-wider mb-2 block">
-            Pilih Program B
+          <label className="text-base font-bold text-primary uppercase tracking-wider mb-2 block">
+            Pilih Program
           </label>
-          {/* Mekanismenya sama kaya Program A, tapi nge-set state progBId */}
-          <select
-            value={progBId}
-            onChange={(e) => setProgBId(e.target.value)}
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-          >
-            <option value="">-- Pilih Program Kedua --</option>
-            {/* Looping program lagi buat dropdown kedua */}
-            {programs.map((p) => (
-              <option key={`B-${p.id}`} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          {/* Mekanismenya sama kaya Program diatas, tapi nge-set state progBId */}
+          <div className="relative inblock">
+            <select
+              value={progBId}
+              onChange={(e) => setProgBId(e.target.value)}
+              className="appearance-none w-full bg-muted border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            >
+              <option value="">-- Pilih Program Kedua --</option>
+              {/* Looping program lagi buat dropdown kedua */}
+              {programs.map((p) => (
+                <option key={`B-${p.id}`} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
+              <svg
+                xmlns="http://w3.org"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -304,7 +341,7 @@ export default function CompareProgramPage() {
           {/* AREA DETAIL TABEL (Ngambil full width 12 kolom biar panjang) */}
           <div className="lg:col-span-12 bg-card rounded-2xl shadow-sm border border-border overflow-hidden mt-2">
             <div className="p-5 border-b border-border bg-muted/20">
-              <h3 className="text-base font-semibold flex items-center gap-2">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
                 <Award size={18} /> Detail Komparasi Metrik Parameter
               </h3>
             </div>
@@ -312,7 +349,7 @@ export default function CompareProgramPage() {
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 {/* Header Tabel */}
-                <thead className="bg-muted/50 text-muted-foreground uppercase text-[11px] tracking-wider">
+                <thead className="bg-muted/50 text-muted-foreground uppercase text-base tracking-wider">
                   <tr>
                     <th className="px-6 py-4">Parameter Spesifik</th>
                     {/* Tarik dinamis dari objek supaya judul tabel sesuai nama yang dipilih */}
@@ -329,37 +366,37 @@ export default function CompareProgramPage() {
                 <tbody className="divide-y divide-border">
                   {/* Baris Kategori & Jam Tayang */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base font-medium flex items-center gap-2">
                       <Tags size={16} className="text-muted-foreground" />{" "}
                       Kategori & Jam
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       Kategori {progA.category} ({progA.broadcastTime})
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       Kategori {progB.category} ({progB.broadcastTime})
                     </td>
-                    <td className="px-6 py-4 text-center text-xs text-muted-foreground">
+                    <td className="px-6 py-4 text-base text-center text-muted-foreground">
                       -
                     </td>
                   </tr>
 
                   {/* Baris Ketersediaan Slot Iklan (Inventory) */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base font-medium flex items-center gap-2">
                       <Clock size={16} className="text-muted-foreground" />{" "}
                       Inventory Spot
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       {progA.inventorySpot} Slot @ Rp{" "}
                       {progA.rateIklan.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       {progB.inventorySpot} Slot @ Rp{" "}
                       {progB.rateIklan.toLocaleString("id-ID")}
                     </td>
                     {/* Cek siapa yang punya slot (kapasitas) lebih gede buat nampilin pemenangnya */}
-                    <td className="px-6 py-4 text-center text-xs">
+                    <td className="px-6 py-4 text-base text-center">
                       {progA.inventorySpot > progB.inventorySpot ? (
                         <span className="text-[#1f77b4] font-bold">
                           {progA.name} Kapasitas Lebih Besar
@@ -376,18 +413,18 @@ export default function CompareProgramPage() {
 
                   {/* Baris Modal Pengeluaran (Cost Direct) */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base font-medium flex items-center gap-2">
                       <Wallet size={16} className="text-muted-foreground" />{" "}
                       Cost Direct (Modal)
                     </td>
                     {/* Gunakan toLocaleString buat kasih titik pemisah ribuan otomatis (format Rupiah) */}
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       Rp {progA.costDirect.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base">
                       Rp {progB.costDirect.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-6 py-4 text-center text-xs">
+                    <td className="px-6 py-4 text-base text-center">
                       {/* Khusus cost (pengeluaran), logika berbalik: angka KECIL yang lebih hemat/menang */}
                       {progA.costDirect < progB.costDirect ? (
                         <span className="text-[#1f77b4] font-bold">
@@ -405,7 +442,7 @@ export default function CompareProgramPage() {
 
                   {/* Baris Pendapatan Bersih (Revenue Aktual) */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base font-medium flex items-center gap-2">
                       <DollarSign size={16} className="text-muted-foreground" />{" "}
                       Revenue Aktual
                     </td>
@@ -415,7 +452,7 @@ export default function CompareProgramPage() {
                     <td className="px-6 py-4">
                       Rp {progB.revenueCapaian.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-6 py-4 text-center text-xs">
+                    <td className="px-6 py-4 text-base text-center">
                       {progA.revenueCapaian > progB.revenueCapaian ? (
                         <span className="text-[#1f77b4] font-bold">
                           {progA.name} Pendapatan Lebih Besar
@@ -432,13 +469,17 @@ export default function CompareProgramPage() {
 
                   {/* Baris Perbandingan ROI */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base font-medium flex items-center gap-2">
                       <Percent size={16} className="text-muted-foreground" />{" "}
                       ROI (Efisiensi Modal)
                     </td>
-                    <td className="px-6 py-4 font-bold">{roiA.toFixed(1)}%</td>
-                    <td className="px-6 py-4 font-bold">{roiB.toFixed(1)}%</td>
-                    <td className="px-6 py-4 text-center text-xs">
+                    <td className="px-6 py-4 text-base font-bold">
+                      {roiA.toFixed(1)}%
+                    </td>
+                    <td className="px-6 py-4 text-base font-bold">
+                      {roiB.toFixed(1)}%
+                    </td>
+                    <td className="px-6 py-4 text-base text-center">
                       {roiA > roiB ? (
                         <span className="text-[#1f77b4] font-bold">
                           {progA.name} Margin Lebih Baik
@@ -455,23 +496,23 @@ export default function CompareProgramPage() {
 
                   {/* Baris Persentase Kinerja Terhadap Target */}
                   <tr className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4 font-medium flex items-center gap-2">
+                    <td className="px-6 py-4 text-base  font-medium flex items-center gap-2">
                       <TrendingUp size={16} className="text-muted-foreground" />{" "}
                       Performa Kinerja
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base ">
                       {progA.performaCapaian}%{" "}
                       <span className="text-xs text-muted-foreground">
                         (Target {progA.performaTarget}%)
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-base ">
                       {progB.performaCapaian}%{" "}
                       <span className="text-xs text-muted-foreground">
                         (Target {progB.performaTarget}%)
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-xs">
+                    <td className="px-6 py-4 text-base text-center">
                       {progA.performaCapaian > progB.performaCapaian ? (
                         <span className="text-[#1f77b4] font-bold">
                           {progA.name} Lebih Efektif

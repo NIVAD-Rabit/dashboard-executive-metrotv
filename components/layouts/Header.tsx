@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { getTitleFromMenu, MenuGroup } from "@/lib/pageTitle";
 import { menuGroups } from "@/constants/menuGroups";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 
 // Trik optimasi React18+, daftarin fungsi subscribe kosong di luar komponen supaya memori ram browser stabil
 // Dibuat sekali, disimpen diram sekali aja
@@ -41,13 +42,33 @@ export default function Header() {
           <Menu size={24} />
         </button>
         <div className="border-2 border-cyan-700 hidden sm:block">
-          <h1 className="text-2xl font-bold text-foreground ">{titlePage}</h1>
+          {/* <h1 className="text-2xl font-bold text-foreground ">{titlePage}</h1> */}
+          <div className="border-2 border-cyan-600 flex items-center gap-1.5 text-xl text-foreground">
+            {/* <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-md">
+                          E
+                        </div> */}
+            {/* <button
+                          onClick={() => dispatch(toggleSidebar())}
+                          className="p-3 text-foreground hidden md:block hover:bg-muted rounded-full transition-colors cursor-pointer"
+                        >
+                          <Menu size={24} />
+                        </button> */}
+            <Image
+              src="/logo-metrotv.png"
+              alt="MTI Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 shrink-0 object-contain"
+            />
+            <span className="font-bold">Executive</span>
+            <span className="font-normal text-muted-foreground">Dashboard</span>
+          </div>
         </div>
       </div>
 
       {/* Sisi Kanan */}
-      <div className="flex items-center gap-2 border-2 border-cyan-800">
-        {/* Toggle dark mode */}
+      {/* <div className="flex items-center gap-2 border-2 border-cyan-800">
+        Toggle dark mode
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-colors relative cursor-pointer"
@@ -59,14 +80,14 @@ export default function Header() {
               <Moon size={22} />
             )
           ) : (
-            // Placeholder sebelum mounted icon ke load biar layoutnya ga ke geser
+            Placeholder sebelum mounted icon ke load biar layoutnya ga ke geser
             <div className="w-[22px] h-[22px]" />
           )}
         </button>
         <div className="ml-2 px-4 w-full h-10 rounded-full bg-secondary text-secondary-foreground border border-border flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm hover:shadow-md transition-shadow">
           Mamang Elon Musk
         </div>
-      </div>
+      </div> */}
     </header>
   );
 }

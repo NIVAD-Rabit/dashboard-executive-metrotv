@@ -29,12 +29,12 @@ export default function RootLayout({
       <body className="antialiased">
         <QueryProvider>
           {/* Bungkus Theme Provider untuk dark mode */}
-          <ThemeProvider attribute="class" defaultTheme="system">
+          <ThemeProvider attribute="class" defaultTheme="dark">
             {/* Bungkus redux disini */}
             <ReduxProvider>
               <div className="flex h-screen w-full overflow-hidden relative bg-background text-foreground transition-colors duration-300 border-2 border-amber-500">
                 {/* Sidebar */}
-                <Sidebar />
+                {/* <Sidebar /> */}
                 <div className="flex flex-col flex-1 min-w-0 h-full relative overflow-hidden border-2 border-amber-700">
                   <Header />
                   <main className="flex-1 overflow-y-auto overflow-x-hidden p-0 custom-scrollbar border-2 border-cyan-700">
