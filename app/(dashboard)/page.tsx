@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
-import { FilterX, LayoutDashboard } from "lucide-react";
+import { FilterX, LayoutDashboard, GitCompare } from "lucide-react";
+import { useRouter } from "next/navigation";
 import useDashboard from "@/hooks/useDashboard";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import BaseChart from "@/components/shared/BaseChart";
 import { elements } from "chart.js";
 
 export default function ExecutiveDashboardPage() {
+  const router = useRouter();
+
   const {
     allProgramData,
     filteredPrograms,
@@ -139,34 +142,42 @@ export default function ExecutiveDashboardPage() {
                 const p = MOCK_PROGRAMS.find((x) => x.id === activeProgramId);
                 if (!p) return null;
                 return (
-                  <div className="text-sm space-y-4">
-                    <div className="flex flex-col border-b border-border/50 pb-3">
-                      <span className="text-muted-foreground font-medium mb-1">
-                        PNL Bersih
-                      </span>
-                      <span
-                        className={`font-medium text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
-                      >
-                        Rp {p.pnl.toLocaleString("id-ID")}
-                      </span>
+                  <>
+                    <div className="text-sm space-y-4">
+                      <div className="flex flex-col border-b border-border/50 pb-3">
+                        <span className="text-muted-foreground font-medium mb-1">
+                          PNL Bersih
+                        </span>
+                        <span
+                          className={`font-medium text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
+                        >
+                          Rp {p.pnl.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-muted-foreground font-medium">
+                          Target Capaian
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {p.performaCapaian}% / {p.performaTarget}%
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1 mb-2">
+                        <span className="text-muted-foreground font-medium">
+                          Status
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {p.keterangan}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-muted-foreground font-medium">
-                        Target Capaian
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {p.performaCapaian}% / {p.performaTarget}%
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-muted-foreground font-medium">
-                        Status Analisis
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {p.keterangan}
-                      </span>
-                    </div>
-                  </div>
+                    <button
+                      onClick={() => router.push("/compare")}
+                      className="border-2 border-cyan-700 mt-4 flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground py-2 rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                    >
+                      <GitCompare size={14} /> Compare
+                    </button>
+                  </>
                 );
               })()}
             </div>
