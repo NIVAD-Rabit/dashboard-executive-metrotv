@@ -1,39 +1,61 @@
 import { TooltipItem } from "chart.js";
-import { Scale } from "chart.js";
+import { Scale, CoreScaleOptions } from "chart.js";
 
 // Fungsi helper buat nyingkat angka gede misalnya Miliar, Juta, Ribu
 export const formatBigNumber = function (
-  // "this" bind si Chart.jsnya buat ambil tesxt labelnya
-  this: Scale | undefined,
+  // Diubah ke tipe gabungan agar bisa menerima konteks dari Chart.js maupun context kosong (void/undefined) dari komponen
+  this: Scale<CoreScaleOptions> | void | undefined,
   value: string | number,
 ): string | number | string[] {
+  // Bikin variabel penampung biar fleksibel pas dioper 1 angka dari luar
+  const targetValue = value;
+
   // Kalo "this" chartnya ada dan tipenya "category"
-  if (this && this.type === "category") {
+  // Ditambah pengecekan tipe objek (duck typing) biar aman dari void/undefined sebelum baca properti internal
+  if (
+    this &&
+    typeof this === "object" &&
+    "type" in this &&
+    this.type === "category"
+  ) {
     // Ambil label teks asli berdasarkan index yang dikirim oleh Chart.js
-    const label = this.getLabelForValue(Number(value));
+    const label = this.getLabelForValue(Number(targetValue));
     if (label !== undefined && label !== null) {
       // Balikim huruf aslinya
       return label;
     }
   }
 
-  const numValue = Number(value);
-  if (isNaN(numValue)) return value;
+  const numValue = Number(targetValue);
+  if (isNaN(numValue)) return targetValue;
 
   // Pake Math.abs biar angka yang minus jadi positif
   // Cuma buat logika dibawah aja
   const absValue = Math.abs(numValue);
 
+  // Setingan koma gaya Indonesia, otomatis ngilangin nol mubazir (misal: 1,50 jadi 1,5)
+  const formatIndo = { minimumFractionDigits: 0, maximumFractionDigits: 3 };
+
+  // Kalo angka tembus 1 Triliun (Biar gak rancu nyebut jutaan miliar)
+  if (absValue >= 1_000_000_000_000) {
+    // Bagi angkanya terus tempelin tulisan Triliun di buntutnya, pake format koma Indo
+    return (
+      (numValue / 1_000_000_000_000).toLocaleString("id-ID", formatIndo) +
+      " Triliun"
+    );
+  }
   // Kalo angka tembus 1 Miliar
   if (absValue >= 1_000_000_000) {
     //  Bagi angkanya terus tempelem tulisan Miliar di buntutnya, kaya 1 Miliar
-    return (numValue / 1_000_000_000).toFixed(1).replace(".0", "") + " Miliar";
+    return (
+      (numValue / 1_000_000_000).toLocaleString("id-ID", formatIndo) + " Miliar"
+    );
   }
   if (absValue >= 1_000_000) {
-    return (numValue / 1_000_000).toFixed(1).replace(".0", "") + " Juta";
+    return (numValue / 1_000_000).toLocaleString("id-ID", formatIndo) + " Juta";
   }
   if (absValue >= 1_000) {
-    return (numValue / 1_000).toFixed(1).replace(".0", "") + " Ribu";
+    return (numValue / 1_000).toLocaleString("id-ID", formatIndo) + " Ribu";
   }
 
   // Kalo cuma angka kecil atau angka 0, kasih format titik pemisah ribuan standar Indonesia (id-ID)

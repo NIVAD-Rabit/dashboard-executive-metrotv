@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import { ChartData, ChartDataset } from "chart.js";
+import { formatBigNumber } from "@/lib/formatters";
 
 export default function useDashboard() {
   // Buat tampungan state atau nilai yang diselect berdasarkan kategori
@@ -18,6 +19,103 @@ export default function useDashboard() {
     // Kalo kategorinya ada yang diselect filter berdasarkan katergori
     return MOCK_PROGRAMS.filter((p) => p.category === selectedCategory);
   }, [selectedCategory, MOCK_PROGRAMS]);
+
+  // Nilai KPI buat di card dashboard
+  const totalKPI = useMemo(() => {
+    // Pake reduce buat akumulasi data total dari revenue, cost, pnl
+    const totals = filteredPrograms.reduce(
+      (acc, curr) => {
+        acc.revenue += curr.revenueCapaian;
+        acc.cost += curr.costDirect;
+        acc.pnl += curr.pnl;
+        return acc;
+      },
+      // Set nilai awal ke nol semua
+      { revenue: 0, cost: 0, pnl: 0 },
+    );
+
+    // Fungsi buat nyegah error pas bagi angka, biar hasilnya ga jadi "infinity" atau "NaN" pas penyebutnya nol
+    // Parameter num itu angka atas, denom angka bawah
+    const safeDiv = (num: number, denom: number) =>
+      // Klo angka bawah bukan nol, lanjut bagi aja, tapi kalo angka bawahnya nol, langsung sebut hasilnya 0
+      denom !== 0 ? num / denom : 0;
+
+    // Biar kaga bingung bahasa akutansi
+    // Net = Bersih (Duit sisa akhir yang udah bersih dipotong)
+    // Gross = Kotor (Duit yang belom dipotong biaya operasional)
+    // Omset / Total Pendapatan / Revenue = Duit masuk utuh, belom dipotong apa2 (totals.revenue)
+    // Harga Pokok Penjualan (HPP) / Modal Barang = Duit modal buat bikin produk (totals.cost)
+    // Laba Kotor / Gross Profit = Duit sisa pas omset dikurang modal barang (grossProfit)
+    // Net Profit & Loss = Laba/rugi bersih akhir pas udah dipotong semua biaya (totals.pnl)
+
+    // Itung laba kotor / gross profit (omset - biaya)
+    // Rumusnya, Laba Kotor = Total Pendapatan - Harga Pokok Penjualan (HPP)
+    const grossProfit = totals.revenue - totals.cost;
+
+    // Itung persentase margin laba kotor dari revenue
+    // Rumusnya, Gross Profit Margin = (Laba Kotor / Total Pendapatan) * 100
+    // "Dari total omset, berapa persen yang jadi keuntungan kotornya?"
+    const grossProfitMarginPct = safeDiv(grossProfit, totals.revenue) * 100;
+
+    // Pake perbandingan buat cek cost gedean dari revenue atau gak
+    // Rumusnya, apa si Total Biaya > Total Pendapatan?
+    const isOverCost = totals.cost > totals.revenue;
+
+    // Pake Math.abs buat cari selisih persen cost dan revenue
+    // Rumusnya, Selisih Persentase Biaya = (Absolut(Total Biaya - Total Pendapatan) / Total Pendapatan) * 100
+    const costDiffPct =
+      safeDiv(Math.abs(totals.cost - totals.revenue), totals.revenue) * 100;
+
+    // Pake pembagian safeDiv buat cari rasio cost dibanding revenue
+    // Rumusnya, Cost-to-Revenue Ratio = (Total Biaya / Total Pendapatan) * 100
+    // "Berapa persen sih omset yang abis kemakan sama biaya?"
+    const costToRevenueRatio = safeDiv(totals.cost, totals.revenue) * 100;
+
+    // Mapping konfigurasi cardnya buat dirender di komponen
+    return {
+      // Pake objek totals buat dibalikin totalsnya
+      totals,
+      // Array cardnya
+      cards: [
+        {
+          title: "Total Capaian Revenue",
+          value: `Rp ${formatBigNumber(totals.revenue)}`,
+          // Pake boolean buat buat style di tailwindnya di clasname komponennya
+          isPositive: totals.revenue > 0,
+          // Pake toFixed sama replace buat rapihin persenan laba kotor
+          label: `${grossProfitMarginPct.toFixed(1).replace(".", ",")}% Capaian`,
+        },
+        {
+          title: "Total Cost Direct",
+          value: `Rp ${formatBigNumber(totals.cost)}`,
+          // Pake kebalikan isOverCost buat status positif aman atau kaga
+          // Biaya aman kalo ga ngelebihin revenue
+          isPositive: !isOverCost,
+          // Pake ternary buat nentuin textnya over atau under budget
+          label: isOverCost
+            ? `Over Budget ${costDiffPct.toFixed(1).replace(".", ",")}%`
+            : `Under Budget ${costDiffPct.toFixed(1).replace(".", ",")}%`,
+        },
+        {
+          title: "Net Profit & Loss",
+          value: `Rp ${formatBigNumber(totals.pnl)}`,
+          isPositive: totals.pnl >= 0,
+          label: totals.pnl >= 0 ? "Margin Aktual" : "Defisit Aktual",
+        },
+        {
+          title: "Cost-to-Revenue Ratio",
+          value: `${costToRevenueRatio.toFixed(1).replace(".", ",")}%`,
+          // Pake batas maksimal 60 persen buat indikator positif
+          isPositive: costToRevenueRatio <= 60,
+          // Pake ternary buat set label terkendali atau boros
+          label:
+            costToRevenueRatio <= 60
+              ? "Biaya Terkendali"
+              : "Boros / Over Budget",
+        },
+      ],
+    };
+  }, [filteredPrograms]);
 
   // Aktif per program berdasarkan filter kategori diatas
   const activeProgramId = useMemo(() => {
@@ -199,5 +297,6 @@ export default function useDashboard() {
     bottomPnlData,
     filteredPrograms,
     comboTargetActualData,
+    totalKPI,
   };
 }

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import Sidebar from "@/components/layouts/Sidebar";
 import Header from "@/components/layouts/Header";
+import TopHeader from "@/components/layouts/TopHeader";
 import ReduxProvider from "@/store/ReduxProvider";
 import QueryProvider from "@/store/QueryProvider";
 
@@ -15,9 +16,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="id"
@@ -32,17 +33,17 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="dark">
             {/* Bungkus redux disini */}
             <ReduxProvider>
-              <div className="flex h-screen w-full overflow-hidden relative bg-background text-foreground transition-colors duration-300 border-2 border-amber-500">
+              <div className="border-2 border-amber-500 flex flex-col h-screen w-full relative bg-background text-foreground transition-colors duration-300">
                 {/* Sidebar */}
                 {/* <Sidebar /> */}
-                <div className="flex flex-col flex-1 min-w-0 h-full relative overflow-hidden border-2 border-amber-700">
-                  <Header />
-                  <main className="flex-1 overflow-y-auto overflow-x-hidden p-0 custom-scrollbar border-2 border-cyan-700">
-                    <div className="w-full min-h-full pb-24 md:pb-0 border-2 border-b-fuchsia-700">
-                      {children}
-                    </div>
-                  </main>
-                </div>
+                <TopHeader />
+                <main className="border-2 border-cyan-700 flex-1 overflow-y-auto overflow-x-hidden p-0 custom-scrollbar relative z-0">
+                  <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))] -z-10" />
+
+                  <div className="border-2 border-b-fuchsia-700 w-full min-h-full pb-24 md:pb-0 ">
+                    {children}
+                  </div>
+                </main>
               </div>
             </ReduxProvider>
           </ThemeProvider>

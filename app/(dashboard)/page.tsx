@@ -1,12 +1,19 @@
 "use client";
 
 import React from "react";
-import { FilterX, LayoutDashboard, GitCompare } from "lucide-react";
+import {
+  FilterX,
+  LayoutDashboard,
+  GitCompare,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import useDashboard from "@/hooks/useDashboard";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import BaseChart from "@/components/shared/BaseChart";
 import { elements } from "chart.js";
+import { formatBigNumber } from "@/lib/formatters";
 
 export default function ExecutiveDashboardPage() {
   const router = useRouter();
@@ -23,10 +30,11 @@ export default function ExecutiveDashboardPage() {
     setSelectedProgramId,
     selectedCategory,
     setSelectedCategory,
+    totalKPI,
   } = useDashboard();
 
   return (
-    <div className="p-4 md:px-8 space-y-8 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Title Page & Control */}
       {/* <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="flex items-center gap-4 border-2 border-b-blue-700">
@@ -56,10 +64,62 @@ export default function ExecutiveDashboardPage() {
         </div>
       </div> */}
 
+      {/* Card */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {totalKPI.cards.map((card, idx) => (
+          <div
+            key={idx}
+            className="border-2 border-purple-700 flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6"
+          >
+            {/* Animasi pulse */}
+            <span className="absolute top-4 right-4 flex h-3 w-3">
+              <span
+                className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${card.isPositive ? "bg-green-400" : "bg-red-400"}`}
+              ></span>
+              <span
+                className={`relative inline-flex h-3 w-3 rounded-full ${card.isPositive ? "bg-green-500" : "bg-red-500"}`}
+              ></span>
+            </span>
+
+            <span className="text-xl font-bold text-muted-foreground mb-1 pr-4">
+              {card.title}
+            </span>
+            <span className="text-2xl font-bold text-muted-foreground mb-1">
+              {card.value}
+            </span>
+
+            <div
+              className={`flex items-center gap-1 mt-3 text-lg font-bold ${card.isPositive ? "text-green-600" : "text-red-500"}`}
+            >
+              {card.isPositive ? (
+                <ArrowUpRight size={18} />
+              ) : (
+                <ArrowDownRight size={18} />
+              )}
+              <span>{card.label}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Chart */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-2 border-cyan-700">
         {/* All program data chart */}
         <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-red-500 flex flex-col p-2 relative">
+          {selectedCategory ? (
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="absolute top-4 right-6 text-[10px] bg-destructive/10 text-destructive px-2 py-1 rounded-full font-bold uppercase tracking-wider z-10 hover:bg-destructive/20 cursor-pointer transition-colors flex items-center gap-1"
+            >
+              <FilterX size={14} />
+              <span>Clear Filter</span>
+            </button>
+          ) : (
+            <span className="absolute top-4 right-6 text-[10px] bg-secondary text-secondary-foreground px-2 py-1 rounded-full font-bold uppercase tracking-wider z-10 transition-colors">
+              Click to Filter
+            </span>
+          )}
+
           <BaseChart
             // Jenis chartnya "bar"
             type="bar"
