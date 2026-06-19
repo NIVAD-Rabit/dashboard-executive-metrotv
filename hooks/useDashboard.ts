@@ -11,6 +11,8 @@ export default function useDashboard() {
     null,
   );
 
+  console.log(JSON.stringify(MOCK_PROGRAMS));
+
   // Filter data dinamis berdasarkan kategori
   const filteredPrograms = useMemo(() => {
     // Kalo kategorinya ga ada yang diselect kasih MOCK PROGRAMS semuanya
