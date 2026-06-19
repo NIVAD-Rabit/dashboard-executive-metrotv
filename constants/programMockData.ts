@@ -1,33 +1,13 @@
-export interface ProgramData {
-  id: string;
-  category: "A" | "B" | "C";
-  name: string;
-  // Target performa yang pengen dicapai
-  performaTarget: number;
-  // Hasil performa asli yang beneran didapet di lapangan
-  performaCapaian: number;
-  // Biaya modal utama yang langsung keluar buat bikin program ini
-  costDirect: number;
-  // Target dapet duit (omset) yang dipasang dari awal
-  revenueTarget: number;
-  // Duit/omset asli yang beneran masuk kantong
-  revenueCapaian: number;
-  // Keuntungan bersih atao kerugian (Sisa duit setelah omset dikurang biaya modal)
-  pnl: number;
-  // Sisa slot atau sisa kuota iklan yang masih kosong dan bisa dijual
-  inventorySpot: number;
-  // Harga pasaran buat pasang satu iklan di program ini
-  rateIklan: number;
-  // Catatan tambahan atau info ekstra kalau ada yang perlu dijelasin
-  keterangan: string;
-}
+import { ProgramData } from "@/services/api/programService";
 
 export const MOCK_PROGRAMS: ProgramData[] = [
-  // Kategori A
   {
-    id: "p1",
+    id: "p1-stat",
+    periodeBulan: "2026-05",
     category: "A",
+    descriptionCategory: "16.05-22.05",
     name: "Metro Hari Ini",
+    broadcastTime: "16:30",
     performaTarget: 80,
     performaCapaian: 85,
     costDirect: 50000000,
@@ -39,9 +19,12 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p2",
+    id: "p2-stat",
+    periodeBulan: "2026-05",
     category: "A",
+    descriptionCategory: "16.05-22.05",
     name: "Prime Time News",
+    broadcastTime: "18:00",
     performaTarget: 90,
     performaCapaian: 92,
     costDirect: 75000000,
@@ -53,23 +36,12 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p3",
+    id: "p3-stat",
+    periodeBulan: "2026-05",
     category: "A",
-    name: "Top News",
-    performaTarget: 75,
-    performaCapaian: 70,
-    costDirect: 45000000,
-    revenueTarget: 100000000,
-    revenueCapaian: 90000000,
-    pnl: 45000000,
-    inventorySpot: 15,
-    rateIklan: 4000000,
-    keterangan: "Underperform",
-  },
-  {
-    id: "p4",
-    category: "A",
+    descriptionCategory: "16.05-22.05",
     name: "Kick Andy",
+    broadcastTime: "21:05",
     performaTarget: 95,
     performaCapaian: 98,
     costDirect: 60000000,
@@ -80,40 +52,30 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     rateIklan: 10000000,
     keterangan: "Overachieve",
   },
-
-  // Kategori B
   {
-    id: "p6",
+    id: "p4-stat",
+    periodeBulan: "2026-05",
     category: "B",
-    name: "Editorial MI",
-    performaTarget: 70,
-    performaCapaian: 65,
-    costDirect: 30000000,
-    revenueTarget: 80000000,
-    revenueCapaian: 60000000,
-    pnl: 30000000,
-    inventorySpot: 12,
-    rateIklan: 3500000,
-    keterangan: "Perlu Evaluasi",
-  },
-  {
-    id: "p7",
-    category: "B",
-    name: "Metro Sports",
-    performaTarget: 75,
-    performaCapaian: 80,
+    descriptionCategory: "07.05-16.05 & 22.05-24.05",
+    name: "Selamat Pagi Indonesia",
+    broadcastTime: "07:30",
+    performaTarget: 85,
+    performaCapaian: 82,
     costDirect: 40000000,
-    revenueTarget: 90000000,
+    revenueTarget: 120000000,
     revenueCapaian: 110000000,
     pnl: 70000000,
     inventorySpot: 15,
     rateIklan: 4000000,
-    keterangan: "Baik",
+    keterangan: "Sesuai Target",
   },
   {
-    id: "p9",
+    id: "p5-stat",
+    periodeBulan: "2026-05",
     category: "B",
+    descriptionCategory: "07.05-16.05 & 22.05-24.05",
     name: "Newsline",
+    broadcastTime: "14:00",
     performaTarget: 80,
     performaCapaian: 72,
     costDirect: 45000000,
@@ -124,12 +86,13 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     rateIklan: 5000000,
     keterangan: "Rugi",
   },
-
-  // Kategori C
   {
-    id: "p11",
+    id: "p6-stat",
+    periodeBulan: "2026-05",
     category: "C",
+    descriptionCategory: "00.05-07.05",
     name: "Metro Pagi Primetime",
+    broadcastTime: "05:00",
     performaTarget: 60,
     performaCapaian: 55,
     costDirect: 25000000,
@@ -141,17 +104,54 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Stabil",
   },
   {
-    id: "p12",
-    category: "C",
-    name: "Euromaxx",
-    performaTarget: 50,
-    performaCapaian: 45,
-    costDirect: 30000000,
-    revenueTarget: 40000000,
-    revenueCapaian: 20000000,
-    pnl: -10000000,
-    inventorySpot: 8,
-    rateIklan: 1500000,
-    keterangan: "Rugi",
+    id: "p7-stat",
+    periodeBulan: "2026-05",
+    category: "Signature",
+    descriptionCategory: "Special / Breaking News",
+    name: "Breaking News",
+    broadcastTime: "12:00",
+    performaTarget: 90,
+    performaCapaian: 95,
+    costDirect: 80000000,
+    revenueTarget: 200000000,
+    revenueCapaian: 220000000,
+    pnl: 140000000,
+    inventorySpot: 15,
+    rateIklan: 15000000,
+    keterangan: "Overachieve",
+  },
+  {
+    id: "p8-stat",
+    periodeBulan: "2026-05",
+    category: "Blocking Reguler",
+    descriptionCategory: "Sponsored Content",
+    name: "Go Healthy",
+    broadcastTime: "10:30",
+    performaTarget: 60,
+    performaCapaian: 62,
+    costDirect: 15000000,
+    revenueTarget: 100000000,
+    revenueCapaian: 105000000,
+    pnl: 90000000,
+    inventorySpot: 5,
+    rateIklan: 20000000,
+    keterangan: "Sesuai Target",
+  },
+  {
+    id: "p9-stat",
+    periodeBulan: "2026-05",
+    category: "Others",
+    descriptionCategory: "Event / Awards",
+    name: "National Government Awards",
+    broadcastTime: "20:00",
+    performaTarget: 70,
+    performaCapaian: 75,
+    costDirect: 150000000,
+    revenueTarget: 300000000,
+    revenueCapaian: 350000000,
+    pnl: 200000000,
+    inventorySpot: 40,
+    rateIklan: 12000000,
+    keterangan: "Overachieve",
   },
 ];

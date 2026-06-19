@@ -91,7 +91,7 @@ export default function TopHeader() {
                 href={tab.href}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
                   isActive
-                    ? "bg-background shadow-sm text-primary"
+                    ? "bg-background shadow-sm text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >

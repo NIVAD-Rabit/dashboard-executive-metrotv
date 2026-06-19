@@ -34,7 +34,7 @@ export default function ExecutiveDashboardPage() {
   } = useDashboard();
 
   return (
-    <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Title Page & Control */}
       {/* <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="flex items-center gap-4 border-2 border-b-blue-700">
@@ -69,7 +69,7 @@ export default function ExecutiveDashboardPage() {
         {totalKPI.cards.map((card, idx) => (
           <div
             key={idx}
-            className="border-2 border-purple-700 flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6"
+            className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6"
           >
             {/* Animasi pulse */}
             <span className="absolute top-4 right-4 flex h-3 w-3">
@@ -103,9 +103,9 @@ export default function ExecutiveDashboardPage() {
       </div>
 
       {/* Chart */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-2 border-cyan-700">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* All program data chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-red-500 flex flex-col p-2 relative">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2 relative">
           {selectedCategory ? (
             <button
               onClick={() => setSelectedCategory(null)}
@@ -169,7 +169,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Detail program data chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-blue-500 flex flex-col ">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col">
           {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h3 className="text-base font-semibold text-foreground">
               Struktur Performa Program
@@ -177,7 +177,7 @@ export default function ExecutiveDashboardPage() {
           </div> */}
 
           <div className="grid grid-cols-1 sm:grid-cols-10 gap-4 flex-1">
-            <div className="sm:col-span-7 border-2 border-red-700">
+            <div className="sm:col-span-7">
               <BaseChart
                 type="doughnut"
                 title="Struktur Performa Program"
@@ -186,7 +186,7 @@ export default function ExecutiveDashboardPage() {
               />
             </div>
 
-            <div className="sm:col-span-3 p-4 rounded-[20px] bg-muted gap-2 h-full flex flex-col justify-center border-2 border-purple-500">
+            <div className="sm:col-span-3 p-4 rounded-[20px] bg-muted gap-2 h-full flex flex-col justify-center">
               {(() => {
                 const p = MOCK_PROGRAMS.find((x) => x.id === activeProgramId);
                 if (!p) return null;
@@ -223,17 +223,17 @@ export default function ExecutiveDashboardPage() {
                     </div>
 
                     <div className="text-sm space-y-4 rounded-full">
-                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                      <div className="flex flex-col p-2">
                         <span className="text-muted-foreground text-lg font-medium mb-1">
                           PNL Bersih
                         </span>
                         <span
                           className={`font-semibold text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
                         >
-                          Rp {p.pnl.toLocaleString("id-ID")}
+                          Rp {formatBigNumber(p.pnl)}
                         </span>
                       </div>
-                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                      <div className="flex flex-col p-2">
                         <span className="text-muted-foreground text-lg font-medium">
                           Target Capaian
                         </span>
@@ -241,7 +241,7 @@ export default function ExecutiveDashboardPage() {
                           {p.performaCapaian}% / {p.performaTarget}%
                         </span>
                       </div>
-                      <div className="flex flex-col border-2 border-amber-700 mb-2 p-2">
+                      <div className="flex flex-col mb-2 p-2">
                         <span className="text-muted-foreground text-lg font-medium">
                           Status
                         </span>
@@ -254,7 +254,7 @@ export default function ExecutiveDashboardPage() {
                     </div>
                     <button
                       onClick={() => router.push("/compare")}
-                      className="border-2 border-cyan-700 flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                      className="flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
                     >
                       <GitCompare size={18} /> Compare
                     </button>
@@ -266,7 +266,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Top PNL Data Chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-green-500 flex flex-col p-2">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
@@ -281,7 +281,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Bottom PNL Data Chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-yellow-500 flex flex-col p-2">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
@@ -302,7 +302,7 @@ export default function ExecutiveDashboardPage() {
         </div>
       </section>
 
-      <section className="bg-card shadow-sm rounded-2xl border-2 border-teal-500 p-2 overflow-x-auto custom-scrollbar">
+      <section className="bg-card shadow-sm rounded-2xl p-2 overflow-x-auto custom-scrollbar">
         <div className="min-w-[800px]">
           <BaseChart
             type="bar"

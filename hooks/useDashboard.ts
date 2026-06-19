@@ -76,7 +76,7 @@ export default function useDashboard() {
       // Array cardnya
       cards: [
         {
-          title: "Total Capaian Revenue",
+          title: "Total Laba Kotor",
           value: `Rp ${formatBigNumber(totals.revenue)}`,
           // Pake boolean buat buat style di tailwindnya di clasname komponennya
           isPositive: totals.revenue > 0,
@@ -92,7 +92,7 @@ export default function useDashboard() {
           // Pake ternary buat nentuin textnya over atau under budget berdasarkan rasio serapan omset
           label: isOverCost
             ? `Over Budget ${formatPct(costToRevenueRatio - 100)}%`
-            : `Under Budget (Memakan ${formatPct(costToRevenueRatio)}% Omset)`,
+            : `Under Budget (${formatPct(costToRevenueRatio)}%)`,
         },
         {
           title: "Net Profit & Loss",

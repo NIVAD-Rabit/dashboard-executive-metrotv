@@ -13,8 +13,8 @@ export const menuGroups = [
     group: "EXECUTIVE VIEW",
     items: [
       { name: "Dashboard", href: "/", icon: House },
-      { name: "Finansial & Efisiensi", href: "/financial", icon: BarChart2 },
-      { name: "Operasional & Rating", href: "/operation", icon: LineChart },
+      // { name: "Finansial & Efisiensi", href: "/financial", icon: BarChart2 },
+      // { name: "Operasional & Rating", href: "/operation", icon: LineChart },
     ],
   },
   {
