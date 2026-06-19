@@ -61,24 +61,22 @@ export default function TopHeader() {
       <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
         {/* Sisi Kiri */}
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-xl text-foreground"
-            >
-              <Image
-                src="/logo-metrotv.png"
-                alt="MTI Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8 shrink-0 object-contain"
-              />
-              <span className="font-bold">MTV</span>
-              <span className="font-normal text-muted-foreground">
-                Executive
-              </span>
-            </Link>
-          </div>
+          {/* <div className="hidden sm:block"> */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-xl text-foreground"
+          >
+            <Image
+              src="/logo-metrotv.png"
+              alt="MTI Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 shrink-0 object-contain"
+            />
+            <span className="font-bold">MTV</span>
+            <span className="font-normal text-muted-foreground">Executive</span>
+          </Link>
+          {/* </div> */}
         </div>
 
         {/* Main tab, tengah */}
