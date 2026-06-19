@@ -227,14 +227,14 @@ export default function CompareProgramPage() {
   }
 
   return (
-    // Wrapper utama
+    // Bungkus
     <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Filter Selector */}
       <div className="bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-end gap-6 justify-between">
-        {/* Dropdown A */}
+        {/* Dropdown 1 */}
         <div className="w-full flex-1">
           <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-            Pilih Program A
+            Pilih Program
           </label>
           <div className="relative inline-block w-full">
             <select
@@ -277,10 +277,10 @@ export default function CompareProgramPage() {
           <ArrowRightLeft size={18} />
         </button>
 
-        {/* Dropdown B */}
+        {/* Dropdown 2 */}
         <div className="w-full flex-1">
           <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-            Pilih Program B
+            Pilih Program
           </label>
           <div className="relative inline-block w-full">
             <select
