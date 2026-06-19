@@ -92,6 +92,7 @@ export function useCompare() {
           ],
           // Kasih warna biru buat chart bar Program A
           backgroundColor: "#1f77b4",
+          minBarLength: 15,
         },
         {
           // Data bar kelompok kedua buat Program B
@@ -104,6 +105,7 @@ export function useCompare() {
           ],
           // Kasih warna oranye buat chart bar Program B
           backgroundColor: "#ff7f0e",
+          minBarLength: 15,
         },
       ],
     };

@@ -220,7 +220,13 @@ export default function useDashboard() {
 
     return {
       labels: sorted.map((p) => p.name),
-      datasets: [{ label: "Positif (Rp)", data: sorted.map((p) => p.pnl) }],
+      datasets: [
+        {
+          label: "Positif (Rp)",
+          data: sorted.map((p) => p.pnl),
+          minBarLength: 15,
+        },
+      ],
     };
   }, [filteredPrograms]);
 
@@ -243,12 +249,14 @@ export default function useDashboard() {
           // Kalo nilainya di bawah 0, sisanya null
           data: sorted.map((p) => (p.pnl < 0 ? p.pnl : null)),
           backgroundColor: "#8b0000", // Merah Gelap tunggal
+          minBarLength: 15,
         },
         {
           label: "Terendah (Rp)",
           // Kalo nilainya 0 atao lebih, sisanya null
           data: sorted.map((p) => (p.pnl >= 0 ? p.pnl : null)),
           backgroundColor: "#ff0000", // Merah Terang tunggal
+          minBarLength: 15,
         },
       ],
     };
@@ -265,11 +273,13 @@ export default function useDashboard() {
           type: "bar",
           label: "Target Revenue (Rp)",
           data: filteredPrograms.map((p) => p.revenueTarget),
+          minBarLength: 15,
         },
         {
           type: "bar",
           label: "Actual Revenue (Rp)",
           data: filteredPrograms.map((p) => p.revenueCapaian),
+          minBarLength: 15,
         },
         {
           type: "line",
@@ -278,6 +288,7 @@ export default function useDashboard() {
           borderColor: "#FFFFFF",
           borderWidth: 2,
           tension: 0.3,
+          minBarLength: 15,
         } as unknown as ChartDataset<"bar">,
       ],
     };
