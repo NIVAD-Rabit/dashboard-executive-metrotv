@@ -111,7 +111,7 @@ export function useMasterProgram() {
     gridRef.current?.api.setGridOption("rowData", newData);
   };
 
-  // Eksekusi utama pas tombol save diklik (Disini Zod main peran!)
+  // Eksekusi pas tombol save diklik, disini Zod bakal validasi
   const submitBulkData = async () => {
     if (!gridRef.current) return;
 
@@ -119,7 +119,7 @@ export function useMasterProgram() {
 
     // Loop semua baris yang ada di AG Grid
     gridRef.current.api.forEachNode((node) => {
-      // Cuma ambil baris yang minimal kolom namanya diisi (ngabaikan baris kosong)
+      // Cuma ambil baris yang minimal kolom namanya diisi, ngabaikan baris kosong
       if (node.data && node.data.name) {
         // Otomatis itung PNL dari revenue dikurang cost biar ga usah ngitung manual
         node.data.pnl =
@@ -148,7 +148,7 @@ export function useMasterProgram() {
       }
     });
 
-    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user!
+    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user
     if (errors.length > 0) {
       toast.error("Gagal Menyimpan Data", {
         description: (
