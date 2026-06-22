@@ -46,7 +46,7 @@ export default function TopHeader() {
   );
 
   // Menu utama
-  const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS"];
+  const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS", "MASTER DATA"];
   const mainTabs = menuGroups
     // Ambil grup yang udah ditentuin
     .filter((menu) => groups.includes(menu.group))

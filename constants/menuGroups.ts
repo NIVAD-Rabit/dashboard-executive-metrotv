@@ -25,11 +25,11 @@ export const menuGroups = [
     group: "MASTER DATA",
     items: [
       { name: "Data Program", href: "/master-program", icon: Database },
-      {
-        name: "Target & Realisasi",
-        href: "/master-realisasi",
-        icon: ShieldAlert,
-      },
+      // {
+      //   name: "Target & Realisasi",
+      //   href: "/master-realisasi",
+      //   icon: ShieldAlert,
+      // },
     ],
   },
 ];

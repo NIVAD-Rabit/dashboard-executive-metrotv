@@ -168,11 +168,24 @@ export default function useDashboard() {
     // Ambil value sebagai datanya
     const data = Object.values(grouped);
     // Buat background pas lagi select kategorinya
-    const bgColors = labels.map((label) =>
-      !selectedCategory || label === selectedCategory
-        ? "#1f77b4"
-        : "rgba(31, 119, 180, 0.15)",
-    );
+    const bgColors = labels.map((label, index) => {
+      const colors = [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+      ];
+      const baseColor = colors[index % colors.length];
+      return !selectedCategory || label === selectedCategory
+        ? baseColor
+        : baseColor + "26";
+    });
 
     // Mapping returnnya
     return {

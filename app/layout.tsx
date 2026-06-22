@@ -7,6 +7,7 @@ import Header from "@/components/layouts/Header";
 import TopHeader from "@/components/layouts/TopHeader";
 import ReduxProvider from "@/store/ReduxProvider";
 import QueryProvider from "@/store/QueryProvider";
+import { Toaster } from "sonner";
 
 // Title Window
 export const metadata: Metadata = {
@@ -45,6 +46,12 @@ export default function RootLayout({
                   </div>
                 </main>
               </div>
+              <Toaster
+                position="top-center"
+                richColors
+                closeButton
+                duration={5000}
+              />
             </ReduxProvider>
           </ThemeProvider>
         </QueryProvider>

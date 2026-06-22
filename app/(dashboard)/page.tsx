@@ -130,6 +130,12 @@ export default function ExecutiveDashboardPage() {
             // Tinggi canvas chartnya, pake satuan pixel
             height={360}
             options={{
+              plugins: {
+                // Biar legend ga muncul
+                legend: {
+                  display: false,
+                },
+              },
               // Event click pas area chartnya diklik user
               // Kasih parameter elements biar bisa akses properti element si chart
               // Chart biar bisa akses properti chart bar, bukan area kosong
