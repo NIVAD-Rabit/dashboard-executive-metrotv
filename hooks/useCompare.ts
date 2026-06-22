@@ -13,9 +13,9 @@ export function useCompare() {
     queryFn: () => fetchProgramsByRange("", ""),
   });
 
-  // Bikin state buat nyimpen ID program pertama (Program A) yang dipilih user
+  // Bikin state buat nyimpen id program pertama (Program A) yang dipilih user
   const [progAId, setProgAId] = useState<string>("");
-  // Bikin state buat nyimpen ID program kedua (Program B) yang dipilih user
+  // Bikin state buat nyimpen id program kedua (Program B) yang dipilih user
   const [progBId, setProgBId] = useState<string>("");
 
   // Pake useMemo biar pencarian objek program A nggak dirender ulang terus-terusan

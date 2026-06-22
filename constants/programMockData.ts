@@ -2,7 +2,7 @@ import { ProgramData } from "@/services/api/programService";
 
 export const MOCK_PROGRAMS: ProgramData[] = [
   {
-    id: "p1-stat",
+    id: "p1",
     periodeBulan: "2026-05",
     category: "A",
     descriptionCategory: "16.05-22.05",
@@ -19,7 +19,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p2-stat",
+    id: "p2",
     periodeBulan: "2026-05",
     category: "A",
     descriptionCategory: "16.05-22.05",
@@ -36,7 +36,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p3-stat",
+    id: "p3",
     periodeBulan: "2026-05",
     category: "A",
     descriptionCategory: "16.05-22.05",
@@ -53,7 +53,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Overachieve",
   },
   {
-    id: "p4-stat",
+    id: "p4",
     periodeBulan: "2026-05",
     category: "B",
     descriptionCategory: "07.05-16.05 & 22.05-24.05",
@@ -70,7 +70,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p5-stat",
+    id: "p5",
     periodeBulan: "2026-05",
     category: "B",
     descriptionCategory: "07.05-16.05 & 22.05-24.05",
@@ -87,7 +87,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Rugi",
   },
   {
-    id: "p6-stat",
+    id: "p6",
     periodeBulan: "2026-05",
     category: "C",
     descriptionCategory: "00.05-07.05",
@@ -104,7 +104,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Stabil",
   },
   {
-    id: "p7-stat",
+    id: "p7",
     periodeBulan: "2026-05",
     category: "Signature",
     descriptionCategory: "Special / Breaking News",
@@ -121,7 +121,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Overachieve",
   },
   {
-    id: "p8-stat",
+    id: "p8",
     periodeBulan: "2026-05",
     category: "Blocking Reguler",
     descriptionCategory: "Sponsored Content",
@@ -138,7 +138,7 @@ export const MOCK_PROGRAMS: ProgramData[] = [
     keterangan: "Sesuai Target",
   },
   {
-    id: "p9-stat",
+    id: "p9",
     periodeBulan: "2026-05",
     category: "Others",
     descriptionCategory: "Event / Awards",

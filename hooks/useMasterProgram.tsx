@@ -4,7 +4,13 @@ import React, { useState, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Trash2 } from "lucide-react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef } from "ag-grid-community";
+import {
+  ColDef,
+  ValueParserParams,
+  ICellRendererParams,
+  ValueGetterParams,
+  CellClassParams,
+} from "ag-grid-community";
 import { toast } from "sonner";
 
 import {
@@ -89,7 +95,7 @@ export function useMasterProgram() {
 
   // Fungsi buka modal mode "Edit Data Spesifik"
   const openEditModal = (prog: ProgramData) => {
-    // Pisahin ID sama tanggalan, kita cuma butuh data mentahnya buat di form
+    // Pisahin id sama tanggalan, cuma butuh data mentahnya buat di form
     const { id, createdAt, updatedAt, ...formData } = prog;
     setEditingId(prog.id);
     setRowData([formData]);
@@ -111,15 +117,15 @@ export function useMasterProgram() {
     gridRef.current?.api.setGridOption("rowData", newData);
   };
 
-  // Eksekusi pas tombol save diklik, disini Zod bakal validasi
+  // Eksekusi utama pas tombol save diklik (Disini Zod main peran!)
   const submitBulkData = async () => {
     if (!gridRef.current) return;
 
-    const rawPayload: any[] = [];
+    const rawPayload: ProgramFormData[] = [];
 
     // Loop semua baris yang ada di AG Grid
     gridRef.current.api.forEachNode((node) => {
-      // Cuma ambil baris yang minimal kolom namanya diisi, ngabaikan baris kosong
+      // Cuma ambil baris yang minimal kolom namanya diisi (ngabaikan baris kosong)
       if (node.data && node.data.name) {
         // Otomatis itung PNL dari revenue dikurang cost biar ga usah ngitung manual
         node.data.pnl =
@@ -148,7 +154,7 @@ export function useMasterProgram() {
       }
     });
 
-    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user
+    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user!
     if (errors.length > 0) {
       toast.error("Gagal Menyimpan Data", {
         description: (
@@ -288,14 +294,15 @@ export function useMasterProgram() {
 
   // Config
   // Fungsi kecil buat ngubah inputan cell AG Grid jadi angka murni (fallback ke 0 kalo error)
-  const numberParser = (params: any) => Number(params.newValue) || 0;
+  const numberParser = (params: ValueParserParams<ProgramFormData>) =>
+    Number(params.newValue) || 0;
 
   // Setup definisi kolom buat modal spreadsheet AG Grid
   const colDefs = useMemo<ColDef<ProgramFormData>[]>(
     () => [
       {
         headerName: "Aksi",
-        field: "name" as any,
+        field: "name" as keyof ProgramFormData,
         width: 65,
         minWidth: 65,
         maxWidth: 65,
@@ -306,14 +313,14 @@ export function useMasterProgram() {
           justifyContent: "center",
           alignItems: "center",
         },
-        cellRenderer: (params: any) => {
+        cellRenderer: (params: ICellRendererParams<ProgramFormData>) => {
           // Tombol hapus baris disembunyiin kalo lagi mode edit data spesifik
           if (editingId) return null;
           return (
             <button
               onClick={() => {
                 const currentData = [...rowData];
-                currentData.splice(params.node.rowIndex, 1);
+                currentData.splice(params.node!.rowIndex!, 1);
                 setRowData(currentData);
                 gridRef.current?.api.setGridOption("rowData", currentData);
               }}
@@ -378,12 +385,12 @@ export function useMasterProgram() {
         // Ngambil nilai PNL secara live dari kalkulasi revenue dikurang cost
         // Kalo ada rumus pake properti valueGetter ini
         // Editable harus false biar cellnya ga bisa diketik manual
-        valueGetter: (params) => {
+        valueGetter: (params: ValueGetterParams<ProgramFormData>) => {
           const rev = params.data?.revenueCapaian || 0;
           const cost = params.data?.costDirect || 0;
           return rev - cost;
         },
-        cellStyle: (params) => {
+        cellStyle: (params: CellClassParams<ProgramFormData>) => {
           const val = params.value;
           return {
             fontWeight: "bold",

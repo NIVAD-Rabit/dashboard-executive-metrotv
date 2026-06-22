@@ -18,7 +18,8 @@ import {
   getFilteredRowModel,
   flexRender,
   SortingState,
-  FilterFn,
+  Row,
+  CellContext,
 } from "@tanstack/react-table";
 
 export interface ColumnConfig<T> {
@@ -51,7 +52,11 @@ interface SmartTableProps<T> {
 }
 
 // Custom global filter biar nyarinya tembus ke semua daleman value objek
-const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
+const globalFilterFn = <T,>(
+  row: Row<T>,
+  columnId: string,
+  filterValue: unknown,
+) => {
   const query = String(filterValue).toLowerCase();
   return Object.values(row.original as Record<string, unknown>).some((val) =>
     String(val).toLowerCase().includes(query),
@@ -111,7 +116,7 @@ export default function SmartTable<T>({
       id: col.accessorKey ? String(col.accessorKey) : col.header,
       accessorKey: col.accessorKey,
       header: col.header,
-      cell: (info: any) => col.render(info.row.original),
+      cell: (info: CellContext<T, unknown>) => col.render(info.row.original),
       // Nyalain fitur sorting cuma kalo kolomnya punya accessorKey yang jelas
       enableSorting: !!col.accessorKey,
       meta: {
@@ -273,7 +278,7 @@ export default function SmartTable<T>({
                         header.column.getCanSort()
                           ? "cursor-pointer hover:bg-muted transition-colors select-none"
                           : ""
-                      } ${(header.column.columnDef.meta as any)?.className || ""}`}
+                      } ${(header.column.columnDef.meta as Record<string, string>)?.className || ""}`}
                     >
                       <div className="flex items-center gap-1">
                         {flexRender(
@@ -315,7 +320,7 @@ export default function SmartTable<T>({
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className={`px-6 py-4 ${(cell.column.columnDef.meta as any)?.className || ""}`}
+                        className={`px-6 py-4 ${(cell.column.columnDef.meta as Record<string, string>)?.className || ""}`}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import {
@@ -23,13 +23,15 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import SmartTable from "@/components/shared/SmartTable";
 import { useMasterProgram } from "@/hooks/useMasterProgram";
 
+const emptySubscribe = () => () => {};
+
 export default function MasterProgramPage() {
   const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   // Panggil semua state dan fungsi dari custom hook
   const {
@@ -49,7 +51,7 @@ export default function MasterProgramPage() {
 
   return (
     <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
-      {/* Area header atas buat judul sama tombol input */}
+      {/* Title page */}
       {/* <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-secondary text-secondary-foreground rounded-2xl">
@@ -60,7 +62,7 @@ export default function MasterProgramPage() {
               Master Data Program
             </h1>
             <p className="text-sm text-muted-foreground font-medium">
-              Manajemen CRUD operasional dengan AG Grid (Excel Mode).
+              Pusat Kendali Master Data Program.
             </p>
           </div>
         </div>
@@ -68,7 +70,7 @@ export default function MasterProgramPage() {
 
       <button
         onClick={actions.openAddModal}
-        className="fixed bottom-8 right-8 z-[40] flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-full font-bold hover:opacity-90 transition-all hover:-translate-y-1 hover:shadow-xl cursor-pointer shadow-lg"
+        className="fixed bottom-8 right-8 z-[40] flex items-center gap-3 bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:-translate-y-1 hover:shadow-xl cursor-pointer shadow-lg"
       >
         <TableProperties size={20} /> Input
       </button>

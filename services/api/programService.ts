@@ -28,13 +28,13 @@ export const programFormSchema = z.object({
 });
 
 // Otomatis ngekstrak/nge-generate tipe TypeScript (interface) dari skema Zod di atas
-// Jadi kita ga usah cape-cape nulis tipe datanya dua kali, DRY (Don't Repeat Yourself) banget!
+// Jadi ga usah cape-cape nulis tipe datanya dua kali, DRY
 export type ProgramFormData = z.infer<typeof programFormSchema>;
 
 // Bikin interface baru buat data program yang udah masuk ke database
-// Ini extends (numpang warisan) dari ProgramFormData, tapi ketambahan ID sama timestamp
+// Ini extends (numpang warisan) dari ProgramFormData, tapi ketambahan id sama timestamp
 export interface ProgramData extends ProgramFormData {
-  // ID unik dari database
+  // id unik dari database
   id: string;
   // Kapan data ini dibikin (opsional pas narik data)
   createdAt?: Date | string;
@@ -90,7 +90,7 @@ export const createProgram = async (
     const res = await fetch("/api/programs", {
       // Method HTTP buat nambah data baru
       method: "POST",
-      // Kasih tau server kalo kita ngirim JSON
+      // Kasih tau server kalo ngirim JSON
       headers: { "Content-Type": "application/json" },
       // Ubah objek data javascript jadi string JSON biar bisa dikirim
       body: JSON.stringify(data),
@@ -101,13 +101,13 @@ export const createProgram = async (
   // Mode Data Bohongan: Bikin pura-pura loading nunggu 600 milidetik biar dapet feel transisinya
   await new Promise((r) => setTimeout(r, 600));
 
-  // Balikin datanya ke UI seolah-olah sukses masuk DB, tambahin ID bohongan pake timestamp saat ini
+  // Balikin datanya ke UI seolah-olah sukses masuk DB, tambahin id bohongan pake timestamp saat ini
   return { id: `p-new-${Date.now()}`, ...data } as ProgramData;
 };
 
 // Fungsi asinkron buat nge-update data program yang udah ada (Update)
 export const updateProgram = async (
-  // ID program mana yang mau diedit
+  // id program mana yang mau diedit
   id: string,
   // Data barunya apa
   data: ProgramFormData,
@@ -126,7 +126,7 @@ export const updateProgram = async (
   // Mode Data Bohongan: Pura-pura nunggu proses server 600ms lagi
   await new Promise((r) => setTimeout(r, 600));
 
-  // Balikin gabungan ID yang diedit sama data terbarunya
+  // Balikin gabungan id yang diedit sama data terbarunya
   return { id, ...data } as ProgramData;
 };
 
@@ -134,7 +134,7 @@ export const updateProgram = async (
 export const deleteProgram = async (id: string): Promise<void> => {
   // Mode nembak API beneran
   if (USE_REAL_API) {
-    // Cukup panggil method DELETE ke endpoint ID yang bersangkutan, ga butuh kirim body payload
+    // Cukup panggil method DELETE ke endpoint id yang bersangkutan, ga butuh kirim body payload
     await fetch(`/api/programs/${id}`, { method: "DELETE" });
     // Kalo sukses, fungsi langsung kelar
     return;

@@ -78,7 +78,7 @@ export default function useDashboard() {
       // Array cardnya
       cards: [
         {
-          title: "Total Laba Kotor",
+          title: "Total Revenue",
           value: `Rp ${formatBigNumber(totals.revenue)}`,
           // Pake boolean buat buat style di tailwindnya di clasname komponennya
           isPositive: totals.revenue > 0,

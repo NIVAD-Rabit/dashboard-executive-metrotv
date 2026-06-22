@@ -102,7 +102,7 @@ export default function TopHeader() {
 
         {/* Tool tab, Kanan */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="hidden lg:flex items-center gap-1 border-r border-border/50 pr-2 mr-1">
+          {/* <div className="hidden lg:flex items-center gap-1 border-r border-border/50 pr-2 mr-1">
             {toolTabs.map((tab) => (
               <Link
                 key={tab.href}
@@ -117,7 +117,7 @@ export default function TopHeader() {
                 <tab.icon size={20} />
               </Link>
             ))}
-          </div>
+          </div> */}
 
           {/* Tombol dark mode*/}
           {/* <button
