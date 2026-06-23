@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import useDashboard from "@/hooks/useDashboard";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import BaseChart from "@/components/shared/BaseChart";
-import { elements } from "chart.js";
+import { ChartEvent, ActiveElement, Chart as ChartJS } from "chart.js";
 import { formatBigNumber } from "@/lib/formatters";
 
 export default function ExecutiveDashboardPage() {
@@ -33,6 +33,7 @@ export default function ExecutiveDashboardPage() {
     totalKPI,
     topRevenueDigitalData,
     bottomRevenueDigitalData,
+    tvPerformanceData,
   } = useDashboard();
 
   return (
@@ -141,7 +142,11 @@ export default function ExecutiveDashboardPage() {
               // Event click pas area chartnya diklik user
               // Kasih parameter elements biar bisa akses properti element si chart
               // Chart biar bisa akses properti chart bar, bukan area kosong
-              onClick: (event, elements, chart) => {
+              onClick: (
+                event: ChartEvent,
+                elements: ActiveElement[],
+                chart: ChartJS,
+              ) => {
                 // Cek kalo user ngelick salah satu chart bar
                 if (elements && elements.length > 0) {
                   console.log(elements, "chart diklik");
@@ -164,7 +169,7 @@ export default function ExecutiveDashboardPage() {
                 }
               },
               // Event hover pas cursor mouse di atas area chart
-              onHover: (event, chartElement) => {
+              onHover: (event: ChartEvent, chartElement: ActiveElement[]) => {
                 // Ambil target elemen html canvas tempat chart dirender
                 const target = event.native?.target as HTMLElement;
                 if (target)
@@ -214,7 +219,7 @@ export default function ExecutiveDashboardPage() {
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
                         <svg
-                          xmlns="http://w3.org"
+                          xmlns="http://w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           strokeWidth={2}
@@ -243,10 +248,10 @@ export default function ExecutiveDashboardPage() {
                       </div>
                       <div className="flex flex-col p-2">
                         <span className="text-muted-foreground text-lg font-medium">
-                          Target Capaian
+                          Target Share
                         </span>
                         <span className="font-semibold text-xl text-foreground">
-                          {p.performaCapaian}% / {p.performaTarget}%
+                          {p.capaianShare}% / {p.targetShare}%
                         </span>
                       </div>
                       <div className="flex flex-col mb-2 p-2">
@@ -308,14 +313,15 @@ export default function ExecutiveDashboardPage() {
             height={360}
           />
         </div>
-        {/* Top Revenue Data Chart */}
+
+        {/* Top Digital Revenue Data Chart */}
         <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
               selectedCategory
-                ? `Top Digital Revenue (${selectedCategory})`
-                : "Top 5 Digital (Revenue Tertinggi)"
+                ? `Top Digital Revenue & Views (${selectedCategory})`
+                : "Top 5 Digital (Revenue & Views Tertinggi)"
             }
             data={topRevenueDigitalData}
             options={{ indexAxis: "y" }}
@@ -323,38 +329,63 @@ export default function ExecutiveDashboardPage() {
           />
         </div>
 
-        {/* Bottom Revenue Data Chart */}
+        {/* Bottom Digital Revenue Data Chart */}
         <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
               selectedCategory
-                ? `Bottom Digital Revenue (${selectedCategory})`
-                : "Bottom 5 Digital (Revenue Terendah)"
+                ? `Bottom Digital Revenue & Views (${selectedCategory})`
+                : "Bottom 5 Digital (Revenue & Views Terendah)"
             }
             data={bottomRevenueDigitalData}
             options={{
               indexAxis: "y",
-              scales: {
-                x: { stacked: true },
-                y: { stacked: true },
-              },
             }}
             height={360}
           />
         </div>
       </section>
 
+      {/* Grafik Target vs Aktual Revenue */}
       <section className="bg-card shadow-sm rounded-2xl p-2 overflow-x-auto custom-scrollbar">
-        <div className="min-w-[800px]">
+        {/* Pake inline style untuk kalkulasi lebar area canvas berdasarkan total data program */}
+        {/* Set minimal lebar area 800px, per program dialokasikan ruang sekitar 60px */}
+        <div
+          style={{
+            minWidth: `${Math.max(800, filteredPrograms.length * 60)}px`,
+          }}
+        >
           <BaseChart
             type="bar"
             title={
               selectedCategory
-                ? `Target vs Aktual - ${selectedCategory}`
-                : "Target vs Aktual (Semua Kategori)"
+                ? `Target vs Aktual Revenue - ${selectedCategory}`
+                : "Target vs Aktual Revenue (Semua Kategori)"
             }
             data={comboTargetActualData}
+            height={400}
+          />
+        </div>
+      </section>
+
+      {/* Grafik Performa TV */}
+      <section className="bg-card shadow-sm rounded-2xl p-2 overflow-x-auto custom-scrollbar">
+        {/* Pake inline style untuk kalkulasi lebar area canvas berdasarkan total data program */}
+        {/* Set minimal lebar area 800px, per program dialokasikan ruang sekitar 60px */}
+        <div
+          style={{
+            minWidth: `${Math.max(800, filteredPrograms.length * 60)}px`,
+          }}
+        >
+          <BaseChart
+            type="bar"
+            title={
+              selectedCategory
+                ? `Performa TV (TVR & Share) - ${selectedCategory}`
+                : "Performa TV (Target vs Aktual)"
+            }
+            data={tvPerformanceData}
             height={400}
           />
         </div>

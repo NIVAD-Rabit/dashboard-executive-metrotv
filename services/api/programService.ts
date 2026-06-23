@@ -12,14 +12,10 @@ export const programFormSchema = z.object({
   broadcastTime: z.string().min(1, "Jam tayang wajib diisi"),
 
   // Performa TV
-  // performaCapaian diganti jadi 2 (capaianTVR, capaianShare)
-  // performaTarget diganti jadi 2 (targetTVR, targetShare)
-  performaCapaian: z.number().min(0, "Tidak boleh minus"),
-  performaTarget: z.number().min(0, "Tidak boleh minus"),
-  // capaianTVR: z.number().min(0, "Tidak boleh minus"),
-  // capaianShare: z.number().min(0, "Tidak boleh minus"),
-  // targetTVR: z.number().min(0, "Tidak boleh minus"),
-  // targetShare: z.number().min(0, "Tidak boleh minus"),
+  capaianTVR: z.number().min(0, "Tidak boleh minus"),
+  capaianShare: z.number().min(0, "Tidak boleh minus"),
+  targetTVR: z.number().min(0, "Tidak boleh minus"),
+  targetShare: z.number().min(0, "Tidak boleh minus"),
 
   // Performa Digital
   digitalViews: z.number().min(0, "Tidak boleh minus"),

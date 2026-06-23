@@ -32,14 +32,19 @@ export function useCompare() {
 
   // Kalkulasi ROI (Return on Investment) = ((Revenue - Cost) / Cost) * 100
   // Kalo progA ada datanya, itung persentase ROI. Kalo costDirect nol, bagi sama 1 biar ga error 'Infinity'
-  const roiA = progA
-    ? ((progA.revenueCapaian - progA.costDirect) / (progA.costDirect || 1)) *
-      100
+  const totalRevA = progA
+    ? (progA.revenueCapaian || 0) + (progA.digitalRevenue || 0)
     : 0;
+  const roiA = progA
+    ? ((totalRevA - progA.costDirect) / (progA.costDirect || 1)) * 100
+    : 0;
+
   // Itung ROI buat program B juga pake rumus yang sama persis
+  const totalRevB = progB
+    ? (progB.revenueCapaian || 0) + (progB.digitalRevenue || 0)
+    : 0;
   const roiB = progB
-    ? ((progB.revenueCapaian - progB.costDirect) / (progB.costDirect || 1)) *
-      100
+    ? ((totalRevB - progB.costDirect) / (progB.costDirect || 1)) * 100
     : 0;
 
   // Fungsi buat nuker posisi Program A sama Program B pas tombol swap diklik
@@ -78,7 +83,13 @@ export function useCompare() {
     if (!progA || !progB) return { labels: [], datasets: [] };
     return {
       // Label buat sumbu X (kategori di bawah chart)
-      labels: ["Target Revenue", "Actual Revenue", "Cost Direct", "Net PNL"],
+      labels: [
+        "Target Revenue",
+        "Actual TV Rev",
+        "Digital Rev",
+        "Cost Direct",
+        "Net PNL",
+      ],
       datasets: [
         {
           // Data bar kelompok pertama buat Program A
@@ -87,6 +98,7 @@ export function useCompare() {
           data: [
             progA.revenueTarget,
             progA.revenueCapaian,
+            progA.digitalRevenue || 0,
             progA.costDirect,
             progA.pnl,
           ],
@@ -100,6 +112,7 @@ export function useCompare() {
           data: [
             progB.revenueTarget,
             progB.revenueCapaian,
+            progB.digitalRevenue || 0,
             progB.costDirect,
             progB.pnl,
           ],

@@ -14,7 +14,6 @@ import {
 import { toast } from "sonner";
 
 import {
-  // Tarik data
   fetchProgramsByRange,
   createProgram,
   updateProgram,
@@ -72,14 +71,16 @@ export function useMasterProgram() {
     // Kasih default biar ga ditolak Zod
     descriptionCategory: "General",
     broadcastTime: "",
+    capaianTVR: 0,
+    capaianShare: 0,
+    targetTVR: 0,
+    targetShare: 0,
+    digitalViews: 0,
+    digitalRevenue: 0,
     costDirect: 0,
     revenueTarget: 0,
     revenueCapaian: 0,
-    digitalViews: 0,
-    digitalRevenue: 0,
     pnl: 0,
-    performaTarget: 0,
-    performaCapaian: 0,
     inventorySpot: 0,
     rateIklan: 0,
     keterangan: "Normal",
@@ -121,11 +122,11 @@ export function useMasterProgram() {
     gridRef.current?.api.setGridOption("rowData", newData);
   };
 
-  // Eksekusi utama pas tombol save diklik, validasi Zod disini
+  // Eksekusi pas tombol save diklik, disini Zod bakal validasi
   const submitBulkData = async () => {
     if (!gridRef.current) return;
 
-    const rawPayload: ProgramFormData[] = [];
+    const rawPayload: any[] = [];
 
     // Loop semua baris yang ada di AG Grid
     gridRef.current.api.forEachNode((node) => {
@@ -133,7 +134,9 @@ export function useMasterProgram() {
       if (node.data && node.data.name) {
         // Otomatis itung PNL dari revenue dikurang cost biar ga usah ngitung manual
         node.data.pnl =
-          (node.data.revenueCapaian || 0) - (node.data.costDirect || 0);
+          (node.data.revenueCapaian || 0) +
+          (node.data.digitalRevenue || 0) -
+          (node.data.costDirect || 0);
         rawPayload.push(node.data);
       }
     });
@@ -144,7 +147,6 @@ export function useMasterProgram() {
 
     // Cek satu-satu barisnya pake schema Zod
     rawPayload.forEach((data, index) => {
-      // Proses validasi zod
       const validation = programFormSchema.safeParse(data);
       if (validation.success) {
         // Kalo aman, masukin ke array payload yang siap dikirim
@@ -159,7 +161,7 @@ export function useMasterProgram() {
       }
     });
 
-    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user!
+    // Kalo array error ada isinya, cegat proses save dan tembak alert ke user
     if (errors.length > 0) {
       toast.error("Gagal Menyimpan Data", {
         description: (
@@ -200,17 +202,17 @@ export function useMasterProgram() {
   const tableColumns = useMemo<ColumnConfig<ProgramData>[]>(
     () => [
       {
-        header: "Bulan",
-        accessorKey: "periodeBulan",
-        render: (item) => (
-          <span className="font-medium">{item.periodeBulan}</span>
-        ),
-      },
-      {
         header: "Nama Program",
         accessorKey: "name",
         render: (item) => (
           <span className="font-semibold text-foreground">{item.name}</span>
+        ),
+      },
+      {
+        header: "Periode",
+        accessorKey: "periodeBulan",
+        render: (item) => (
+          <span className="font-medium">{item.periodeBulan}</span>
         ),
       },
       {
@@ -363,6 +365,48 @@ export function useMasterProgram() {
         editable: true,
       },
       {
+        field: "targetTVR",
+        headerName: "Target TVR",
+        width: 130,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
+        field: "capaianTVR",
+        headerName: "Actual TVR",
+        width: 130,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
+        field: "targetShare",
+        headerName: "Target Share (%)",
+        width: 140,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
+        field: "capaianShare",
+        headerName: "Actual Share (%)",
+        width: 140,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
+        field: "digitalViews",
+        headerName: "Digital Views",
+        width: 140,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
+        field: "digitalRevenue",
+        headerName: "Digital Revenue (Rp)",
+        width: 160,
+        editable: true,
+        valueParser: numberParser,
+      },
+      {
         field: "costDirect",
         headerName: "Cost Direct (Rp)",
         width: 160,
@@ -392,8 +436,9 @@ export function useMasterProgram() {
         // Editable harus false biar cellnya ga bisa diketik manual
         valueGetter: (params: ValueGetterParams<ProgramFormData>) => {
           const rev = params.data?.revenueCapaian || 0;
+          const digRev = params.data?.digitalRevenue || 0;
           const cost = params.data?.costDirect || 0;
-          return rev - cost;
+          return rev + digRev - cost;
         },
         cellStyle: (params: CellClassParams<ProgramFormData>) => {
           const val = params.value;
@@ -404,20 +449,6 @@ export function useMasterProgram() {
             backgroundColor: "rgba(0,0,0,0.03)",
           };
         },
-      },
-      {
-        field: "performaTarget",
-        headerName: "Target Performa (%)",
-        width: 150,
-        editable: true,
-        valueParser: numberParser,
-      },
-      {
-        field: "performaCapaian",
-        headerName: "Actual Performa (%)",
-        width: 150,
-        editable: true,
-        valueParser: numberParser,
       },
       {
         field: "inventorySpot",

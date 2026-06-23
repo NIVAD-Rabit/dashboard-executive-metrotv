@@ -122,7 +122,7 @@ export default function useDashboard() {
     // Kalo ada program yang lagi diselect dan program tersebut ada dikategori yang udah difilter diatas
     if (
       selectedProgramId &&
-      // disini some cuma boolean true atau false, bukan array baru kaya filter/find
+      // some cuma boolean true atau false, bukan array baru kaya filter/find
       filteredPrograms.some((p) => p.id === selectedProgramId)
     ) {
       // Kalo ada, tetep pake program yang diselect
@@ -219,7 +219,7 @@ export default function useDashboard() {
       datasets: [
         {
           data: [
-            prog.revenueCapaian + prog.digitalRevenue,
+            prog.revenueCapaian + (prog.digitalRevenue || 0),
             prog.costDirect,
             prog.revenueTarget,
           ],
@@ -285,15 +285,21 @@ export default function useDashboard() {
   // Top Revenue Digital
   const topRevenueDigitalData = useMemo<ChartData<"bar">>(() => {
     const sorted = [...filteredPrograms]
-      .sort((a, b) => b.digitalRevenue - a.digitalRevenue)
+      .sort((a, b) => (b.digitalRevenue || 0) - (a.digitalRevenue || 0))
       .slice(0, 5);
 
     return {
       labels: sorted.map((p) => p.name),
       datasets: [
         {
-          label: "Positif (Rp)",
-          data: sorted.map((p) => p.digitalRevenue),
+          label: "Revenue (Rp)",
+          data: sorted.map((p) => p.digitalRevenue || 0),
+          minBarLength: 15,
+        },
+        {
+          label: "Views",
+          data: sorted.map((p) => p.digitalViews || 0),
+          backgroundColor: "#9467bd",
           minBarLength: 15,
         },
       ],
@@ -303,27 +309,21 @@ export default function useDashboard() {
   // Bottom Revenue Digital
   const bottomRevenueDigitalData = useMemo<ChartData<"bar">>(() => {
     const sorted = [...filteredPrograms]
-      .sort((a, b) => a.digitalRevenue - b.digitalRevenue)
+      .sort((a, b) => (a.digitalRevenue || 0) - (b.digitalRevenue || 0))
       .slice(0, 5);
 
     return {
       labels: sorted.map((p) => p.name),
       datasets: [
         {
-          label: "Minus (Rp)",
-          // Kalo nilainya di bawah 0, sisanya null
-          data: sorted.map((p) =>
-            p.digitalRevenue < 0 ? p.digitalRevenue : null,
-          ),
-          backgroundColor: "#ff0000", // Merah Terang
+          label: "Revenue (Rp)",
+          data: sorted.map((p) => p.digitalRevenue || 0),
           minBarLength: 15,
         },
         {
-          label: "Terendah (Rp)",
-          // Kalo nilainya 0 atao lebih, sisanya null
-          data: sorted.map((p) =>
-            p.digitalRevenue >= 0 ? p.digitalRevenue : null,
-          ),
+          label: "Views",
+          data: sorted.map((p) => p.digitalViews || 0),
+          backgroundColor: "#9467bd",
           minBarLength: 15,
         },
       ],
@@ -349,15 +349,32 @@ export default function useDashboard() {
           data: filteredPrograms.map((p) => p.revenueCapaian),
           minBarLength: 15,
         },
+      ],
+    };
+  }, [filteredPrograms]);
+
+  const tvPerformanceData = useMemo<ChartData<"bar">>(() => {
+    return {
+      labels: filteredPrograms.map((p) => p.name),
+      datasets: [
         {
-          type: "line",
-          label: "Performa Kinerja (%)",
-          data: filteredPrograms.map((p) => p.performaCapaian * 2000000),
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-          tension: 0.3,
+          label: "Pencapaian TVR (%)",
+          // Rumus persentase: Aktual / Target * 100
+          // Kalo target 0 fallback ke 0 biar ga infinity
+          data: filteredPrograms.map((p) =>
+            p.targetTVR ? (p.capaianTVR / p.targetTVR) * 100 : 0,
+          ),
+          backgroundColor: "#1f77b4",
           minBarLength: 15,
-        } as unknown as ChartDataset<"bar">,
+        },
+        {
+          label: "Pencapaian Share (%)",
+          data: filteredPrograms.map((p) =>
+            p.targetShare ? (p.capaianShare / p.targetShare) * 100 : 0,
+          ),
+          backgroundColor: "#ff7f0e",
+          minBarLength: 15,
+        },
       ],
     };
   }, [filteredPrograms]);
@@ -377,5 +394,6 @@ export default function useDashboard() {
     totalKPI,
     topRevenueDigitalData,
     bottomRevenueDigitalData,
+    tvPerformanceData,
   };
 }

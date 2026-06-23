@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import {
@@ -23,6 +23,9 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import SmartTable from "@/components/shared/SmartTable";
 import { useMasterProgram } from "@/hooks/useMasterProgram";
 
+// Import komponen modal detail yang baru aja dibikin
+import ProgramDetailModal from "@/components/shared/ProgramDetailModal";
+
 const emptySubscribe = () => () => {};
 
 export default function MasterProgramPage() {
@@ -32,6 +35,9 @@ export default function MasterProgramPage() {
     () => true,
     () => false,
   );
+
+  // State baru buat nyimpen data program spesifik yang diklik dari tabel SmartTable
+  const [detailProgramData, setDetailProgramData] = useState<any | null>(null);
 
   // Panggil semua state dan fungsi dari custom hook
   const {
@@ -49,25 +55,33 @@ export default function MasterProgramPage() {
     actions,
   } = useMasterProgram();
 
+  // Fungsi buat ngubah isi state detail pas nama program diklik
+  const handleOpenDetail = (program: any) => {
+    setDetailProgramData(program);
+  };
+
+  // Manipulasi konfigurasi tabel dari hook, biar kolom nama berubah jadi tombol yang bisa diklik
+  const enhancedTableColumns = tableColumns.map((col: any) => {
+    // Pastikan 'name' ini sama persis dengan accessorKey nama program dari hook kamu
+    if (col.accessorKey === "name") {
+      return {
+        ...col,
+        // PENTING: Gunakan 'render(item)', BUKAN 'cell(info)' agar terbaca oleh SmartTable
+        render: (item: any) => (
+          <button
+            onClick={() => handleOpenDetail(item)}
+            className="text-primary hover:text-primary/80 hover:underline font-bold text-left truncate max-w-full cursor-pointer transition-colors focus:outline-none"
+          >
+            {item.name}
+          </button>
+        ),
+      };
+    }
+    return col;
+  });
+
   return (
     <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
-      {/* Title page */}
-      {/* <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-6 border-2 border-slate-300">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-secondary text-secondary-foreground rounded-2xl">
-            <Database size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-normal tracking-tight text-foreground">
-              Master Data Program
-            </h1>
-            <p className="text-sm text-muted-foreground font-medium">
-              Pusat Kendali Master Data Program.
-            </p>
-          </div>
-        </div>
-      </div> */}
-
       {/* Tampilan muter-muter kalo data dari API lagi difetch */}
       {isLoading ? (
         <div className="p-12 text-center">
@@ -77,14 +91,15 @@ export default function MasterProgramPage() {
         <>
           <button
             onClick={actions.openAddModal}
-            className="fixed bottom-8 right-8 z-[40] flex items-center gap-3 bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold hover:opacity-90 transition-all hover:-translate-y-1 hover:shadow-xl cursor-pointer shadow-lg"
+            className="fixed bottom-8 right-8 z-[40] flex items-center gap-3 bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-bold hover:opacity-90 transition-all hover:-translate-y-1 hover:shadow-xl cursor-pointer shadow-lg"
           >
             <TableProperties size={20} /> Input
           </button>
           <div className="bg-card shadow-sm rounded-2xl border border-border p-4">
             <SmartTable
               data={programs}
-              columns={tableColumns}
+              // PENTING: Pake columns yang udah dimanipulasi biar bisa diklik
+              columns={enhancedTableColumns}
               selectFilters={selectFilters}
               enableDateRange={true}
               dateKey="periodeBulan"
@@ -93,6 +108,14 @@ export default function MasterProgramPage() {
           </div>
         </>
       )}
+
+      {/* Modal Detail Reusable */}
+      {/* Akan muncul kalo state detailProgramData ada isinya */}
+      <ProgramDetailModal
+        isOpen={!!detailProgramData}
+        onClose={() => setDetailProgramData(null)}
+        program={detailProgramData}
+      />
 
       {/* Modal buat nampilin AG Grid */}
       {isModalOpen &&
@@ -106,9 +129,6 @@ export default function MasterProgramPage() {
                     <TableProperties size={20} className="text-primary" />
                     {editingId ? "Edit Data Program" : "Input Program"}
                   </h2>
-                  {/* <p className="text-xs text-muted-foreground mt-0.5">
-                    Dukung Copy-Paste langsung dari file Excel/Sheet.
-                  </p> */}
                 </div>
                 <button
                   onClick={actions.closeModal}
@@ -118,7 +138,7 @@ export default function MasterProgramPage() {
                 </button>
               </div>
 
-              {/* Wadah utama buat ngerender AG Grid-nya, pastiin settingan colDefs udah sinkron sama schema Zod */}
+              {/* Wadah utama buat ngerender AG Grid-nya */}
               <div className="flex-1 p-4 bg-muted/10 flex flex-col">
                 <div
                   className={`flex-1 w-full rounded-xl overflow-hidden border border-border ${theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}`}
@@ -154,10 +174,6 @@ export default function MasterProgramPage() {
               </div>
 
               <div className="px-6 py-4 border-t border-border/50 bg-muted/30 flex justify-end items-center shrink-0">
-                {/* <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <CheckCircle2 size={14} className="text-green-500" /> AG Grid
-                  Engine Active. Baris kosong akan diabaikan.
-                </span> */}
                 <div className="flex gap-3">
                   <button
                     onClick={actions.closeModal}
@@ -165,7 +181,7 @@ export default function MasterProgramPage() {
                   >
                     Batal
                   </button>
-                  {/* Tombol submit bakal manggil mutasi buat nembak APIm AG Gridnya harus tervalidasi Zod sebelum disave */}
+                  {/* Tombol submit bakal manggil mutasi buat nembak API */}
                   <button
                     onClick={actions.submitBulkData}
                     disabled={

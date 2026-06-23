@@ -107,21 +107,22 @@ export const formatTooltipLabel = (
   let formattedValue: string;
 
   // Kalo angkanya tembus 1 Miliar atau lebih yang bukan data performa, bagi angkanya trus tempelin teks "Miliar" di buntutnya
-  if (label !== "Performa Kinerja (%)" && absValue >= 1_000_000_000) {
+  if (!label.includes("(%)") && absValue >= 1_000_000_000) {
     formattedValue =
       (numValue / 1_000_000_000).toFixed(1).replace(".0", "") + " Miliar";
-  } else if (label !== "Performa Kinerja (%)" && absValue >= 1_000_000) {
+  } else if (!label.includes("(%)") && absValue >= 1_000_000) {
     // Kalo masuk direntang jutaan yang bukan data performa, bagi angkanya trus tempelin teks "Juta" di buntutnya
     formattedValue =
       (numValue / 1_000_000).toFixed(1).replace(".0", "") + " Juta";
-  } else if (label !== "Performa Kinerja (%)" && absValue >= 1_000) {
+  } else if (!label.includes("(%)") && absValue >= 1_000) {
     // Kalo masuk direntang ribuan yang bukan data performa, bagi angkanya trus tempelin teks "Ribu" di buntutnya
     formattedValue = (numValue / 1_000).toFixed(1).replace(".0", "") + " Ribu";
   } else {
     // Kalo angka kecil/nol, balikin mentah2
     // Tapi kalo kebukti data performa, tempel persen % di buntutnya
-    formattedValue =
-      label === "Performa Kinerja (%)" ? `${numValue}%` : String(numValue);
+    formattedValue = label.includes("(%)")
+      ? `${numValue.toFixed(1).replace(".0", "")}%`
+      : String(numValue);
   }
 
   // Gabungin nama label sama hasil angka yang udah rapi tadi buat dipajang di dalem popup tooltip

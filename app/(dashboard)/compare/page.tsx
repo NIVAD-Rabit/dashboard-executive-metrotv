@@ -12,6 +12,8 @@ import {
   Clock,
   Tags,
   Award,
+  Tv,
+  MonitorPlay,
 } from "lucide-react";
 import BaseChart from "@/components/shared/BaseChart";
 import { useCompare } from "@/hooks/useCompare";
@@ -53,6 +55,52 @@ export default function CompareProgramPage() {
         isHighlight: false,
       },
       {
+        id: "performa_tv",
+        icon: Tv,
+        label: "Performa TV (TVR / Share)",
+        valA: `TVR: ${progA.capaianTVR} (Target: ${progA.targetTVR}) | Share: ${progA.capaianShare} (Target: ${progA.targetShare})`,
+        valB: `TVR: ${progB.capaianTVR} (Target: ${progB.targetTVR}) | Share: ${progB.capaianShare} (Target: ${progB.targetShare})`,
+        analysis: (
+          <div className="text-center">
+            {progA.capaianShare > progB.capaianShare ? (
+              <span className="text-[#1f77b4] font-bold">
+                {progA.name} penonton TV-nya lebih banyak
+              </span>
+            ) : progB.capaianShare > progA.capaianShare ? (
+              <span className="text-[#ff7f0e] font-bold">
+                {progB.name} penonton TV-nya lebih banyak
+              </span>
+            ) : (
+              "Penonton TV sama banyak"
+            )}
+          </div>
+        ),
+        isHighlight: false,
+      },
+      {
+        id: "performa_digital",
+        icon: MonitorPlay,
+        label: "Performa Digital",
+        valA: `${formatBigNumber(progA.digitalViews || 0)} Views | Rp ${formatBigNumber(progA.digitalRevenue || 0)}`,
+        valB: `${formatBigNumber(progB.digitalViews || 0)} Views | Rp ${formatBigNumber(progB.digitalRevenue || 0)}`,
+        analysis: (
+          <div className="text-center">
+            {(progA.digitalViews || 0) > (progB.digitalViews || 0) ? (
+              <span className="text-[#1f77b4] font-bold">
+                {progA.name} penonton sosmed-nya lebih rame
+              </span>
+            ) : (progB.digitalViews || 0) > (progA.digitalViews || 0) ? (
+              <span className="text-[#ff7f0e] font-bold">
+                {progB.name} penonton sosmed-nya lebih rame
+              </span>
+            ) : (
+              "Penonton sosmed sama rame"
+            )}
+          </div>
+        ),
+        isHighlight: false,
+      },
+      {
         id: "inventory",
         icon: Clock,
         label: "Inventory Spot",
@@ -62,14 +110,14 @@ export default function CompareProgramPage() {
           <div className="text-center">
             {progA.inventorySpot > progB.inventorySpot ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} Kapasitas Lebih Besar
+                {progA.name} slot iklannya lebih banyak
               </span>
             ) : progB.inventorySpot > progA.inventorySpot ? (
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} Kapasitas Lebih Besar
+                {progB.name} slot iklannya lebih banyak
               </span>
             ) : (
-              "Kapasitas Sama"
+              "Slot iklan sama banyak"
             )}
           </div>
         ),
@@ -86,14 +134,14 @@ export default function CompareProgramPage() {
           <div className="text-center">
             {progA.costDirect < progB.costDirect ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} Lebih Hemat
+                {progA.name} modalnya lebih murah
               </span>
             ) : progB.costDirect < progA.costDirect ? (
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} Lebih Hemat
+                {progB.name} modalnya lebih murah
               </span>
             ) : (
-              "Modal Sama Besar"
+              "Modalnya sama aja"
             )}
           </div>
         ),
@@ -109,14 +157,14 @@ export default function CompareProgramPage() {
           <div className="text-center">
             {progA.revenueCapaian > progB.revenueCapaian ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} Pendapatan Lebih Besar
+                {progA.name} dapet duit lebih gede
               </span>
             ) : progB.revenueCapaian > progA.revenueCapaian ? (
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} Pendapatan Lebih Besar
+                {progB.name} dapet duit lebih gede
               </span>
             ) : (
-              "Pendapatan Sama"
+              "Pemasukannya sama"
             )}
           </div>
         ),
@@ -132,51 +180,14 @@ export default function CompareProgramPage() {
           <div className="text-center">
             {roiA > roiB ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} Margin Lebih Baik
+                {progA.name} persentase untungnya lebih gede
               </span>
             ) : roiB > roiA ? (
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} Margin Lebih Baik
+                {progB.name} persentase untungnya lebih gede
               </span>
             ) : (
-              "Efisiensi Sama"
-            )}
-          </div>
-        ),
-        isHighlight: false,
-      },
-      {
-        id: "performa",
-        icon: TrendingUp,
-        label: "Performa Kinerja",
-        valA: (
-          <>
-            {progA.performaCapaian}%{" "}
-            <span className="text-xs text-muted-foreground">
-              (Target {progA.performaTarget}%)
-            </span>
-          </>
-        ),
-        valB: (
-          <>
-            {progB.performaCapaian}%{" "}
-            <span className="text-xs text-muted-foreground">
-              (Target {progB.performaTarget}%)
-            </span>
-          </>
-        ),
-        analysis: (
-          <div className="text-center">
-            {progA.performaCapaian > progB.performaCapaian ? (
-              <span className="text-[#1f77b4] font-bold">
-                {progA.name} Lebih Efektif
-              </span>
-            ) : progB.performaCapaian > progA.performaCapaian ? (
-              <span className="text-[#ff7f0e] font-bold">
-                {progB.name} Lebih Efektif
-              </span>
-            ) : (
-              "Efektivitas Sama"
+              "Untungnya seimbang"
             )}
           </div>
         ),
@@ -203,11 +214,21 @@ export default function CompareProgramPage() {
         analysis: (
           <div className="text-center text-lg font-bold">
             {progA.pnl > progB.pnl ? (
-              <span className="text-[#1f77b4]">WINNER: {progA.name}</span>
+              <span className="text-[#1f77b4]">
+                {progA.pnl < 0
+                  ? `${progA.name} ruginya lebih dikit`
+                  : `${progA.name} Paling Cuan!`}
+              </span>
             ) : progB.pnl > progA.pnl ? (
-              <span className="text-[#ff7f0e]">WINNER: {progB.name}</span>
+              <span className="text-[#ff7f0e]">
+                {progB.pnl < 0
+                  ? `${progB.name} ruginya lebih dikit`
+                  : `${progB.name} Paling Cuan!`}
+              </span>
+            ) : progA.pnl < 0 ? (
+              "Sama-sama rugi"
             ) : (
-              "SERI"
+              "Cuannya Seri"
             )}
           </div>
         ),
@@ -371,46 +392,49 @@ export default function CompareProgramPage() {
               </span>
             </div>
 
-            {/* KPI 2, Winner ROI */}
+            {/* KPI 2, Winner Performa */}
             <div
-              className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(roiA, roiB)}`}
+              className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(progA.capaianShare || 0, progB.capaianShare || 0)}`}
             >
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <Percent size={14} /> Pemenang ROI
+                <TrendingUp size={14} /> Pemenang Share TV
               </span>
               <span
-                className={`text-2xl font-bold ${getWinnerTextColor(roiA, roiB)}`}
+                className={`text-2xl font-bold ${getWinnerTextColor(progA.capaianShare || 0, progB.capaianShare || 0)}`}
               >
-                {roiA > roiB
+                {(progA.capaianShare || 0) > (progB.capaianShare || 0)
                   ? progA.name
-                  : roiB > roiA
+                  : (progB.capaianShare || 0) > (progA.capaianShare || 0)
                     ? progB.name
                     : "Seimbang"}
               </span>
               <span className="text-sm font-medium mt-1">
-                ROI: {Math.max(roiA, roiB).toFixed(1)}%
+                Share Maks:{" "}
+                {Math.max(progA.capaianShare || 0, progB.capaianShare || 0)}
               </span>
             </div>
 
-            {/* KPI 3, Winner Performa */}
+            {/* KPI 3, Winner Digital */}
             <div
-              className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(progA.performaCapaian, progB.performaCapaian)}`}
+              className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(progA.digitalViews || 0, progB.digitalViews || 0)}`}
             >
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <TrendingUp size={14} /> Pemenang Performa
+                <MonitorPlay size={14} /> Pemenang Digital
               </span>
               <span
-                className={`text-2xl font-bold ${getWinnerTextColor(progA.performaCapaian, progB.performaCapaian)}`}
+                className={`text-2xl font-bold ${getWinnerTextColor(progA.digitalViews || 0, progB.digitalViews || 0)}`}
               >
-                {progA.performaCapaian > progB.performaCapaian
+                {(progA.digitalViews || 0) > (progB.digitalViews || 0)
                   ? progA.name
-                  : progB.performaCapaian > progA.performaCapaian
+                  : (progB.digitalViews || 0) > (progA.digitalViews || 0)
                     ? progB.name
                     : "Seimbang"}
               </span>
               <span className="text-sm font-medium mt-1">
-                Capaian Maks:{" "}
-                {Math.max(progA.performaCapaian, progB.performaCapaian)}%
+                Views Maks:{" "}
+                {formatBigNumber(
+                  Math.max(progA.digitalViews || 0, progB.digitalViews || 0),
+                )}
               </span>
             </div>
           </div>
