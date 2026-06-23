@@ -46,7 +46,7 @@ export default function TopHeader() {
   );
 
   // Menu utama
-  const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS"];
+  const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS", "MASTER DATA"];
   const mainTabs = menuGroups
     // Ambil grup yang udah ditentuin
     .filter((menu) => groups.includes(menu.group))
@@ -61,24 +61,22 @@ export default function TopHeader() {
       <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
         {/* Sisi Kiri */}
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-xl text-foreground"
-            >
-              <Image
-                src="/logo-metrotv.png"
-                alt="MTI Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8 shrink-0 object-contain"
-              />
-              <span className="font-bold">MTV</span>
-              <span className="font-normal text-muted-foreground">
-                Executive
-              </span>
-            </Link>
-          </div>
+          {/* <div className="hidden sm:block"> */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-xl text-foreground"
+          >
+            <Image
+              src="/logo-metrotv.png"
+              alt="MTI Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 shrink-0 object-contain"
+            />
+            <span className="font-bold">MTV</span>
+            <span className="font-normal text-muted-foreground">Executive</span>
+          </Link>
+          {/* </div> */}
         </div>
 
         {/* Main tab, tengah */}
@@ -91,7 +89,7 @@ export default function TopHeader() {
                 href={tab.href}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
                   isActive
-                    ? "bg-background shadow-sm text-primary"
+                    ? "bg-background shadow-sm text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >
@@ -104,7 +102,7 @@ export default function TopHeader() {
 
         {/* Tool tab, Kanan */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="hidden lg:flex items-center gap-1 border-r border-border/50 pr-2 mr-1">
+          {/* <div className="hidden lg:flex items-center gap-1 border-r border-border/50 pr-2 mr-1">
             {toolTabs.map((tab) => (
               <Link
                 key={tab.href}
@@ -119,7 +117,7 @@ export default function TopHeader() {
                 <tab.icon size={20} />
               </Link>
             ))}
-          </div>
+          </div> */}
 
           {/* Tombol dark mode*/}
           {/* <button

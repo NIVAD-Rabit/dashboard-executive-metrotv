@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import useDashboard from "@/hooks/useDashboard";
 import { MOCK_PROGRAMS } from "@/constants/programMockData";
 import BaseChart from "@/components/shared/BaseChart";
-import { elements } from "chart.js";
+import { ChartEvent, ActiveElement, Chart as ChartJS } from "chart.js";
 import { formatBigNumber } from "@/lib/formatters";
 
 export default function ExecutiveDashboardPage() {
@@ -31,10 +31,13 @@ export default function ExecutiveDashboardPage() {
     selectedCategory,
     setSelectedCategory,
     totalKPI,
+    topRevenueDigitalData,
+    bottomRevenueDigitalData,
+    tvPerformanceData,
   } = useDashboard();
 
   return (
-    <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Title Page & Control */}
       {/* <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="flex items-center gap-4 border-2 border-b-blue-700">
@@ -69,7 +72,7 @@ export default function ExecutiveDashboardPage() {
         {totalKPI.cards.map((card, idx) => (
           <div
             key={idx}
-            className="border-2 border-purple-700 flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6"
+            className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6"
           >
             {/* Animasi pulse */}
             <span className="absolute top-4 right-4 flex h-3 w-3">
@@ -103,9 +106,9 @@ export default function ExecutiveDashboardPage() {
       </div>
 
       {/* Chart */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-2 border-cyan-700">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* All program data chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-red-500 flex flex-col p-2 relative">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2 relative">
           {selectedCategory ? (
             <button
               onClick={() => setSelectedCategory(null)}
@@ -130,10 +133,20 @@ export default function ExecutiveDashboardPage() {
             // Tinggi canvas chartnya, pake satuan pixel
             height={360}
             options={{
+              plugins: {
+                // Biar legend ga muncul
+                legend: {
+                  display: false,
+                },
+              },
               // Event click pas area chartnya diklik user
               // Kasih parameter elements biar bisa akses properti element si chart
               // Chart biar bisa akses properti chart bar, bukan area kosong
-              onClick: (event, elements, chart) => {
+              onClick: (
+                event: ChartEvent,
+                elements: ActiveElement[],
+                chart: ChartJS,
+              ) => {
                 // Cek kalo user ngelick salah satu chart bar
                 if (elements && elements.length > 0) {
                   console.log(elements, "chart diklik");
@@ -156,7 +169,7 @@ export default function ExecutiveDashboardPage() {
                 }
               },
               // Event hover pas cursor mouse di atas area chart
-              onHover: (event, chartElement) => {
+              onHover: (event: ChartEvent, chartElement: ActiveElement[]) => {
                 // Ambil target elemen html canvas tempat chart dirender
                 const target = event.native?.target as HTMLElement;
                 if (target)
@@ -169,7 +182,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Detail program data chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-blue-500 flex flex-col ">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col">
           {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h3 className="text-base font-semibold text-foreground">
               Struktur Performa Program
@@ -177,7 +190,7 @@ export default function ExecutiveDashboardPage() {
           </div> */}
 
           <div className="grid grid-cols-1 sm:grid-cols-10 gap-4 flex-1">
-            <div className="sm:col-span-7 border-2 border-red-700">
+            <div className="sm:col-span-7">
               <BaseChart
                 type="doughnut"
                 title="Struktur Performa Program"
@@ -186,7 +199,7 @@ export default function ExecutiveDashboardPage() {
               />
             </div>
 
-            <div className="sm:col-span-3 p-4 rounded-[20px] bg-muted gap-2 h-full flex flex-col justify-center border-2 border-purple-500">
+            <div className="sm:col-span-3 p-4 rounded-[20px] bg-muted gap-2 h-full flex flex-col justify-center">
               {(() => {
                 const p = MOCK_PROGRAMS.find((x) => x.id === activeProgramId);
                 if (!p) return null;
@@ -206,7 +219,7 @@ export default function ExecutiveDashboardPage() {
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
                         <svg
-                          xmlns="http://w3.org"
+                          xmlns="http://w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           strokeWidth={2}
@@ -223,25 +236,25 @@ export default function ExecutiveDashboardPage() {
                     </div>
 
                     <div className="text-sm space-y-4 rounded-full">
-                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                      <div className="flex flex-col p-2">
                         <span className="text-muted-foreground text-lg font-medium mb-1">
-                          PNL Bersih
+                          Net PNL
                         </span>
                         <span
                           className={`font-semibold text-xl ${p.pnl < 0 ? "text-destructive" : "text-primary"}`}
                         >
-                          Rp {p.pnl.toLocaleString("id-ID")}
+                          Rp {formatBigNumber(p.pnl)}
                         </span>
                       </div>
-                      <div className="flex flex-col border-2 border-amber-700 p-2">
+                      <div className="flex flex-col p-2">
                         <span className="text-muted-foreground text-lg font-medium">
-                          Target Capaian
+                          Target Share
                         </span>
                         <span className="font-semibold text-xl text-foreground">
-                          {p.performaCapaian}% / {p.performaTarget}%
+                          {p.capaianShare}% / {p.targetShare}%
                         </span>
                       </div>
-                      <div className="flex flex-col border-2 border-amber-700 mb-2 p-2">
+                      <div className="flex flex-col mb-2 p-2">
                         <span className="text-muted-foreground text-lg font-medium">
                           Status
                         </span>
@@ -254,7 +267,7 @@ export default function ExecutiveDashboardPage() {
                     </div>
                     <button
                       onClick={() => router.push("/compare")}
-                      className="border-2 border-cyan-700 flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                      className="flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
                     >
                       <GitCompare size={18} /> Compare
                     </button>
@@ -266,7 +279,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Top PNL Data Chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-green-500 flex flex-col p-2">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
@@ -281,7 +294,7 @@ export default function ExecutiveDashboardPage() {
         </div>
 
         {/* Bottom PNL Data Chart */}
-        <div className="col-span-1 bg-card shadow-sm rounded-2xl border-2 border-yellow-500 flex flex-col p-2">
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
@@ -300,18 +313,79 @@ export default function ExecutiveDashboardPage() {
             height={360}
           />
         </div>
-      </section>
 
-      <section className="bg-card shadow-sm rounded-2xl border-2 border-teal-500 p-2 overflow-x-auto custom-scrollbar">
-        <div className="min-w-[800px]">
+        {/* Top Digital Revenue Data Chart */}
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
           <BaseChart
             type="bar"
             title={
               selectedCategory
-                ? `Target vs Aktual - ${selectedCategory}`
-                : "Target vs Aktual (Semua Kategori)"
+                ? `Top Digital Revenue & Views (${selectedCategory})`
+                : "Top 5 Digital (Revenue & Views Tertinggi)"
+            }
+            data={topRevenueDigitalData}
+            options={{ indexAxis: "y" }}
+            height={360}
+          />
+        </div>
+
+        {/* Bottom Digital Revenue Data Chart */}
+        <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2">
+          <BaseChart
+            type="bar"
+            title={
+              selectedCategory
+                ? `Bottom Digital Revenue & Views (${selectedCategory})`
+                : "Bottom 5 Digital (Revenue & Views Terendah)"
+            }
+            data={bottomRevenueDigitalData}
+            options={{
+              indexAxis: "y",
+            }}
+            height={360}
+          />
+        </div>
+      </section>
+
+      {/* Grafik Target vs Aktual Revenue */}
+      <section className="bg-card shadow-sm rounded-2xl p-2 overflow-x-auto custom-scrollbar">
+        {/* Pake inline style untuk kalkulasi lebar area canvas berdasarkan total data program */}
+        {/* Set minimal lebar area 800px, per program dialokasikan ruang sekitar 60px */}
+        <div
+          style={{
+            minWidth: `${Math.max(800, filteredPrograms.length * 60)}px`,
+          }}
+        >
+          <BaseChart
+            type="bar"
+            title={
+              selectedCategory
+                ? `Target vs Aktual Revenue - ${selectedCategory}`
+                : "Target vs Aktual Revenue (Semua Kategori)"
             }
             data={comboTargetActualData}
+            height={400}
+          />
+        </div>
+      </section>
+
+      {/* Grafik Performa TV */}
+      <section className="bg-card shadow-sm rounded-2xl p-2 overflow-x-auto custom-scrollbar">
+        {/* Pake inline style untuk kalkulasi lebar area canvas berdasarkan total data program */}
+        {/* Set minimal lebar area 800px, per program dialokasikan ruang sekitar 60px */}
+        <div
+          style={{
+            minWidth: `${Math.max(800, filteredPrograms.length * 60)}px`,
+          }}
+        >
+          <BaseChart
+            type="bar"
+            title={
+              selectedCategory
+                ? `Performa TV (TVR & Share) - ${selectedCategory}`
+                : "Performa TV (Target vs Aktual)"
+            }
+            data={tvPerformanceData}
             height={400}
           />
         </div>
