@@ -33,14 +33,14 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="dark">
             {/* Bungkus redux disini */}
             <ReduxProvider>
-              <div className="border-2 border-amber-500 flex flex-col h-screen w-full relative bg-background text-foreground transition-colors duration-300">
+              <div className=" flex flex-col h-screen w-full relative bg-background text-foreground transition-colors duration-300">
                 {/* Sidebar */}
                 {/* <Sidebar /> */}
                 <TopHeader />
-                <main className="border-2 border-cyan-700 flex-1 overflow-y-auto overflow-x-hidden p-0 custom-scrollbar relative z-0">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-0 custom-scrollbar relative z-0">
                   <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))] -z-10" />
 
-                  <div className="border-2 border-b-fuchsia-700 w-full min-h-full pb-24 md:pb-0 ">
+                  <div className=" w-full min-h-full pb-24 md:pb-0 ">
                     {children}
                   </div>
                 </main>
