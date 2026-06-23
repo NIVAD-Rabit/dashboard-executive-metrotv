@@ -21,14 +21,14 @@ export const menuGroups = [
   {
     group: "ANALYTICS TOOLS",
     items: [
-      { name: "Compare Program", href: "/compare", icon: GitCompare },
-      { name: "Detail Program", href: "/detail", icon: FileText },
+      { name: "Detail", href: "/detail", icon: FileText },
+      { name: "Compare", href: "/compare", icon: GitCompare },
     ],
   },
   {
     group: "MASTER DATA",
     items: [
-      { name: "Master Data", href: "/master-program", icon: Database },
+      // { name: "Master Data", href: "/master-program", icon: Database },
       // {
       //   name: "Target & Realisasi",
       //   href: "/master-realisasi",
