@@ -41,7 +41,7 @@ export default function DetailProgramPage() {
   } = useDetailProgram();
 
   return (
-    <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {isLoading ? (
         <div className="p-12 text-center text-muted-foreground font-medium">
           Memuat data program...

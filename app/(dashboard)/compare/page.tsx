@@ -249,7 +249,7 @@ export default function CompareProgramPage() {
 
   return (
     // Bungkus
-    <div className="p-4 md:px-8 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+    <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Title page */}
       {/* <div className="flex items-center gap-4 border-b border-border/50 pb-6 border-2 border-slate-300">
         <div className="p-3 bg-secondary text-secondary-foreground rounded-2xl">

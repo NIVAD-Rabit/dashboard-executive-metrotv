@@ -5,6 +5,7 @@ import {
   FilterX,
   LayoutDashboard,
   GitCompare,
+  RefreshCcw,
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
@@ -39,44 +40,148 @@ export default function ExecutiveDashboardPage() {
     topRevenueDigitalData,
     bottomRevenueDigitalData,
     tvPerformanceData,
+    programCategories,
+    selectedPeriod,
+    setSelectedPeriod,
   } = useDashboard();
 
   return (
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
-      {/* Control Filter Date Terpadu */}
-      <div className="bg-card p-4 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
-        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <LayoutDashboard size={24} className="text-primary" />
-          Executive Dashboard
-        </h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <input
-              type="month"
-              value={startMonth}
-              onChange={(e) => setStartMonth(e.target.value)}
-              className="bg-muted/40 border border-border text-foreground rounded-xl px-3 py-2 text-xs outline-none cursor-pointer"
-            />
-            <span className="text-muted-foreground text-xs">s/d</span>
-            <input
-              type="month"
-              value={endMonth}
-              onChange={(e) => setEndMonth(e.target.value)}
-              className="bg-muted/40 border border-border text-foreground rounded-xl px-3 py-2 text-xs outline-none cursor-pointer"
-            />
+      {/* Control filter */}
+      <div className="bg-card px-6 py-4 rounded-2xl flex lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
+        {/* Sisi kiri */}
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground font-medium hidden sm:block">
+            Pembaruan terakhir:
+          </p>
+          <span className="text-[11px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-semibold flex items-center gap-1">
+            <RefreshCcw size={10} /> 14:00 WIB
+          </span>
+        </div>
+
+        {/* Sisi Kanan */}
+        <div className="flex items-center gap-4">
+          {/* Sisi kiri dalem */}
+          <div className="relative inline-block ">
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedCategory ?? ""}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="appearance-none border border-border bg-card text-foreground text-sm font-medium rounded-full focus:ring-2 focus:ring-primary truncate focus:outline-none block pl-4 pr-10 py-0 h-10 cursor-pointer w-fit"
+              >
+                <option
+                  value=""
+                  className="bg-muted/40 text-foreground"
+                  disabled
+                  hidden
+                >
+                  Pilih Kategori
+                </option>
+                {programCategories.map((categoryName, idx) => (
+                  <option
+                    key={idx}
+                    value={categoryName}
+                    className="bg-muted/40 text-foreground"
+                  >
+                    {categoryName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
+              <svg
+                xmlns="http://w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
+              </svg>
+            </div>
           </div>
-          {(startMonth || endMonth || selectedCategory) && (
-            <button
-              onClick={() => {
-                setStartMonth("");
-                setEndMonth("");
-                setSelectedCategory(null);
-              }}
-              className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
-            >
-              <FilterX size={14} /> Reset Filter
-            </button>
-          )}
+
+          {/* Sisi kanan dalem */}
+          <div className="flex flex-row items-center gap-4 ">
+            <div className="relative inline-block w-full sm:w-auto">
+              <select
+                value={selectedPeriod ?? ""}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="appearance-none bg-card border border-border text-foreground text-sm font-medium rounded-full focus:ring-2 focus:ring-primary truncate focus:outline-none block pl-4 pr-10 py-0 h-10 cursor-pointer w-fit"
+              >
+                <option value="all" className="bg-muted/40 text-foreground">
+                  All Time
+                </option>
+                <option value="ytd" className="bg-muted/40 text-foreground">
+                  YTD
+                </option>
+                <option value="mtd" className="bg-muted/40 text-foreground">
+                  MTD
+                </option>
+                <option value="30d" className="bg-muted/40 text-foreground">
+                  30 Days
+                </option>
+                <option value="7d" className="bg-muted/40 text-foreground">
+                  7 Days
+                </option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
+                <svg
+                  xmlns="http://w3.org"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="month"
+                  value={startMonth}
+                  onChange={(e) => setStartMonth(e.target.value)}
+                  className="bg-muted/40 border border-border text-foreground rounded-full px-3 py-2 h-10 text-xs outline-none cursor-pointer"
+                />
+                <span className="text-muted-foreground text-xs">s/d</span>
+                <input
+                  type="month"
+                  value={endMonth}
+                  onChange={(e) => setEndMonth(e.target.value)}
+                  className="bg-muted/40 border border-border text-foreground rounded-full px-3 py-2 h-10 text-xs outline-none cursor-pointer"
+                />
+              </div>
+              {(startMonth ||
+                endMonth ||
+                selectedCategory ||
+                selectedPeriod) && (
+                <button
+                  onClick={() => {
+                    setStartMonth("");
+                    setEndMonth("");
+                    setSelectedCategory(null);
+                    setSelectedPeriod(null);
+                  }}
+                  className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
+                >
+                  <FilterX size={14} /> Reset Filter
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -91,7 +196,7 @@ export default function ExecutiveDashboardPage() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* All program data chart */}
         <div className="col-span-1 bg-card shadow-sm rounded-2xl flex flex-col p-2 relative">
-          {selectedCategory ? (
+          {/* {selectedCategory ? (
             <button
               onClick={() => setSelectedCategory(null)}
               className="absolute top-4 right-6 text-[10px] bg-destructive/10 text-destructive px-2 py-1 rounded-full font-bold uppercase tracking-wider z-10 hover:bg-destructive/20 cursor-pointer transition-colors flex items-center gap-1"
@@ -103,7 +208,7 @@ export default function ExecutiveDashboardPage() {
             <span className="absolute top-3 md:top-4 right-6 text-[10px] bg-secondary text-secondary-foreground px-2 py-1 rounded-full font-bold uppercase tracking-wider z-10 transition-colors">
               Click to Filter
             </span>
-          )}
+          )} */}
 
           <BaseChart
             // Jenis chartnya "bar"
@@ -191,7 +296,7 @@ export default function ExecutiveDashboardPage() {
                       <select
                         value={activeProgramId}
                         onChange={(e) => setSelectedProgramId(e.target.value)}
-                        className="appearance-none border border-border bg-card text-foreground text-sm font-medium rounded-full focus:ring-2 focus:ring-primary truncate focus:outline-none block pl-4 pr-10 py-0 h-10 cursor-pointer border-none w-full"
+                        className="appearance-none bg-card text-foreground text-sm font-medium rounded-full focus:ring-2 focus:ring-primary truncate focus:outline-none block pl-4 pr-10 py-0 h-10 cursor-pointer w-full"
                       >
                         {filteredPrograms.map((prog) => (
                           <option key={prog.id} value={prog.id}>
@@ -249,7 +354,7 @@ export default function ExecutiveDashboardPage() {
                     </div>
                     <button
                       onClick={() => router.push("/compare")}
-                      className="flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground border border-border text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                      className="flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
                     >
                       <GitCompare size={18} /> Compare
                     </button>

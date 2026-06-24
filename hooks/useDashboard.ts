@@ -6,6 +6,8 @@ import { formatBigNumber } from "@/lib/formatters";
 export default function useDashboard() {
   // Buat tampungan state atau nilai yang diselect berdasarkan kategori
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // Buat tampungan state atau nilai yang diselect berdasarkan periode
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   // Buat tampungan state atau nilai yang diselect di per program
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(
     null,
@@ -14,6 +16,24 @@ export default function useDashboard() {
   const [endMonth, setEndMonth] = useState<string>("");
 
   // console.log(JSON.stringify(MOCK_PROGRAMS));
+
+  // List option kategori
+  const programCategories = useMemo(() => {
+    return MOCK_PROGRAMS.reduce(
+      (acc, curr) => {
+        // Cek, kalau di dalam wadah array belum ada nama kategori si curr
+        if (!acc.includes(curr.category)) {
+          // Masukkan nama kategorinya saja ke dalam array wadah
+          acc.push(curr.category);
+        }
+
+        // Balikin wadah array untuk putaran looping berikutnya
+        return acc;
+      },
+      // Modal awalnya berupa wadah array kosong tipe string[]
+      [] as string[],
+    );
+  }, []);
 
   // Filter data dinamis berdasarkan kategori
   const filteredPrograms = useMemo(() => {
@@ -221,7 +241,7 @@ export default function useDashboard() {
         },
       ],
     };
-  }, [MOCK_PROGRAMS, selectedCategory]);
+  }, [selectedCategory]);
 
   // Detail Per-Program
   // Pake useMemo juga biar chart donat ini cuma kerender ulang kalo nilai selectedProgramId (dari dropdown) berubah
@@ -421,5 +441,8 @@ export default function useDashboard() {
     topRevenueDigitalData,
     bottomRevenueDigitalData,
     tvPerformanceData,
+    programCategories,
+    selectedPeriod,
+    setSelectedPeriod,
   };
 }
