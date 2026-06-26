@@ -54,7 +54,7 @@ export default function useDashboard() {
     // Buat wadah tanggal paling jadul (1 Jan 1970) buat pancingan nilai awal bandingan
     let latest = new Date(0);
 
-    // Cek semua data program satu-satu di dalem array
+    // Cek semua data program satu2 di dalem array
     MOCK_PROGRAMS.forEach((p) => {
       // Kalo ada properti tanggal update di data program itu
       if (p.updatedAt) {
@@ -88,12 +88,12 @@ export default function useDashboard() {
         });
   }, []);
 
-  // Kumpul daftar opsi kategori
+  // Wadah buat ngumpulin semua pilihan kategori yang ada
   const programCategories = useMemo(() => {
     return MOCK_PROGRAMS.reduce((acc, curr) => {
-      // Masuk nama kategori ke array kalo belum ada
+      // Masukin nama kategori ke wadah array kalo emang belum ada
       if (!acc.includes(curr.category)) acc.push(curr.category);
-      // Balik wadah array buat putar looping berikut
+      // Balikin wadah array biar bisa lanjut dibongkar di putaran berikutnya
       return acc;
     }, [] as string[]);
   }, []);
