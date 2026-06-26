@@ -43,18 +43,34 @@ export default function useDashboard() {
 
   // Set tanggal paling baru dasar mock data
   const lastUpdated = useMemo(() => {
+    // Buat wadah tanggal paling jadul (1 Jan 1970) buat pancingan nilai awal bandingan
     let latest = new Date(0);
+
+    // Cek semua data program satu-satu di dalem array
     MOCK_PROGRAMS.forEach((p) => {
+      // Kalo ada properti tanggal update di data program itu
       if (p.updatedAt) {
+        // Buat wadah baru buat ubah string updatedAt jadi tipe Date
         const d = new Date(String(p.updatedAt));
+        
+        // Kalo tanggal ini lebih baru dari isi wadah latest, tiban wadah latest pake tanggal baru ini
         if (d > latest) latest = d;
       }
+      
+      // Cek semua data periode kalo properti periods emang ada
       p.periods?.forEach((per) => {
+        // Bongkar string teks periode terus pisah jadi angka tahun sama bulan pake tanda strip
         const [year, month] = per.month.split("-").map(Number);
+
+        // Buat wadah baru tanggal periode (bulan dikurang 1 soalnya indeks bulan JavaScript mulainya dari angka 0)
         const d = new Date(year, month - 1);
+
+        // Kalo tanggal periode ini lebih baru dari isi wadah latest, tiban wadah latest pake tanggal periode ini
         if (d > latest) latest = d;
       });
     });
+    
+    // Kalo wadah latest ga pernah ketiban (tetap 1 Jan 1970), balikin strip. Kalo ketiban, ubah ke format tanggal Indonesia
     return latest.getTime() === 0
       ? "-"
       : latest.toLocaleDateString("id-ID", {
