@@ -21,6 +21,7 @@ import { formatBigNumber } from "@/lib/formatters";
 import { ProgramFormData } from "@/schemas/program";
 
 export default function CompareProgramPage() {
+  // Tarik state sama helper dari hook
   const {
     programs,
     isLoading,
@@ -45,6 +46,7 @@ export default function CompareProgramPage() {
     comparisonData,
   } = useCompare();
 
+  // Setup config mapping buat tabel
   const tableRows = useMemo(() => {
     if (!progA || !progB) return [];
 
@@ -153,6 +155,7 @@ export default function CompareProgramPage() {
         label: "Cost Direct (Modal)",
         valA: `Rp ${formatBigNumber(costDirectA)}`,
         valB: `Rp ${formatBigNumber(costDirectB)}`,
+        // Cost makin kecil makin bagus
         analysis: (
           <div className="text-center">
             {costDirectA < costDirectB ? (
@@ -255,11 +258,13 @@ export default function CompareProgramPage() {
             )}
           </div>
         ),
+        // Highlight row ini
         isHighlight: true,
       },
     ];
   }, [progA, progB, pA, pB, roiA, roiB]);
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center h-[60vh]">
@@ -269,11 +274,14 @@ export default function CompareProgramPage() {
   }
 
   return (
+    // Bungkus
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
+      {/* Filter Selector */}
       <div className="bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-end gap-6 justify-between">
+        {/* Dropdown 1 */}
         <div className="w-full flex-1 flex flex-col gap-2">
           <label className="text-sm font-medium text-muted-foreground block">
-            Pilih Program A
+            Pilih Program
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative inline-block w-full">
@@ -340,6 +348,7 @@ export default function CompareProgramPage() {
           </div>
         </div>
 
+        {/* Tombol Swap */}
         <button
           onClick={handleSwap}
           title="Tukar Posisi"
@@ -348,9 +357,10 @@ export default function CompareProgramPage() {
           <ArrowRightLeft size={18} />
         </button>
 
+        {/* Dropdown 2 */}
         <div className="w-full flex-1 flex flex-col gap-2">
           <label className="text-sm font-medium text-muted-foreground block">
-            Pilih Program B
+            Pilih Program
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative inline-block w-full">
@@ -419,7 +429,7 @@ export default function CompareProgramPage() {
       </div>
 
       <div className="w-full text-center">
-        <span className="text-sm text-muted-foreground font-medium bg-muted/30 px-4 py-1.5 rounded-full border border-border">
+        <span className="text-sm text-muted-foreground font-medium bg-muted/30 px-4 py-1.5 rounded-full">
           Komparasi Periode:{" "}
           <span className="font-bold text-foreground">
             {pA?.month || selectedPeriodA || "Terbaru"}
@@ -431,12 +441,15 @@ export default function CompareProgramPage() {
         </span>
       </div>
 
+      {/* State kosong (belum milih 2 program) */}
       {!progA || !progB ? (
         <div className="text-center py-20 text-sm font-medium text-muted-foreground bg-card rounded-2xl border border-dashed border-border">
           Silakan pilih kedua program di atas untuk melihat komparasi.
         </div>
       ) : (
+        // Main content
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Chart bar komparasi */}
           <div className="lg:col-span-9 bg-card shadow-sm rounded-2xl flex flex-col p-2 min-h-[400px]">
             <BaseChart
               type="bar"
@@ -446,7 +459,9 @@ export default function CompareProgramPage() {
             />
           </div>
 
+          {/* Area KPI */}
           <div className="lg:col-span-3 bg-card shadow-sm rounded-2xl flex flex-col p-4 gap-4">
+            {/* KPI 1, Winner PNL */}
             <div
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.financials?.pnl ?? 0, pB?.financials?.pnl ?? 0)}`}
             >
@@ -472,6 +487,7 @@ export default function CompareProgramPage() {
               </span>
             </div>
 
+            {/* KPI 2, Winner Performa */}
             <div
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.performanceTV?.actualShare ?? 0, pB?.performanceTV?.actualShare ?? 0)}`}
             >
@@ -498,6 +514,7 @@ export default function CompareProgramPage() {
               </span>
             </div>
 
+            {/* KPI 3, Winner Digital */}
             <div
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.performanceDigital?.views ?? 0, pB?.performanceDigital?.views ?? 0)}`}
             >
@@ -527,6 +544,7 @@ export default function CompareProgramPage() {
             </div>
           </div>
 
+          {/* Detail tabel */}
           <div className="lg:col-span-12 bg-card shadow-sm rounded-2xl border border-border overflow-hidden mt-2">
             <div className="p-4 border-b border-border bg-muted/20">
               <h3 className="text-xl font-semibold flex items-center gap-2">

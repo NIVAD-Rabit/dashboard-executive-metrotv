@@ -117,9 +117,9 @@ export default function MasterProgramPage() {
                 ))}
               </select>
               <span className="text-xs text-muted-foreground font-medium bg-muted/50 px-3 py-1.5 rounded-full border border-border">
-                Data ditunjukkan untuk:{" "}
+                Data Ditampilkan:{" "}
                 <span className="font-bold text-foreground">
-                  {selectedPeriod || "Periode Terakhir"}
+                  {selectedPeriod || periodOptions[0] || "-"}
                 </span>
               </span>
             </div>
