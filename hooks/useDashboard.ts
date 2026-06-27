@@ -19,53 +19,29 @@ import {
 export default function useDashboard() {
   // Wadah buat ngeset kategori apa yang lagi dipilih ama user
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-<<<<<<< HEAD
-  
-  // Wadah buat nyimpen periode waktu pake pancingan awal all
-  const [selectedPeriod, setSelectedPeriod] = useState<string | null>("all");
-  
-=======
 
   // Wadah buat nyimpen periode waktu pake pancingan awal all
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>("all");
 
->>>>>>> 7c23464 (refactored)
   // Wadah buat nandain id program mana yang lagi diklik
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(
     null,
   );
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 7c23464 (refactored)
   // Wadah boolean buat ngatur buka tutupnya modal detail program
   const [isProgramDetailOpen, setIsProgramDetailOpen] =
     useState<boolean>(false);
 
   // Wadah buat nyimpen bulan awal pas milih custom tanggal
   const [startMonth, setStartMonth] = useState<string>("");
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 7c23464 (refactored)
   // Wadah buat nyimpen bulan akhir pas milih custom tanggal
   const [endMonth, setEndMonth] = useState<string>("");
 
   // Wadah penanda modal detail chart lagi nongol apa kaga
   const [isChartDetailOpen, setIsChartDetailOpen] = useState<boolean>(false);
-<<<<<<< HEAD
-  
-  // Wadah buat nyimpen jenis chart pake pancingan awal pnl
-  const [chartDetailType, setChartDetailType] = useState<string>("pnl");
-  
-=======
 
   // Wadah buat nyimpen jenis chart pake pancingan awal pnl
   const [chartDetailType, setChartDetailType] = useState<string>("pnl");
 
->>>>>>> 7c23464 (refactored)
   // Wadah teks buat tiban judul modal detail biar dinamis
   const [chartDetailTitle, setChartDetailTitle] = useState<string>("");
 
@@ -88,19 +64,11 @@ export default function useDashboard() {
       if (p.updatedAt) {
         // Buat wadah baru buat ubah string updatedAt jadi tipe Date
         const d = new Date(String(p.updatedAt));
-<<<<<<< HEAD
-        
-        // Kalo tanggal ini lebih baru dari isi wadah latest, tiban wadah latest pake tanggal baru ini
-        if (d > latest) latest = d;
-      }
-      
-=======
 
         // Kalo tanggal ini lebih baru dari isi wadah latest, tiban wadah latest pake tanggal baru ini
         if (d > latest) latest = d;
       }
 
->>>>>>> 7c23464 (refactored)
       // Cek semua data periode kalo properti periods emang ada
       p.periods?.forEach((per) => {
         // Bongkar string teks periode terus pisah jadi angka tahun sama bulan pake tanda strip
@@ -113,11 +81,6 @@ export default function useDashboard() {
         if (d > latest) latest = d;
       });
     });
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 7c23464 (refactored)
     // Kalo wadah latest ga pernah ketiban (tetap 1 Jan 1970), balikin strip. Kalo ketiban, ubah ke format tanggal Indonesia
     return latest.getTime() === 0
       ? "-"
@@ -155,11 +118,7 @@ export default function useDashboard() {
         result = result.filter((p) =>
           p.periods.some((per) => per.month <= endMonth),
         );
-<<<<<<< HEAD
-    // Kalo periode dipilih dan bukan all berarti pake filter bawaan sistem
-=======
       // Kalo periode dipilih dan bukan all berarti pake filter bawaan sistem
->>>>>>> 7c23464 (refactored)
     } else if (selectedPeriod && selectedPeriod !== "all") {
       // Wadah pancingan buat ngambil info tanggal hari ini
       const today = new Date();
@@ -388,7 +347,7 @@ export default function useDashboard() {
       filteredPrograms,
       (per) => per.financials.pnl,
       "Positif (Rp)",
-      "#1f77b4",
+      "#2ca02c",
       true,
     );
   }, [filteredPrograms]);

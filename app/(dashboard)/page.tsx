@@ -228,7 +228,7 @@ export default function ExecutiveDashboardPage() {
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >
                   {/* Ikon filter x */}
-                  <FilterX size={14} /> Reset Filter
+                  <FilterX size={14} /> Reset
                 </button>
               )}
             </div>
@@ -467,7 +467,7 @@ export default function ExecutiveDashboardPage() {
             options={{
               indexAxis: "y",
               scales: {
-                x: { stacked: true, ...axisYFormatter.ticks },
+                x: { stacked: true, ...axisYFormatter },
                 y: { stacked: true },
               },
             }}

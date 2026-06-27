@@ -11,7 +11,7 @@ import { fetchProgramsByRange } from "@/services/api/programService";
 // Import interface config kolom dari smart table
 import { ColumnConfig } from "@/components/shared/SmartTable";
 // Import formatter angka biar tampilan data rapi
-import { formatBigNumber } from "@/lib/formatters";
+import { formatNumberIndo } from "@/lib/formatters";
 // Import skema tipe data buat program
 import { ProgramFormData } from "@/schemas/program";
 
@@ -245,7 +245,7 @@ export function useDetailProgram() {
               }
             >
               {/* Teks pnl yang diformat */}
-              Rp {formatBigNumber(pnl)}
+              Rp {formatNumberIndo(pnl)}
             </span>
           );
         },
