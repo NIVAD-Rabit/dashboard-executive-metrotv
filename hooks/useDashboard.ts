@@ -101,7 +101,7 @@ export default function useDashboard() {
     }, [] as string[]);
   }, []);
 
-  // Bongkar data secara dinamis berdasarkan kategori ama periode yang lagi dipilih
+  // Filter data secara dinamis berdasarkan kategori ama periode yang lagi dipilih
   const filteredPrograms = useMemo(() => {
     // Wadah sementara buat nyalin semua data mentah program
     let result = [...MOCK_PROGRAMS];
