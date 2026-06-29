@@ -11,7 +11,7 @@ import React, {
 import merge from "lodash/merge";
 // Import ikon buat kontrol zoom
 import { Maximize2, ZoomIn, ZoomOut, RefreshCcw } from "lucide-react";
-// Import modul chart js buat bangun grafik
+// Import modul chart js buat bikin grafik
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -43,7 +43,7 @@ import { Chart } from "react-chartjs-2";
 // Import helper format angka buat grafik
 import { formatBigNumber, formatTooltipLabel } from "@/lib/formatters";
 
-// Daftar semua scale sama plugin ke core chart js biar fitur aktif
+// Daftarin semua scale sama plugin ke core chart js biar fitur aktif
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -64,7 +64,7 @@ ChartJS.register(
   RadarController,
 );
 
-// Daftar plugin zoom lewat dynamic import di client biar ga error window not defined
+// Daftarin plugin zoom lewat dynamic import di client biar ga error window not defined
 if (typeof window !== "undefined") {
   // Panggil plugin zoom
   import("chartjs-plugin-zoom").then((plugin) => {
