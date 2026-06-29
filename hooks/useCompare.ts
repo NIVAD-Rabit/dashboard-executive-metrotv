@@ -1,88 +1,201 @@
-import { useState, useMemo } from "react";
+// Import hook state buat kelola data lokal
+import {
+  useState,
+  // Import hook memo buat efisiensi hitungan
+  useMemo,
+} from "react";
+// Import hook query dari tanstack buat manage data server
 import { useQuery } from "@tanstack/react-query";
+// Import fungsi api buat ambil data program
 import { fetchProgramsByRange } from "@/services/api/programService";
+// Import tipe data chart js
 import { ChartData } from "chart.js";
+// Import skema tipe data program
+import { ProgramFormData } from "@/schemas/program";
+// Import fungsi helper buat bikin dataset bar
+import { createBarDataset } from "@/lib/chartHelpers";
 
+// Fungsi buat bikin objek periode kosong biar aplikasi ga crash pas data gada
+const emptyPeriod = (
+  // Bulan periode
+  month: string,
+) => ({
+  // Id unik pake tanda empty
+  id: `empty-${month}`,
+  // Bulan periode
+  month,
+  // Performa tv default nol
+  performanceTV: { targetTVR: 0, targetShare: 0, actualTVR: 0, actualShare: 0 },
+  // Performa digital default nol
+  performanceDigital: { views: 0, revenue: 0 },
+  // Finansial default nol
+  financials: { costDirect: 0, revenueTarget: 0, revenueActual: 0, pnl: 0 },
+  // Inventori default nol
+  inventory: { spot: 0, adRate: 0 },
+  // Status default strip
+  status: "-",
+});
+
+// Hook buat handle logic bandingin dua program
 export function useCompare() {
-  // Ambil data program dari API pake useQuery
-  // Kalo data belum dapet, defaultnya array kosong []. isLoading bakal true selama proses fetch.
-  const { data: programs = [], isLoading } = useQuery({
-    // Key unik buat nyimpen cache data ini, ibarat nama map/folder di dalem memori React Query
+  // Ambil data program dari api pake usequery
+  const {
+    // Data program dari api
+    data: programs = [],
+    // Status loading
+    isLoading,
+  } = useQuery({
+    // Key cache
     queryKey: ["programs"],
-    // Fungsi asinkron buat manggil endpoint API-nya
+    // Fungsi panggil api
     queryFn: () => fetchProgramsByRange("", ""),
   });
 
-  // Bikin state buat nyimpen id program pertama (Program A) yang dipilih user
+  // State buat nyimpen id program pertama
   const [progAId, setProgAId] = useState<string>("");
-  // Bikin state buat nyimpen id program kedua (Program B) yang dipilih user
+  // State buat nyimpen id program kedua
   const [progBId, setProgBId] = useState<string>("");
+  // State buat nyimpen periode program pertama
+  const [selectedPeriodA, setSelectedPeriodA] = useState<string>("");
+  // State buat nyimpen periode program kedua
+  const [selectedPeriodB, setSelectedPeriodB] = useState<string>("");
 
-  // Pake useMemo biar pencarian objek program A nggak dirender ulang terus-terusan
-  // Bakal nyari data ulang cuma kalo isi array 'programs' atau 'progAId' berubah
+  // Memo buat daftar semua opsi periode yang ada
+  const periodOptions = useMemo(() => {
+    // Bongkar semua bulan dari semua program
+    const all = programs.flatMap(
+      (p: ProgramFormData) => p.periods?.map((x) => x.month) || [],
+    );
+    // Hapus duplikat terus urutin dari yang terbaru
+    return Array.from(new Set(all)).sort().reverse();
+  }, [programs]);
+
+  // Cari objek program pertama berdasarkan id
   const progA = useMemo(
-    () => programs.find((p) => p.id === progAId) || null,
+    // Cari program yang match sama progAId
+    () => programs.find((p: ProgramFormData) => p.id === progAId) || null,
+    // Dependency list
     [programs, progAId],
   );
-  // Sama kaya di atas, tapi ini buat nyari full data objek program B
+  // Cari objek program kedua berdasarkan id
   const progB = useMemo(
-    () => programs.find((p) => p.id === progBId) || null,
+    // Cari program yang match sama progBId
+    () => programs.find((p: ProgramFormData) => p.id === progBId) || null,
+    // Dependency list
     [programs, progBId],
   );
 
-  // Kalkulasi ROI (Return on Investment) = ((Revenue - Cost) / Cost) * 100
-  // Kalo progA ada datanya, itung persentase ROI. Kalo costDirect nol, bagi sama 1 biar ga error 'Infinity'
-  const totalRevA = progA
-    ? (progA.revenueCapaian || 0) + (progA.digitalRevenue || 0)
+  // Ambil data periode aktif program pertama
+  const pA = useMemo(() => {
+    // Kalo program gada periode balikin null
+    if (!progA?.periods?.length) return null;
+    // Kalo user milih periode cari di array periode
+    if (selectedPeriodA)
+      return (
+        progA.periods.find((p) => p.month === selectedPeriodA) ||
+        emptyPeriod(selectedPeriodA)
+      );
+    // Default ambil yang paling baru
+    return [...progA.periods].sort((a, b) => b.month.localeCompare(a.month))[0];
+  }, [progA, selectedPeriodA]);
+
+  // Ambil data periode aktif program kedua
+  const pB = useMemo(() => {
+    // Kalo program gada periode balikin null
+    if (!progB?.periods?.length) return null;
+    // Kalo user milih periode cari di array periode
+    if (selectedPeriodB)
+      return (
+        progB.periods.find((p) => p.month === selectedPeriodB) ||
+        emptyPeriod(selectedPeriodB)
+      );
+    // Default ambil yang paling baru
+    return [...progB.periods].sort((a, b) => b.month.localeCompare(a.month))[0];
+  }, [progB, selectedPeriodB]);
+
+  // Hitung total revenue program pertama
+  const totalRevA = pA
+    ? (pA.financials?.revenueActual ?? 0) +
+      (pA.performanceDigital?.revenue ?? 0)
     : 0;
-  const roiA = progA
-    ? ((totalRevA - progA.costDirect) / (progA.costDirect || 1)) * 100
+  // Hitung roi program pertama
+  const roiA = pA
+    ? ((totalRevA - (pA.financials?.costDirect ?? 0)) /
+        ((pA.financials?.costDirect ?? 0) || 1)) *
+      100
     : 0;
 
-  // Itung ROI buat program B juga pake rumus yang sama persis
-  const totalRevB = progB
-    ? (progB.revenueCapaian || 0) + (progB.digitalRevenue || 0)
+  // Hitung total revenue program kedua
+  const totalRevB = pB
+    ? (pB.financials?.revenueActual ?? 0) +
+      (pB.performanceDigital?.revenue ?? 0)
     : 0;
-  const roiB = progB
-    ? ((totalRevB - progB.costDirect) / (progB.costDirect || 1)) * 100
+  // Hitung roi program kedua
+  const roiB = pB
+    ? ((totalRevB - (pB.financials?.costDirect ?? 0)) /
+        ((pB.financials?.costDirect ?? 0) || 1)) *
+      100
     : 0;
 
-  // Fungsi buat nuker posisi Program A sama Program B pas tombol swap diklik
+  // Fungsi buat swap posisi program dan periodenya
   const handleSwap = () => {
-    // Kalo dua-duanya kosong, gausah ngapa-ngapain
+    // Kalo dua dua nya kosong balikin
     if (!progAId && !progBId) return;
-
-    const currentA = progAId;
-    const currentB = progBId;
-
-    // Tuker statenya
+    // Deklarasi temp swap
+    const [currentA, currentB, currentPerA, currentPerB] = [
+      progAId,
+      progBId,
+      selectedPeriodA,
+      selectedPeriodB,
+    ];
+    // Set program a ke b
     setProgAId(currentB);
+    // Set program b ke a
     setProgBId(currentA);
+    // Set periode a ke b
+    setSelectedPeriodA(currentPerB);
+    // Set periode b ke a
+    setSelectedPeriodB(currentPerA);
   };
 
-  // Helper buat ngatur warna background card secara otomatis berdasarkan siapa yang nilainya lebih gede
-  // Program A menang = warna biru. Program B menang = warna oranye. Seri = warna standar.
-  const getCardStyle = (valA: number, valB: number) => {
+  // Fungsi buat atur style card pemenang
+  const getCardStyle = (
+    // Nilai A
+    valA: number,
+    // Nilai B
+    valB: number,
+  ) => {
+    // Kalo a lebih gede kasih warna biru
     if (valA > valB) return "bg-[#1f77b4]/10 border-[#1f77b4]/30";
+    // Kalo b lebih gede kasih warna oren
     if (valB > valA) return "bg-[#ff7f0e]/10 border-[#ff7f0e]/30";
-    // Kalo angkanya persis sama alias Seri / Seimbang
+    // Default style
     return "bg-card border-border";
   };
 
-  // Helper buat ngatur warna teks tulisan pemenangnya. Logikanya sama plek kaya fungsi di atas.
-  const getWinnerTextColor = (valA: number, valB: number) => {
+  // Fungsi buat atur warna teks pemenang
+  const getWinnerTextColor = (
+    // Nilai A
+    valA: number,
+    // Nilai B
+    valB: number,
+  ) => {
+    // Kalo a menang teks biru
     if (valA > valB) return "text-[#1f77b4]";
+    // Kalo b menang teks oren
     if (valB > valA) return "text-[#ff7f0e]";
-    // Seri / Seimbang
+    // Default teks
     return "text-foreground";
   };
 
-  // Bikin struktur data buat Grouped Bar Chart yang nampilin komparasi target, revenue, cost, pnl
+  // Memo buat susun data chart perbandingan
   const comparisonData = useMemo<ChartData<"bar">>(() => {
-    // Kalo salah satu program belum dipilih, balikin data kosong biar chart ga error
+    // Kalo program gada balikin objek data kosong
     if (!progA || !progB) return { labels: [], datasets: [] };
+
+    // Balikin objek data buat bar chart
     return {
-      // Label buat sumbu X (kategori di bawah chart)
+      // Label sumbu x
       labels: [
         "Target Revenue",
         "Actual TV Rev",
@@ -90,41 +203,37 @@ export function useCompare() {
         "Cost Direct",
         "Net PNL",
       ],
+      // Dataset buat perbandingan
       datasets: [
-        {
-          // Data bar kelompok pertama buat Program A
-          label: progA.name,
-          // Urutan angka ini harus sama persis posisinya kaya urutan 'labels' di atas
-          data: [
-            progA.revenueTarget,
-            progA.revenueCapaian,
-            progA.digitalRevenue || 0,
-            progA.costDirect,
-            progA.pnl,
+        // Dataset program pertama
+        createBarDataset(
+          progA.name,
+          [
+            pA?.financials?.revenueTarget ?? 0,
+            pA?.financials?.revenueActual ?? 0,
+            pA?.performanceDigital?.revenue ?? 0,
+            pA?.financials?.costDirect ?? 0,
+            pA?.financials?.pnl ?? 0,
           ],
-          // Kasih warna biru buat chart bar Program A
-          backgroundColor: "#1f77b4",
-          minBarLength: 15,
-        },
-        {
-          // Data bar kelompok kedua buat Program B
-          label: progB.name,
-          data: [
-            progB.revenueTarget,
-            progB.revenueCapaian,
-            progB.digitalRevenue || 0,
-            progB.costDirect,
-            progB.pnl,
+          "#1f77b4",
+        ),
+        // Dataset program kedua
+        createBarDataset(
+          progB.name,
+          [
+            pB?.financials?.revenueTarget ?? 0,
+            pB?.financials?.revenueActual ?? 0,
+            pB?.performanceDigital?.revenue ?? 0,
+            pB?.financials?.costDirect ?? 0,
+            pB?.financials?.pnl ?? 0,
           ],
-          // Kasih warna oranye buat chart bar Program B
-          backgroundColor: "#ff7f0e",
-          minBarLength: 15,
-        },
+          "#ff7f0e",
+        ),
       ],
     };
-    // Chart cuma di-generate ulang kalo data program A atau B ganti
-  }, [progA, progB]);
+  }, [progA, progB, pA, pB]);
 
+  // Return data dan fungsi buat dipake ui
   return {
     programs,
     isLoading,
@@ -134,8 +243,15 @@ export function useCompare() {
     setProgBId,
     progA,
     progB,
+    pA,
+    pB,
     roiA,
     roiB,
+    selectedPeriodA,
+    setSelectedPeriodA,
+    selectedPeriodB,
+    setSelectedPeriodB,
+    periodOptions,
     handleSwap,
     getCardStyle,
     getWinnerTextColor,
