@@ -1,20 +1,13 @@
 "use client";
 
-// Import react
 import React, {
   // Import hook buat atur state lokal
   useState,
-  // Import hook buat optimalisasi hitungan
+  // Import hook buat optimalisasi
   useMemo,
 } from "react";
-// Import ikon filter x buat reset
-import {
-  FilterX,
-  // Import ikon refresh buat update
-  RefreshCcw,
-  // Import ikon git compare buat bandingin data
-  GitCompare,
-} from "lucide-react";
+// Import icon filter x buat reset
+import { FilterX, RefreshCcw, GitCompare } from "lucide-react";
 // Import hook router dari next navigation
 import { useRouter } from "next/navigation";
 // Import hook dashboard custom buat logic
@@ -40,9 +33,9 @@ import CustomSelect from "@/components/shared/CustomSelect";
 // Import komponen card pembungkus chart
 import ChartCard from "@/components/shared/ChartCard";
 
-// Komponen halaman dashboard eksekutif buat pantau data
+// Komponen page dashboard eksekutif buat pantau data
 export default function ExecutiveDashboardPage() {
-  // Inisialisasi router next buat pindah halaman
+  // Inisialisasi router next buat pindah page
   const router = useRouter();
 
   // Ambil semua state dan data dari hook dashboard
@@ -112,7 +105,7 @@ export default function ExecutiveDashboardPage() {
     },
   };
 
-  // Render isi halaman
+  // Render isi page
   return (
     // Div pembungkus utama
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
@@ -126,7 +119,7 @@ export default function ExecutiveDashboardPage() {
           </p>
           {/* Badge waktu update */}
           <span className="text-[11px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-semibold flex items-center gap-1">
-            {/* Ikon refresh */}
+            {/* Icon refresh */}
             <RefreshCcw size={10} /> {lastUpdated}
           </span>
         </div>
@@ -134,7 +127,7 @@ export default function ExecutiveDashboardPage() {
         {/* Kontainer label periode */}
         <div className="w-full text-center">
           {/* Badge label periode aktif */}
-          <span className="text-sm text-muted-foreground font-medium bg-muted/40 px-4 py-1.5 rounded-full border border-border">
+          <span className="text-xs text-muted-foreground font-medium bg-muted/40 px-4 py-1.5 rounded-full border border-border">
             {/* Teks data ditampilkan */}
             Data Ditampilkan: {/* Nilai periode aktif */}
             <span className="font-bold text-foreground">
@@ -227,7 +220,7 @@ export default function ExecutiveDashboardPage() {
                   // Styling tombol reset
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >
-                  {/* Ikon filter x */}
+                  {/* Icon filter x */}
                   <FilterX size={14} /> Reset
                 </button>
               )}
@@ -412,7 +405,7 @@ export default function ExecutiveDashboardPage() {
                       onClick={() => router.push("/compare")}
                       className="flex items-center justify-center gap-2 w-full bg-card hover:bg-primary hover:text-primary-foreground text-foreground h-10 pl-4 pr-6 rounded-full text-sm font-medium transition-colors shadow-sm cursor-pointer"
                     >
-                      {/* Ikon compare */}
+                      {/* Icon compare */}
                       <GitCompare size={18} /> Compare
                     </button>
                   </>

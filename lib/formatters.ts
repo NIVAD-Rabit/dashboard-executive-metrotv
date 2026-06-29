@@ -78,14 +78,14 @@ export const formatTooltipLabel = (
   // Konteks chart
   context: TooltipItem<"bar" | "doughnut" | "pie" | "polarArea">,
 ): string | void => {
-  // Cek apakah chart bentuk bulat
+  // Cek apakah chart bentuk bulet
   const isCircularChart =
     context.parsed.x === undefined && context.parsed.y === undefined;
 
   // Wadah angka mentah
   let rawValue: number | null | undefined;
 
-  // Ambil data buat chart bulat
+  // Ambil data buat chart bulet
   if (isCircularChart) {
     rawValue = typeof context.parsed === "number" ? context.parsed : undefined;
   } else {

@@ -1,12 +1,12 @@
 "use client";
 
-// Import ikon ellipsis dan x dari lucide
+// Import icon ellipsis dan x dari lucide
 import { Ellipsis, X } from "lucide-react";
 // Import komponen link next buat navigasi
 import Link from "next/link";
 // Import hook buat akses url path
 import { usePathname } from "next/navigation";
-// Import fungsi bantu buat judul halaman
+// Import fungsi bantu buat judul page
 import { getTitleFromMenu, MenuGroup } from "@/lib/pageTitle";
 // Import hook redux buat state management
 import { useDispatch, useSelector } from "react-redux";
@@ -79,7 +79,7 @@ export default function Sidebar(): React.JSX.Element {
               // Styling tombol close
               className="p-2 text-muted-foreground hover:bg-muted rounded-full md:hidden"
             >
-              {/* Ikon x */}
+              {/* Icon x */}
               <X size={20} />
             </button>
           </div>
@@ -116,7 +116,7 @@ export default function Sidebar(): React.JSX.Element {
                             : "text-muted-foreground font-medium hover:bg-secondary hover:text-foreground"
                         }`}
                       >
-                        {/* Ikon menu item */}
+                        {/* Icon menu item */}
                         <item.icon
                           size={24}
                           strokeWidth={2}
@@ -154,7 +154,7 @@ export default function Sidebar(): React.JSX.Element {
                 {/* Id user */}
                 <p className="border border-b-blue-700 truncate">1163353</p>
               </div>
-              {/* Ikon ellipsis buat setting tambahan */}
+              {/* Icon ellipsis buat setting tambahan */}
               <Ellipsis
                 size={24}
                 className="border border-b-blue-700 text-muted-foreground group-hover:text-foreground hidden lg:block"

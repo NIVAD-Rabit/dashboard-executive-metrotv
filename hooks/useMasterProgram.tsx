@@ -14,10 +14,10 @@ import {
   // Import client query
   useQueryClient,
 } from "@tanstack/react-query";
-// Import ikon edit dari lucide
+// Import icon edit dari lucide
 import {
   Edit2,
-  // Import ikon trash dari lucide
+  // Import icon trash dari lucide
   Trash2,
 } from "lucide-react";
 // Import komponen grid dari ag grid react
@@ -193,7 +193,7 @@ export function useMasterProgram() {
   });
 
   // Data baris kosong default buat nambah program
-  const defaultEmptyRow: ProgramFormData = {
+  const createEmptyRow = (selectedPeriod: string): ProgramFormData => ({
     // Nama kosong
     name: "",
     // Kategori default
@@ -231,18 +231,19 @@ export function useMasterProgram() {
         status: "Normal",
       },
     ],
-  };
+  });
 
   // Fungsi buat buka modal mode tambah
   const openAddModal = () => {
     // Reset id edit
     setEditingId(null);
     // Setup data kosong 5 baris
-    setRowData(
-      Array(5)
-        .fill(null)
-        .map(() => JSON.parse(JSON.stringify(defaultEmptyRow))),
-    );
+    const initialRows = Array(5)
+      .fill(null)
+      .map(() => createEmptyRow(selectedPeriod));
+
+    setRowData(initialRows);
+
     // Buka modal
     setIsModalOpen(true);
   };
@@ -275,8 +276,9 @@ export function useMasterProgram() {
 
   // Fungsi buat nambah baris kosong di tabel
   const addRow = () => {
+    const newRow = createEmptyRow(selectedPeriod);
     // Gabung data lama sama baris baru
-    const newData = [...rowData, JSON.parse(JSON.stringify(defaultEmptyRow))];
+    const newData = [...rowData, newRow];
     // Update state row
     setRowData(newData);
     // Update grid api
@@ -528,7 +530,7 @@ export function useMasterProgram() {
               // Style tombol
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded cursor-pointer transition-colors"
             >
-              {/* Ikon trash */}
+              {/* Icon trash */}
               <Trash2 size={16} />
             </button>
           );

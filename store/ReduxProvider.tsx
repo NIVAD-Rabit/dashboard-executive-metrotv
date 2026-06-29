@@ -1,6 +1,5 @@
 "use client";
 
-// Import react bawaan
 import React from "react";
 // Import komponen provider dari react redux buat nyambungin aplikasi ke store
 import { Provider } from "react-redux";

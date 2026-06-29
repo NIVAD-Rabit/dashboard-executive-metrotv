@@ -68,9 +68,9 @@ export default function CustomSelect({
           </option>
         ))}
       </select>
-      {/* Div pembungkus ikon anak panah buat nunjukin ini dropdown */}
+      {/* Div pembungkus icon anak arrow buat nunjukin ini dropdown */}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-foreground/70">
-        {/* Gambar svg buat ikon panah bawah */}
+        {/* Gambar svg buat icon arrow bawah */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -79,7 +79,7 @@ export default function CustomSelect({
           stroke="currentColor"
           className="w-4 h-4"
         >
-          {/* Path buat ngebentuk ikon panah */}
+          {/* Path buat ngebentuk icon arrow */}
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

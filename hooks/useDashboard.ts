@@ -108,12 +108,12 @@ export default function useDashboard() {
 
     // Kalo user milih periode custom baru masukin logic filter tanggal manual
     if (selectedPeriod === "custom") {
-      // Kalo bulan awal ada isinya langsung saring data yang masuk range bulan itu
+      // Kalo bulan awal ada isinya langsung filter data yang masuk range bulan itu
       if (startMonth)
         result = result.filter((p) =>
           p.periods.some((per) => per.month >= startMonth),
         );
-      // Kalo bulan akhir ada isinya saring lagi data biar ga kelewat batas bulannya
+      // Kalo bulan akhir ada isinya filter lagi data biar ga kelewat batas bulannya
       if (endMonth)
         result = result.filter((p) =>
           p.periods.some((per) => per.month <= endMonth),
@@ -136,7 +136,7 @@ export default function useDashboard() {
       // Kalo periodenya mtd berarti batas bawahnya langsung tiban pake bulan sekarang
       else if (selectedPeriod === "mtd") minMonth = currentMonthStr;
 
-      // Bongkar isi periods terus saring data yang masuk dalem range waktu tadi
+      // Bongkar isi periods terus filter data yang masuk dalem range waktu tadi
       result = result.filter((p) =>
         p.periods.some(
           (per) => per.month >= minMonth && per.month <= currentMonthStr,
@@ -146,7 +146,7 @@ export default function useDashboard() {
 
     // Kalo kategori kosong kasih semua data
     if (!selectedCategory) return result;
-    // Filter array berdasar kategori
+    // Filter array berdasarkan kategori
     return result.filter((p) => p.category === selectedCategory);
   }, [selectedCategory, startMonth, endMonth, selectedPeriod]);
 
@@ -253,14 +253,14 @@ export default function useDashboard() {
 
   // Set id program aktif dasar filter kategori
   const activeProgramId = useMemo(() => {
-    // Balik id program kalo program ada di dalem data saring
+    // Balik id program kalo program ada di dalem data filter
     if (
       selectedProgramId &&
       filteredPrograms.some((p) => p.id === selectedProgramId)
     ) {
       return selectedProgramId;
     }
-    // Balik id program awal kalo data saring ada isi
+    // Balik id program awal kalo data filter ada isi
     return filteredPrograms.length > 0 ? filteredPrograms[0].id : "";
   }, [filteredPrograms, selectedProgramId]);
 
@@ -321,21 +321,42 @@ export default function useDashboard() {
     // Kalo program gada balikin objek kosong
     if (!prog) return { labels: [], datasets: [] };
 
+    // Itung Total nilai
+    const actualRevenue = sumPeriodValue(
+      prog,
+      (per) =>
+        per.financials.revenueActual + (per.performanceDigital.revenue || 0),
+    );
+    const costDirect = sumPeriodValue(prog, (per) => per.financials.costDirect);
+    const revenueTarget = sumPeriodValue(
+      prog,
+      (per) => per.financials.revenueTarget,
+    );
+
+    // Tampung total nilainya biar gampang diitung
+    const realValues = [actualRevenue, costDirect, revenueTarget];
+    // Totalin semua nilai asli buat nyari patokan persentase buletannya
+    const totalValue = realValues.reduce((sum, val) => sum + val, 0);
+
+    // Kalo totalnya nol langsung balikin kosong biar ga error bagi nol
+    if (totalValue === 0) return { labels: [], datasets: [] };
+
+    // Set minimal irisan 2% dari total buletan biar yang jutaan tetep keliatan
+    const VISUAL_MIN_PERCENT = 0.02;
+    const minVisualValue = totalValue * VISUAL_MIN_PERCENT;
+
+    // Kalo kekecilan paksa naik ke batas minimum visual, selain itu biarin normal
+    const visualValues = realValues.map((val) => {
+      if (val === 0) return 0;
+      return val < minVisualValue ? minVisualValue : val;
+    });
+
     // Balik struktur data siap pakai buat chart js
     return {
       labels: ["Revenue Capaian", "Cost Direct", "Target Revenue"],
       datasets: [
         {
-          data: [
-            sumPeriodValue(
-              prog,
-              (per) =>
-                per.financials.revenueActual +
-                (per.performanceDigital.revenue || 0),
-            ),
-            sumPeriodValue(prog, (per) => per.financials.costDirect),
-            sumPeriodValue(prog, (per) => per.financials.revenueTarget),
-          ],
+          data: visualValues,
         },
       ],
     };

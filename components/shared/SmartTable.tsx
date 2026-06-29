@@ -1,29 +1,22 @@
 "use client";
 
-// Import React buat bikin komponen
 import React, {
   // Import hook useState buat simpen state internal
   useState,
   // Import hook useMemo buat optimalisasi hitungan
   useMemo,
 } from "react";
-// Import ikon panah kiri dari lucide react
+// Import icon arrow kiri dari lucide react
 import {
   ChevronLeft,
-  // Import ikon panah kanan dari lucide react
   ChevronRight,
-  // Import ikon panah double kiri dari lucide react
   ChevronsLeft,
-  // Import ikon panah double kanan dari lucide react
   ChevronsRight,
-  // Import ikon search dari lucide react
   Search,
-  // Import ikon panah atas bawah dari lucide react
   ArrowUpDown,
-  // Import ikon filterx dari lucide react
   FilterX,
 } from "lucide-react";
-// Import modul utama buat tabel dari tanstack react table
+// Import modul buat tabel dari tanstack react table
 import {
   useReactTable,
   getCoreRowModel,
@@ -56,7 +49,7 @@ export interface ColumnConfig<T> {
 export interface FilterOption {
   // Label buat teks pilihan
   label: string;
-  // Nilai yang dipake buat saring data
+  // Nilai yang dipake buat filter data
   value: string;
 }
 
@@ -131,14 +124,14 @@ export default function SmartTable<T>({
   // State buat nyimpen bulan akhir filter
   const [endMonth, setEndMonth] = useState("");
 
-  // Memo buat saring data awal sebelum masuk mesin tanstack
+  // Memo buat filter data awal sebelum masuk mesin tanstack
   const preFilteredData = useMemo(() => {
     // Copy data awal
     let result = [...data];
 
     // Cek kalo fitur rentang tanggal aktif dan key ada
     if (enableDateRange && dateKey) {
-      // Saring berdasarkan bulan mulai
+      // Filter berdasarkan bulan mulai
       if (startMonth) {
         result = result.filter((item) => {
           // Ambil nilai tanggal dari item
@@ -150,7 +143,7 @@ export default function SmartTable<T>({
           return val >= startMonth;
         });
       }
-      // Saring berdasarkan bulan akhir
+      // Filter berdasarkan bulan akhir
       if (endMonth) {
         result = result.filter((item) => {
           // Ambil nilai tanggal dari item
@@ -164,7 +157,7 @@ export default function SmartTable<T>({
       }
     }
 
-    // Saring data berdasarkan filter dropdown dinamis
+    // Filter data berdasarkan filter dropdown dinamis
     Object.keys(dynamicFilters).forEach((key) => {
       // Ambil nilai filter
       const filterValue = dynamicFilters[key];
@@ -179,7 +172,7 @@ export default function SmartTable<T>({
       }
     });
 
-    // Balikin data yang udah disaring
+    // Balikin data yang udah difilter
     return result;
   }, [data, dynamicFilters, startMonth, endMonth, enableDateRange, dateKey]);
 
@@ -202,6 +195,7 @@ export default function SmartTable<T>({
   }, [columns]);
 
   // Inisialisasi instance tabel tanstack
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: preFilteredData,
     columns: tanstackColumns,
@@ -228,7 +222,7 @@ export default function SmartTable<T>({
     setStartMonth("");
     // Reset bulan akhir
     setEndMonth("");
-    // Reset ke halaman pertama
+    // Reset ke page pertama
     table.setPageIndex(0);
   };
 
@@ -249,7 +243,7 @@ export default function SmartTable<T>({
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* Box pencarian */}
           <div className="relative w-full sm:w-[260px]">
-            {/* Ikon search */}
+            {/* Icon search */}
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               size={16}
@@ -275,7 +269,7 @@ export default function SmartTable<T>({
                     ...prev,
                     [filter.key]: e.target.value,
                   }));
-                  // Reset halaman pertama tiap ada perubahan filter
+                  // Reset page pertama tiap ada perubahan filter
                   table.setPageIndex(0);
                 }}
                 className="w-full bg-muted/40 border border-border text-foreground rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary cursor-pointer"
@@ -336,7 +330,7 @@ export default function SmartTable<T>({
           )}
         </div>
 
-        {/* Kontainer baris per halaman */}
+        {/* Kontainer baris per page */}
         <div className="flex items-center gap-2 self-end lg:self-auto">
           <span className="text-xs text-muted-foreground font-medium">
             Baris per halaman:
@@ -477,9 +471,9 @@ export default function SmartTable<T>({
             entri
           </div>
 
-          {/* Kontainer navigasi halaman */}
+          {/* Kontainer navigasi page */}
           <div className="flex items-center gap-1">
-            {/* Tombol ke halaman paling awal */}
+            {/* Tombol ke page paling awal */}
             <button
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
@@ -487,7 +481,7 @@ export default function SmartTable<T>({
             >
               <ChevronsLeft size={16} />
             </button>
-            {/* Tombol ke halaman sebelumnya */}
+            {/* Tombol ke page sebelumnya */}
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
@@ -496,13 +490,13 @@ export default function SmartTable<T>({
               <ChevronLeft size={16} />
             </button>
 
-            {/* Info nomor halaman */}
+            {/* Info nomor page */}
             <div className="px-4 text-xs font-bold text-foreground">
               Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
               {table.getPageCount() || 1}
             </div>
 
-            {/* Tombol ke halaman berikutnya */}
+            {/* Tombol ke page berikutnya */}
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
@@ -510,7 +504,7 @@ export default function SmartTable<T>({
             >
               <ChevronRight size={16} />
             </button>
-            {/* Tombol ke halaman terakhir */}
+            {/* Tombol ke page terakhir */}
             <button
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}

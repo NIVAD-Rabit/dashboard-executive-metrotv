@@ -91,7 +91,7 @@ export default function StatCard({
             // Cek status positif buat styling background dan warna teks
             className={`flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
           >
-            {/* Kondisional ikon panah berdasarkan status positif */}
+            {/* Kondisional icon arrow berdasarkan status positif */}
             {card.isPositive ? (
               <ArrowUpRight size={16} strokeWidth={2.5} />
             ) : (

@@ -1,6 +1,5 @@
 "use client";
 
-// Import react
 import React, {
   // Import hook referensi buat akses dom
   useRef,
@@ -9,7 +8,7 @@ import React, {
 } from "react";
 // Import fungsi merge dari lodash buat gabungin objek opsi chart
 import merge from "lodash/merge";
-// Import ikon buat kontrol zoom
+// Import icon buat kontrol zoom
 import { Maximize2, ZoomIn, ZoomOut, RefreshCcw } from "lucide-react";
 // Import modul chart js buat bikin grafik
 import {
@@ -76,7 +75,7 @@ if (typeof window !== "undefined") {
 // Warna palet buat grafik referensi dari tableu
 const T10_COLORS = [
   // Biru
-  "#1f77b4",
+  "#1fb0cf",
   // Oren
   "#ff7f0e",
   // Hijau
@@ -95,6 +94,29 @@ const T10_COLORS = [
   "#bcbd22",
   // Cyan
   "#17becf",
+];
+
+const T10_COLORS_SOFT = [
+  // Biru (Electric Cyan-Blue)
+  "#38bdf8",
+  // Oren (Soft Neon Amber)
+  "#fb923c",
+  // Hijau (Fresh Emerald)
+  "#34d399",
+  // Merah (Soft Coral Red)
+  "#f87171",
+  // Ungu (Pastel Purple)
+  "#c084fc",
+  // Cokelat (Warm Muted Almond)
+  "#cca585",
+  // Pink (Soft Orchid)
+  "#f472b6",
+  // Slate (Muted Silver Blue)
+  "#94a3b8",
+  // Hijau zaitun (Soft Lime Pastel)
+  "#a3e635",
+  // Cyan (Deep Aqua Glow)
+  "#22d3ee",
 ];
 
 // Struktur interface buat properti komponen grafik
@@ -161,7 +183,7 @@ export default function BaseChart<T extends ChartType>({
     ...data,
     // Map tiap dataset buat nambahin style
     datasets: data.datasets.map((dataset, index) => {
-      // Cek apakah tipenya grafik bulat
+      // Cek apakah tipenya grafik bulet
       const isPieOrDoughnut =
         type === "pie" || type === "doughnut" || type === "polarArea";
 
@@ -206,7 +228,7 @@ export default function BaseChart<T extends ChartType>({
           flexData.borderWidth ?? (type === "line" || isPieOrDoughnut ? 4 : 0),
         // Set radius sudut kalo bar
         ...(type === "bar" && { borderRadius: flexData.borderRadius ?? 6 }),
-        // Set radius sudut kalo bulat
+        // Set radius sudut kalo bulet
         ...(isPieOrDoughnut && { borderRadius: flexData.borderRadius ?? 6 }),
         // Set style buat grafik garis
         ...(type === "line" && {
@@ -234,7 +256,7 @@ export default function BaseChart<T extends ChartType>({
         display: true,
         // Styling teks legend
         labels: {
-          // Icon kotak
+          // Icon box
           usePointStyle: false,
           // Jarak antar item
           padding: 20,
@@ -242,9 +264,9 @@ export default function BaseChart<T extends ChartType>({
           font: { family: "'Inter', sans-serif", size: 16, weight: 500 },
           // Warna teks legend
           color: "#FFFFFF",
-          // Lebar kotak
+          // Lebar box
           boxWidth: 15,
-          // Tinggi kotak
+          // Tinggi box
           boxHeight: 15,
         },
       },
@@ -267,13 +289,14 @@ export default function BaseChart<T extends ChartType>({
         },
       },
     },
-    // Konfigurasi sumbu buat tipe non-bulat
+    // Konfigurasi sumbu buat tipe non-bulet
     scales: ["pie", "doughnut", "polarArea", "radar"].includes(type)
       ? undefined
       : {
           x: {
             // Hilang garis grid x
-            grid: { display: false },
+            // grid: { display: false },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             // Konfigurasi teks sumbu x
             ticks: {
               // Tampil semua teks
@@ -287,7 +310,7 @@ export default function BaseChart<T extends ChartType>({
                 this: Scale<CoreScaleOptions>,
                 tickValue: string | number,
               ) {
-                // Ambil label berdasar index
+                // Ambil label berdasarkan index
                 const label = this.getLabelForValue
                   ? this.getLabelForValue(tickValue as number)
                   : tickValue;
@@ -304,7 +327,8 @@ export default function BaseChart<T extends ChartType>({
             // Hilang garis border
             border: { display: false },
             // Warna grid y
-            grid: { color: "rgba(0, 0, 0, 0.05)" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            // grid: { color: "rgba(0, 0, 0, 0.05)" },
             // Konfigurasi teks sumbu y
             ticks: {
               // Tampil semua teks
@@ -318,7 +342,7 @@ export default function BaseChart<T extends ChartType>({
                 this: Scale<CoreScaleOptions>,
                 tickValue: string | number,
               ) {
-                // Ambil label berdasar index
+                // Ambil label berdasarkan index
                 const label = this.getLabelForValue
                   ? this.getLabelForValue(tickValue as number)
                   : tickValue;
@@ -342,7 +366,7 @@ export default function BaseChart<T extends ChartType>({
   // Hitung lebar grafik setelah zoom
   const finalWidth = zoomPercent > 100 ? `${zoomPercent}%` : "100%";
 
-  // Render halaman
+  // Render page
   return (
     // Bungkus utama
     <div className="flex flex-col w-full p-6 relative">
@@ -363,7 +387,7 @@ export default function BaseChart<T extends ChartType>({
               // Style tombol expand
               className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
             >
-              {/* Ikon maximize */}
+              {/* Icon maximize */}
               <Maximize2 size={18} />
             </button>
           )}

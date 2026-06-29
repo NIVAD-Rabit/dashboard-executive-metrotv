@@ -1,23 +1,15 @@
 "use client";
 
-// Import ikon menu dari lucide
+// Import icon menu dari lucide
 import {
   Menu,
-  // Import ikon sun buat tema
   Sun,
-  // Import ikon moon buat mode gelap
   Moon,
-  // Import ikon bell buat notifikasi
   Bell,
-  // Import ikon sun dim buat tema
   SunDim,
-  // Import ikon funnel buat filter
   Funnel,
-  // Import ikon bar chart 2
   BarChart2,
-  // Import ikon line chart
   LineChart,
-  // Import ikon pie chart
   PieChart,
 } from "lucide-react";
 // Import fungsi dispatch dari redux
@@ -28,7 +20,7 @@ import { usePathname } from "next/navigation";
 import { toggleSidebar } from "@/store/slices/uiSlice";
 // Import hook tema dari next-themes
 import { useTheme } from "next-themes";
-// Import helper buat ambil judul halaman
+// Import helper buat ambil judul page
 import { getTitleFromMenu, MenuGroup } from "@/lib/pageTitle";
 // Import data menu groups dari folder konstan
 import { menuGroups } from "@/constants/menuGroups";
@@ -48,14 +40,14 @@ export default function Header() {
   const pathname = usePathname() || "/";
   // Inisialisasi dispatch untuk kirim aksi redux
   const dispatch = useDispatch();
-  // Ambil judul halaman berdasarkan menu
+  // Ambil judul page berdasarkan menu
   const titlePage = getTitleFromMenu(pathname, menuGroups);
 
   // Daftar grup yang mau ditampilkan di header
   const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS"];
   // Olah menu groups jadi menu utama yang flat
   const menuItems = menuGroups
-    // Saring grup berdasarkan daftar yang disiapin
+    // Filter grup berdasarkan daftar yang disiapin
     .filter((menu) => groups.includes(menu.group))
     // Bongkar menu items jadi array satu dimensi
     .flatMap((menu) => menu.items);
@@ -73,7 +65,7 @@ export default function Header() {
           // Styling tombol mobile
           className="h-12 w-12 flex items-center -ml-2 text-foreground hover:bg-muted rounded-full md:hidden transition-colors cursor-pointer"
         >
-          {/* Ikon menu */}
+          {/* Icon menu */}
           <Menu size={24} />
         </button>
         {/* Kontainer logo yang disembunyiin di mobile kecil */}
@@ -133,7 +125,7 @@ export default function Header() {
                   : "bg-muted text-foreground hover:text-white"
               }`}
             >
-              {/* Ikon tiap menu */}
+              {/* Icon tiap menu */}
               <item.icon size={18} />
               {/* Render nama menu kalo bukan dashboard */}
               {!isDashboard && item.name}
@@ -151,7 +143,7 @@ export default function Header() {
           // Styling tombol filter
           className="border-2 border-cyan-700 flex items-center justify-center gap-2 pl-4 pr-6 h-10 rounded-full cursor-pointer text-sm font-medium transition-colors hover:bg-muted"
         >
-          {/* Ikon funnel */}
+          {/* Icon funnel */}
           <Funnel size={18} /> Filter
         </button>
         {/* Tombol buat nama user */}

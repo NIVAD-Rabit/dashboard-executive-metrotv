@@ -1,17 +1,16 @@
 "use client";
 
-// Import react dari library react
 import React from "react";
-// Import komponen tabel pintar
+// Import komponen tabel
 import SmartTable from "@/components/shared/SmartTable";
 // Import modal detail program
 import ProgramDetailModal from "@/components/shared/ProgramDetailModal";
 // Import hook detail program buat ambil data
 import { useDetailProgram } from "@/hooks/useDetailProgram";
-// Import kotak filter periode
+// Import filter box periode
 import PeriodFilterBox from "@/components/shared/PeriodFilterBox";
 
-// Komponen halaman detail program
+// Komponen page detail program
 export default function DetailProgramPage() {
   // Tarik data sama kolom tabel dari hook, ga butuh tvchart atau financechart di sini
   const {
@@ -35,7 +34,7 @@ export default function DetailProgramPage() {
     periodOptions,
   } = useDetailProgram();
 
-  // Render konten halaman
+  // Render konten page
   return (
     // Div kontainer utama dengan styling responsif
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">

@@ -1,13 +1,12 @@
 // Aktivasi mode client buat jalanin hook react
 "use client";
 
-// Import react dan hooks buat state
 import React, { useState, useSyncExternalStore } from "react";
 // Import createPortal buat ngerender modal di atas body
 import { createPortal } from "react-dom";
 // Import hook tema dari next-themes
 import { useTheme } from "next-themes";
-// Import kumpulan ikon dari lucide
+// Import kumpulan icon dari lucide
 import {
   Plus,
   X,
@@ -40,7 +39,7 @@ import { ColumnConfig } from "@/components/shared/SmartTable";
 // Fungsi buat sinkronisasi store biar aman pas render
 const emptySubscribe = () => () => {};
 
-// Komponen halaman utama master program
+// Komponen page utama master program
 export default function MasterProgramPage() {
   // Ambil tema aplikasi dari next themes
   const { theme } = useTheme();
@@ -105,7 +104,7 @@ export default function MasterProgramPage() {
     return col;
   });
 
-  // Render halaman master program
+  // Render page master program
   return (
     // Container utama
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">

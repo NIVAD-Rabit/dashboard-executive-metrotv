@@ -1,6 +1,5 @@
 "use client";
 
-// Import React buat bikin komponen
 import React, {
   // Import hook useEffect buat jalanin side effect
   useEffect,
@@ -13,7 +12,7 @@ import React, {
 } from "react";
 // Import createPortal buat ngerender modal di level root dom
 import { createPortal } from "react-dom";
-// Import koleksi ikon dari lucide react
+// Import koleksi icon dari lucide react
 import {
   X,
   Tv,
@@ -77,6 +76,7 @@ export default function ProgramDetailModal({
   const [trendEndMonth, setTrendEndMonth] = useState<string>("");
   // State buat simpen pilihan filter tren
   const [trendFilter, setTrendFilter] = useState<string>("all");
+
   // State buat simpen bulan yang lagi aktif dipilih
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   // State buat ganti tab antara overview atau tren
@@ -90,13 +90,20 @@ export default function ProgramDetailModal({
     return [...program.periods].sort((a, b) => a.month.localeCompare(b.month));
   }, [program]);
 
-  // Efek buat set bulan terpilih ke periode paling baru pas modal buka
-  useEffect(() => {
-    // Kalo ada data periode, set ke bulan terakhir
-    if (sortedPeriods.length > 0) {
-      setSelectedMonth(sortedPeriods[sortedPeriods.length - 1].month);
-    }
-  }, [sortedPeriods, isOpen]);
+  // Memo buat bulan terakhir dari data periode
+  const lastPeriodMonth = useMemo(
+    () => sortedPeriods[sortedPeriods.length - 1]?.month ?? "",
+    [sortedPeriods],
+  );
+
+  // Bulan yang dipakai sebenernya, fallback ke periode terbaru kalo pilihan kosong atau ga valid
+  const effectiveSelectedMonth = useMemo(
+    () =>
+      selectedMonth && sortedPeriods.some((p) => p.month === selectedMonth)
+        ? selectedMonth
+        : lastPeriodMonth,
+    [selectedMonth, sortedPeriods, lastPeriodMonth],
+  );
 
   // Memo buat dapetin data periode spesifik yang lagi dipilih
   const currentPeriodData = useMemo(() => {
@@ -104,10 +111,10 @@ export default function ProgramDetailModal({
     if (!program?.periods) return null;
     // Cari periode yang bulan-nya cocok sama pilihan user
     return (
-      program.periods.find((p) => p.month === selectedMonth) ||
+      program.periods.find((p) => p.month === effectiveSelectedMonth) ||
       sortedPeriods[sortedPeriods.length - 1]
     );
-  }, [program, selectedMonth, sortedPeriods]);
+  }, [program, effectiveSelectedMonth, sortedPeriods]);
 
   // Memo buat bikin string display periode yang lagi aktif
   const periodDisplay = useMemo(() => {
@@ -123,16 +130,16 @@ export default function ProgramDetailModal({
   const filteredTrendPeriods = useMemo(() => {
     // Awalnya ambil data periode yang udah urut
     let result = sortedPeriods;
-    // Kalo filter YTD, saring data cuma buat tahun ini
+    // Kalo filter YTD, filter data cuma buat tahun ini
     if (trendFilter === "ytd") {
       const currentYear = new Date().getFullYear().toString();
       result = result.filter((p) => p.month.startsWith(currentYear));
     } else if (trendFilter === "mtd") {
-      // Kalo MTD, saring data buat bulan ini aja
+      // Kalo MTD, filter data buat bulan ini aja
       const currentMonth = new Date().toISOString().slice(0, 7);
       result = result.filter((p) => p.month === currentMonth);
     } else if (trendFilter === "custom") {
-      // Kalo custom, saring berdasarkan input user
+      // Kalo custom, filter berdasarkan input user
       if (trendStartMonth) {
         result = result.filter((p) => p.month >= trendStartMonth);
       }
@@ -140,7 +147,7 @@ export default function ProgramDetailModal({
         result = result.filter((p) => p.month <= trendEndMonth);
       }
     }
-    // Balikin hasil saringan
+    // Balikin hasil filteran
     return result;
   }, [sortedPeriods, trendStartMonth, trendEndMonth, trendFilter]);
 
@@ -225,7 +232,7 @@ export default function ProgramDetailModal({
           hidden: false,
         },
         {
-          label: "Revenue Aktual",
+          label: "Actual Revenue",
           data: filteredTrendPeriods.map((p) => p.financials.revenueActual),
           borderColor: "#1f77b4",
           backgroundColor: "#1f77b4",
@@ -290,8 +297,8 @@ export default function ProgramDetailModal({
       tooltip: {
         callbacks: {
           label: function (context: TooltipItem<"line">) {
-            let label = context.dataset.label || "";
-            let val = context.parsed.y;
+            const label = context.dataset.label || "";
+            const val = context.parsed.y;
             // Kalo tv atau share, ga pake embel2 rupiah
             if (label === "TVR" || label === "Share") {
               return `${label}: ${val}`;
@@ -359,7 +366,7 @@ export default function ProgramDetailModal({
           minBarLength: 10,
         },
         {
-          label: "Aktual",
+          label: "Actual",
           data: [
             currentPeriodData.performanceTV?.actualTVR ?? 0,
             currentPeriodData.performanceTV?.actualShare ?? 0,
@@ -376,24 +383,45 @@ export default function ProgramDetailModal({
     // Kalo ga ada data periode balikin null
     if (!currentPeriodData) return null;
     const pnl = currentPeriodData.financials?.pnl ?? 0;
+
+    // Tampung nilai asli biar gampang dihitung
+    const realValues = [
+      currentPeriodData.financials?.revenueTarget ?? 0,
+      currentPeriodData.financials?.revenueActual ?? 0,
+      currentPeriodData.financials?.costDirect ?? 0,
+      currentPeriodData.performanceDigital?.revenue ?? 0,
+      Math.abs(pnl),
+    ];
+
+    // Totalin semua nilai asli buat nyari patokan persentase buletannya
+    const totalValue = realValues.reduce((sum, val) => sum + val, 0);
+
+    // Kalo totalnya nol langsung balikin isi kosong biar ga error bagi nol
+    if (totalValue === 0) return { labels: [], datasets: [] };
+
+    // Set minimal irisan 2% dari total buletan biar yang jutaan tetep keliatan
+    const VISUAL_MIN_PERCENT = 0.02;
+    const minVisualValue = totalValue * VISUAL_MIN_PERCENT;
+
+    // Kalo kekecilan paksa naik ke batas minimum visual, selain itu biarin normal
+    const visualValues = realValues.map((val) => {
+      if (val === 0) return 0;
+      return val < minVisualValue ? minVisualValue : val;
+    });
+
     // Balikin data donat
     return {
       labels: [
         "Target Rev",
-        "Aktual Rev",
+        "Actual Rev",
         "Cost Direct",
         "Digital Rev",
         "Net PNL",
       ],
       datasets: [
         {
-          data: [
-            currentPeriodData.financials?.revenueTarget ?? 0,
-            currentPeriodData.financials?.revenueActual ?? 0,
-            currentPeriodData.financials?.costDirect ?? 0,
-            currentPeriodData.performanceDigital?.revenue ?? 0,
-            Math.abs(pnl),
-          ],
+          // Pake data visual biar irisan kecil ga tenggelem
+          data: visualValues,
           backgroundColor: [
             "#4bc0c0",
             "#1f77b4",
@@ -652,7 +680,7 @@ export default function ProgramDetailModal({
                   {tvChartData && (
                     <BaseChart
                       type="bar"
-                      title="Performa TV (Target vs Aktual)"
+                      title="Performa TV (Target vs Actual)"
                       data={tvChartData}
                       height={320}
                     />
@@ -788,7 +816,7 @@ export default function ProgramDetailModal({
                     },
                     {
                       id: "rev",
-                      label: "Rev Aktual",
+                      label: "Actual Rev",
                       stat: trendStats.rev,
                       prefix: "Rp",
                     },

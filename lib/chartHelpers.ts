@@ -28,7 +28,7 @@ export const sortAndSlicePrograms = (
   // Maksimal data yang diambil
   limit: number = 5,
 ): ProgramFormData[] => {
-  // Copy array terus sortir berdasar nilai
+  // Copy array terus sortir berdasarkan nilai
   return (
     [...programs]
       // Fungsi sortir
