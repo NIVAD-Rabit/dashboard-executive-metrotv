@@ -176,7 +176,7 @@ export default function BaseChart<T extends ChartType>({
       if (dataset.label?.includes("Top") || dataset.label?.includes("Positif"))
         defaultColor = "#2ca02c";
 
-      // Tentukan warna final
+      // Ganti warna kalo labelnya Target
       const color =
         dataset.label === "Target" || dataset.label === "Taget KPI"
           ? "#5A6B7C"
