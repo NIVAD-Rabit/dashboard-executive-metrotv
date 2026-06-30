@@ -6,6 +6,17 @@ import { ProgramFormData } from "@/schemas/program";
 // Alias tipe buat periode biar ga ngetik panjang panjang
 export type ProgramPeriod = ProgramFormData["periods"][number];
 
+// // Fungsi buat ngitung total nilai dari array periode
+// export const sumPeriodValue = (
+//   // Data program
+//   prog: ProgramFormData,
+//   // Callback buat ambil nilai
+//   valueGetter: (per: ProgramPeriod) => number,
+// ): number => {
+//   // Reducer buat totalin nilai periode
+//   return prog.periods.reduce((s, per) => s + valueGetter(per), 0);
+// };
+
 // Fungsi buat ngitung total nilai dari array periode
 export const sumPeriodValue = (
   // Data program
@@ -14,7 +25,16 @@ export const sumPeriodValue = (
   valueGetter: (per: ProgramPeriod) => number,
 ): number => {
   // Reducer buat totalin nilai periode
-  return prog.periods.reduce((s, per) => s + valueGetter(per), 0);
+  const total = prog.periods.reduce((s, per) => s + valueGetter(per), 0);
+
+  // Validasi buat cek ada nilai desimal atau enggak
+  if (total % 1 !== 0) {
+    // Pembulatan buat ngilangin sisa biner desimal gaib
+    return Math.round(total * 10000) / 10000;
+  }
+
+  // Kembalian buat nilai yang angka bulat
+  return total;
 };
 
 // Fungsi buat ngurutin dan motong array program sesuai nilai kalkulasi
