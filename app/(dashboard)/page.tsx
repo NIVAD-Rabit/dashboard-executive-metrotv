@@ -381,11 +381,19 @@ export default function ExecutiveDashboardPage() {
                       </div>
                       {/* Share detail */}
                       <div className="flex flex-col p-2">
-                        <span className="text-muted-foreground text-lg font-medium">
+                        {/* <span className="text-muted-foreground text-lg font-medium">
                           Target Share:
                         </span>
+                        <span className="font-semibold text-xl text-foreground"> */}
+                        {/* {Math.round(capaianShare)} / {targetShare} */}
+                        {/* {targetShare}
+                        </span> */}
+                        <span className="text-muted-foreground text-lg font-medium">
+                          Capaian Share:
+                        </span>
                         <span className="font-semibold text-xl text-foreground">
-                          {Math.round(capaianShare)}% / {targetShare}%
+                          {/* {Math.round(capaianShare)} / {targetShare} */}
+                          {capaianShare}
                         </span>
                       </div>
                       {/* Status detail */}
