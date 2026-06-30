@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+      import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import StatusBadge from "./Badge";
 
 // Baris deklarasi tipe objek card buat nampilin data statistik
@@ -61,9 +61,9 @@ export default function StatCard({
       */}
 
       {/* Kontainer utama card baru dengan style hover yang bikin efek interaktif */}
-      <div className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl p-6">
+      <div className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl md:p-6 p-4">
         {/* Div buat animasi pulse indikator status */}
-        <span className="absolute top-6 right-6 flex h-2.5 w-2.5">
+        <span className=" absolute md:flex hidden top-6 right-6 flex h-2.5 w-2.5">
           {/* Span ping buat efek animasi */}
           <span
             // Cek status positif buat nentuin warna bg
@@ -77,20 +77,20 @@ export default function StatCard({
         </span>
 
         {/* Teks judul statistik */}
-        <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2 pr-4">
+        <span className="text-sm font-semibold text-muted-foreground truncate uppercase tracking-wider mb-2 pr-4">
           {card.title}
         </span>
         {/* Kontainer buat nilai statistik dan label tren */}
         <div className="flex flex-col 2xl:flex-row 2xl:items-center 2xl:justify-between gap-2 mt-auto">
           {/* Teks nilai statistik utama */}
-          <span className="text-3xl font-black text-foreground tracking-tight">
+          <span className="md:text-3xl font-bold text-xl text-foreground tracking-tight">
             {card.value}
           </span>
 
           {/* Kontainer buat nampilin label tren naik atau turun */}
           <div
             // Cek status positif buat styling background dan warna teks
-            className={`flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+            className={`flex items-center gap-1 text-sm md:font-bold font-semibold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
           >
             {/* Kondisional ikon panah berdasarkan status positif */}
             {card.isPositive ? (
