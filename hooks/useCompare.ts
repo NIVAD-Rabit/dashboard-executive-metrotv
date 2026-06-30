@@ -139,7 +139,7 @@ export function useCompare() {
 
   // Fungsi buat swap posisi program dan periodenya
   const handleSwap = () => {
-    // Kalo dua dua nya kosong balikin
+    // Kalo duanya kosong balikin
     if (!progAId && !progBId) return;
     // Deklarasi temp swap
     const [currentA, currentB, currentPerA, currentPerB] = [

@@ -20,7 +20,7 @@ export default function DetailProgramPage() {
     isLoading,
     // Data program yang lagi dipilih
     selectedProgram,
-    // Fungsi buat ganti program terpilih
+    // Fungsi buat ganti program yang dipilih
     setSelectedProgram,
     // Filter buat dropdown
     selectFilters,
@@ -46,7 +46,7 @@ export default function DetailProgramPage() {
         </div>
       ) : (
         // Div bungkus tabel pas data udah siap
-        <div className="bg-card shadow-sm rounded-2xl p-4">
+        <div className="border border-border bg-card shadow-sm rounded-2xl p-4">
           {/* Komponen filter box periode */}
           <PeriodFilterBox
             // Kirim periode aktif

@@ -53,7 +53,7 @@ import { ProgramFormData, programFormSchema } from "@/schemas/program";
 const getActivePeriod = (
   // Data program
   data: ProgramFormData | undefined,
-  // Periode terpilih
+  // Periode yang dipilih
   selectedPeriod?: string | null,
 ) => {
   // Kalo data gada balikin null
@@ -181,7 +181,7 @@ export function useMasterProgram() {
   const deleteMut = useMutation({
     // Fungsi panggil api hapus
     mutationFn: deleteProgram,
-    // Aksi setelah sukses
+    //Action setelah sukses
     onSuccess: () => {
       // Invalidate data biar update otomatis
       queryClient.invalidateQueries({ queryKey: ["programs"] });
@@ -516,7 +516,7 @@ export function useMasterProgram() {
           if (editingId) return null;
           return (
             <button
-              // Aksi hapus baris
+              //Action hapus baris
               onClick={() => {
                 // Copy data row
                 const currentData = [...rowData];

@@ -542,9 +542,9 @@ export default function ProgramDetailModal({
                 </select>
               </div>
 
-              {/* Grid 3 kartu statistik */}
+              {/* Grid 3 card statistik */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Kartu performa tv */}
+                {/* Card performa tv */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <Tv size={16} /> Performa Layar TV
@@ -562,7 +562,9 @@ export default function ProgramDetailModal({
                       <span className="text-xs text-muted-foreground block">
                         Capaian TVR
                       </span>
-                      <span className="text-xl font-bold text-primary">
+                      <span
+                        className={`text-xl font-bold ${(currentPeriodData?.performanceTV?.actualTVR ?? 0) >= (currentPeriodData?.performanceTV?.targetShare ?? 0) ? "text-green-600" : "text-destructive"}`}
+                      >
                         {currentPeriodData?.performanceTV?.actualTVR ?? 0}
                       </span>
                     </div>
@@ -587,7 +589,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu revenue */}
+                {/* Card revenue */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <DollarSign size={16} /> Revenue Finansial
@@ -629,7 +631,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu profitabilitas */}
+                {/* Card profitabilitas */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <TrendingUp size={16} /> Profitabilitas & Anggaran
@@ -761,7 +763,7 @@ export default function ProgramDetailModal({
               {/* Header kontrol tren */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-border pb-4 gap-4">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity size={16} className="text-primary" /> Multi-Axis
+                  <Activity size={16} className="text-primary" />
                   Trend Historis
                 </h3>
 
@@ -845,7 +847,7 @@ export default function ProgramDetailModal({
                       prefix: "",
                     },
                   ].map((item) => (
-                    // Kartu statistik tren per item
+                    // Card statistik tren per item
                     <div
                       key={item.id}
                       className="flex flex-col p-3 bg-muted/20 rounded-xl border border-border/50"

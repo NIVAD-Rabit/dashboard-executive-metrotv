@@ -12,7 +12,7 @@ import { getTitleFromMenu, MenuGroup } from "@/lib/pageTitle";
 import { useDispatch, useSelector } from "react-redux";
 // Import tipe data buat root state redux
 import { RootState } from "@/store/store";
-// Import aksi buat set buka atau tutup sidebar
+// Import action buat set buka atau tutup sidebar
 import { setSidebarOpen, toggleSidebar } from "@/store/slices/uiSlice";
 // Import data menu groups dari folder konstan
 import { menuGroups } from "@/constants/menuGroups";
@@ -74,7 +74,7 @@ export default function Sidebar(): React.JSX.Element {
             </div>
             {/* Tombol tutup buat mobile */}
             <button
-              // Aksi tutup sidebar
+              //Action tutup sidebar
               onClick={() => dispatch(setSidebarOpen(false))}
               // Styling tombol close
               className="p-2 text-muted-foreground hover:bg-muted rounded-full md:hidden"
@@ -106,7 +106,7 @@ export default function Sidebar(): React.JSX.Element {
                         key={item.href}
                         // Link tujuan
                         href={item.href}
-                        // Aksi tutup sidebar pas menu diklik
+                        //Action tutup sidebar pas menu diklik
                         onClick={() => dispatch(setSidebarOpen(false))}
                         // Styling link item navigasi
                         className={`flex items-center gap-4 px-4 h-14 rounded-full text-sm transition-all ${
@@ -136,7 +136,7 @@ export default function Sidebar(): React.JSX.Element {
           <div className="mt-auto pt-4 border-t border-border/50 border-2 border-cyan-700">
             {/* Tombol profil user */}
             <button
-              // Aksi klik user
+              //Action klik user
               onClick={() => {}}
               // Styling tombol profil
               className="border w-full flex items-center gap-2 px-4 h-14 rounded-full text-sm font-medium hover:bg-secondary hover:text-foreground cursor-pointer group transition-all"

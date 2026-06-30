@@ -20,11 +20,11 @@ import React, {
   // Import hook sinkronisasi store buat handle render server vs client
   useSyncExternalStore,
 } from "react";
-// Import fungsi buat ngirim aksi ke redux
+// Import fungsi buat ngirim action ke redux
 import { useDispatch } from "react-redux";
 // Import hook buat dapetin lokasi url saat ini
 import { usePathname } from "next/navigation";
-// Import aksi buat buka tutup sidebar
+// Import action buat buka tutup sidebar
 import { toggleSidebar } from "@/store/slices/uiSlice";
 // Import hook buat manage tema aplikasi
 import { useTheme } from "next-themes";
@@ -43,7 +43,7 @@ export default function TopHeader() {
   // Ambil lokasi url yang lagi diakses
   const pathname = usePathname();
 
-  // Inisialisasi pengirim aksi ke redux
+  // Inisialisasi pengirim action ke redux
   const dispatch = useDispatch();
 
   // Deteksi apa komponen udah jalan di sisi client

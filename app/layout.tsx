@@ -69,7 +69,7 @@ export default function RootLayout({
                   </div>
                 </main>
               </div>
-              {/* Komponen toaster buat munculin notif aksi user */}
+              {/* Komponen toaster buat munculin notif action user */}
               <Toaster
                 // Posisi notif di atas tengah
                 position="top-center"

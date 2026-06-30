@@ -382,7 +382,7 @@ export default function BaseChart<T extends ChartType>({
           {/* Tombol expand kalo ada fungsi onExpand */}
           {onExpand && (
             <button
-              // Aksi klik expand
+              //Action klik expand
               onClick={onExpand}
               // Style tombol expand
               className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"

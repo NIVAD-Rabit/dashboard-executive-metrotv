@@ -16,7 +16,7 @@ import {
 import { useDispatch } from "react-redux";
 // Import hook buat dapetin path url saat ini
 import { usePathname } from "next/navigation";
-// Import aksi buat toggle sidebar
+// Import action buat toggle sidebar
 import { toggleSidebar } from "@/store/slices/uiSlice";
 // Import hook tema dari next-themes
 import { useTheme } from "next-themes";
@@ -38,7 +38,7 @@ const emptySubscribe = () => () => {};
 export default function Header() {
   // Ambil url path aktif atau set default ke root
   const pathname = usePathname() || "/";
-  // Inisialisasi dispatch untuk kirim aksi redux
+  // Inisialisasi dispatch untuk kirim action redux
   const dispatch = useDispatch();
   // Ambil judul page berdasarkan menu
   const titlePage = getTitleFromMenu(pathname, menuGroups);
@@ -60,7 +60,7 @@ export default function Header() {
       <div className="flex items-center gap-2">
         {/* Tombol menu buat buka sidebar di mobile */}
         <button
-          // Aksi panggil fungsi toggle sidebar
+          //Action panggil fungsi toggle sidebar
           onClick={() => dispatch(toggleSidebar())}
           // Styling tombol mobile
           className="h-12 w-12 flex items-center -ml-2 text-foreground hover:bg-muted rounded-full md:hidden transition-colors cursor-pointer"
@@ -138,7 +138,7 @@ export default function Header() {
       <div className="flex gap-3">
         {/* Tombol filter */}
         <button
-          // Aksi kosong sementara
+          //Action kosong sementara
           onClick={() => ""}
           // Styling tombol filter
           className="border-2 border-cyan-700 flex items-center justify-center gap-2 pl-4 pr-6 h-10 rounded-full cursor-pointer text-sm font-medium transition-colors hover:bg-muted"
@@ -148,7 +148,7 @@ export default function Header() {
         </button>
         {/* Tombol buat nama user */}
         <div
-          // Aksi kosong sementara
+          //Action kosong sementara
           onClick={() => ""}
           // Styling nama user
           className="border-2 border-cyan-700 flex items-center justify-center gap-2 pl-4 pr-6 h-10 rounded-full cursor-pointer text-sm font-medium transition-colors hover:bg-muted"

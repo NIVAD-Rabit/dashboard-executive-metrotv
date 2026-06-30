@@ -23,7 +23,7 @@ export default function StatCard({
   // Ambil objek card dari props
   card,
 }: StatCardProps) {
-  // Balikin elemen jsx buat ngerender kartu statistik
+  // Balikin elemen jsx buat ngerender card statistik
   return (
     // Fragment pembungkus elemen jsx
     <>

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 // Interface buat properti yang dipake di komponen custom select ini
 interface CustomSelectProps {
-  // Nilai terpilih saat ini yang bentuknya string
+  // Nilai yang dipilih saat ini yang bentuknya string
   value: string;
   // Fungsi callback pas nilai di dalem select berubah
   onChange: (val: string) => void;

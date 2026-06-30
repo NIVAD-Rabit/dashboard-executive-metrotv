@@ -124,12 +124,12 @@ export default function CompareProgramPage() {
             {/* Filter cek kalo a menang */}
             {capaianShareA > capaianShareB ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} penonton TV nya lebih banyak
+                {progA.name} penonton TVnya lebih banyak
               </span>
             ) : capaianShareB > capaianShareA ? (
               /* Filter cek kalo b yang menang */
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} penonton TV nya lebih banyak
+                {progB.name} penonton TVnya lebih banyak
               </span>
             ) : (
               "Penonton TV sama banyak"
@@ -156,12 +156,12 @@ export default function CompareProgramPage() {
             {/* Cek kalo a ramean */}
             {digitalViewsA > digitalViewsB ? (
               <span className="text-[#1f77b4] font-bold">
-                {progA.name} penonton sosmed nya lebih rame
+                {progA.name} penonton sosmednya lebih rame
               </span>
             ) : digitalViewsB > digitalViewsA ? (
               /* Cek kalo b ramean */
               <span className="text-[#ff7f0e] font-bold">
-                {progB.name} penonton sosmed nya lebih rame
+                {progB.name} penonton sosmednya lebih rame
               </span>
             ) : (
               "Penonton sosmed sama rame"
@@ -354,7 +354,7 @@ export default function CompareProgramPage() {
             )}
           </div>
         ),
-        // Sorot baris ini nyalain highlight
+        // Highlight baris ini nyalain highlight
         isHighlight: true,
       },
     ];
@@ -376,7 +376,7 @@ export default function CompareProgramPage() {
     // Wadah bungkus polosan layar
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Box khusus filter dropdown di pucuk atas */}
-      <div className="bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-end gap-6 justify-between">
+      <div className="border border-border bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-end gap-6 justify-between">
         {/* Bungkus barisan dropdown pihak a */}
         <div className="w-full flex-1 flex flex-col gap-2">
           {/* Judul kecil milih program */}
@@ -518,9 +518,9 @@ export default function CompareProgramPage() {
             className="lg:col-span-9 bg-card shadow-sm rounded-2xl flex flex-col p-2 min-h-[400px]"
           />
 
-          {/* Area kartu2 kpi pameran the best siapa */}
+          {/* Area card2 kpi pameran the best siapa */}
           <div className="lg:col-span-3 bg-card shadow-sm rounded-2xl flex flex-col p-4 gap-4">
-            {/* Kartu pertama urusan siapa yang tajir pnl */}
+            {/* Card pertama urusan siapa yang tajir pnl */}
             <div
               // Atur warna classnya dinamis narik pnl a vs b
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.financials?.pnl ?? 0, pB?.financials?.pnl ?? 0)}`}
@@ -688,7 +688,7 @@ export default function CompareProgramPage() {
                     <tr
                       // Key mutlak id
                       key={row.id}
-                      // Warnain background kalo disorot ama dibikin beda pas disorot hover
+                      // Warnain background kalo dihighlight ama dibikin beda pas dihighlight hover
                       className={`transition-colors ${row.isHighlight ? "bg-muted/30" : "hover:bg-muted/30"}`}
                     >
                       {/* Kolom data parameter */}
@@ -697,7 +697,7 @@ export default function CompareProgramPage() {
                         <row.icon
                           // Size tetep
                           size={16}
-                          // Warnain icon pas dapet jatah sorot
+                          // Warnain icon pas dapet jatah highlight
                           className={
                             row.isHighlight
                               ? "text-primary"

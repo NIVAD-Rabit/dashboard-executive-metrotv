@@ -86,7 +86,7 @@ export default function ExecutiveDashboardPage() {
 
   // Cari data program buat modal detail
   const activeProgramForModal = useMemo(() => {
-    // Cari program yang id nya sama dengan aktif program
+    // Cari program yang idnya sama dengan aktif program
     return filteredPrograms.find((x) => x.id === activeProgramId) || null;
   }, [filteredPrograms, activeProgramId]);
 
@@ -229,9 +229,9 @@ export default function ExecutiveDashboardPage() {
         </div>
       </div>
 
-      {/* Grid buat kartu statistik */}
+      {/* Grid buat card statistik */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Mapping data kpi jadi kartu statistik */}
+        {/* Mapping data kpi jadi card statistik */}
         {totalKPI.cards.map((card, idx) => (
           // Fragment buat bungkus komponen
           <React.Fragment key={idx}>
@@ -317,7 +317,7 @@ export default function ExecutiveDashboardPage() {
                 height={360}
                 // Style
                 className=""
-                // Aksi buka modal detail
+                //Action buka modal detail
                 onExpand={() => setIsProgramDetailOpen(true)}
               />
             </div>
@@ -519,7 +519,7 @@ export default function ExecutiveDashboardPage() {
         {/* Kontainer kontrol tv */}
         <div className="absolute top-6 right-6 flex gap-2 z-10 bg-background/50 backdrop-blur px-2 py-1 rounded-xl border border-border">
           <button
-            // Aksi buka modal detail
+            //Action buka modal detail
             onClick={() => {
               setChartDetailType("tv");
               setChartDetailTitle("Top & Bottom Performa TV");
