@@ -37,6 +37,7 @@ import { formatBigNumber, formatNumberIndo } from "@/lib/formatters";
 import { ChartData, ChartOptions, TooltipItem } from "chart.js";
 // Import skema tipe data buat form program
 import { ProgramFormData } from "@/schemas/program";
+import { generateMultiMetricDoughnutData } from "@/lib/chartHelpers";
 
 // Interface buat mendefinisikan tipe properti yang masuk ke modal ini
 interface ProgramDetailModalProps {
@@ -379,59 +380,68 @@ export default function ProgramDetailModal({
   }, [currentPeriodData]);
 
   // Memo data grafik donat finansial
+  // Susun data chart donat finansial pake helper multi metrik baru
   const financeDoughnutChartData = useMemo<ChartData<"doughnut"> | null>(() => {
-    // Kalo ga ada data periode balikin null
+    // Kondisional cek kalo ga ada data periode balikin null aja biar ga error
     if (!currentPeriodData) return null;
+
+    // Ambil nilai pnl buat nentuin warna ijo penanda untung atau merah tanda rugi
     const pnl = currentPeriodData.financials?.pnl ?? 0;
 
-    // Tampung nilai asli biar gampang dihitung
-    const realValues = [
-      currentPeriodData.financials?.revenueTarget ?? 0,
-      currentPeriodData.financials?.revenueActual ?? 0,
-      currentPeriodData.financials?.costDirect ?? 0,
-      currentPeriodData.performanceDigital?.revenue ?? 0,
-      Math.abs(pnl),
-    ];
-
-    // Totalin semua nilai asli buat nyari patokan persentase buletannya
-    const totalValue = realValues.reduce((sum, val) => sum + val, 0);
-
-    // Kalo totalnya nol langsung balikin isi kosong biar ga error bagi nol
-    if (totalValue === 0) return { labels: [], datasets: [] };
-
-    // Set minimal irisan 2% dari total buletan biar yang jutaan tetep keliatan
-    const VISUAL_MIN_PERCENT = 0.02;
-    const minVisualValue = totalValue * VISUAL_MIN_PERCENT;
-
-    // Kalo kekecilan paksa naik ke batas minimum visual, selain itu biarin normal
-    const visualValues = realValues.map((val) => {
-      if (val === 0) return 0;
-      return val < minVisualValue ? minVisualValue : val;
-    });
-
-    // Balikin data donat
-    return {
-      labels: [
-        "Target Rev",
-        "Actual Rev",
-        "Cost Direct",
-        "Digital Rev",
-        "Net PNL",
-      ],
-      datasets: [
+    // Balikin hasil rakitan chart donat multi metrik dari fungsi helper
+    return generateMultiMetricDoughnutData(
+      // Masukin objek data periode aktif sebagai sumber penarik nilai
+      currentPeriodData,
+      // Array konfigurasi list irisan metrik buat diagram donat
+      [
+        // Objek konfigurasi irisan pertama buat target omset
         {
-          // Pake data visual biar irisan kecil ga tenggelem
-          data: visualValues,
-          backgroundColor: [
-            "#4bc0c0",
-            "#1f77b4",
-            "#ff7f0e",
-            "#8b5cf6",
-            pnl >= 0 ? "#16a34a" : "#d62728",
-          ],
+          // Teks penanda nama potongan target revenue
+          label: "Target Rev",
+          // Callback narik nilai uang target revenue dari sumber data
+          getter: (data) => data.financials?.revenueTarget ?? 0,
+          // Kode heksadesimal toska buat warna irisan target
+          color: "#4bc0c0",
+        },
+        // Objek konfigurasi irisan kedua buat omset tv riil
+        {
+          // Teks penanda nama potongan actual revenue
+          label: "Actual Rev",
+          // Callback penarik nilai capaian revenue tv
+          getter: (data) => data.financials?.revenueActual ?? 0,
+          // Kode warna biru tua buat potongan capaian tv
+          color: "#1f77b4",
+        },
+        // Objek konfigurasi irisan ketiga buat pengeluaran produksi
+        {
+          // Teks penanda nama potongan pengeluaran modal
+          label: "Cost Direct",
+          // Callback narik jumlah duit pengeluaran cost direct
+          getter: (data) => data.financials?.costDirect ?? 0,
+          // Kode heksadesimal oren buat tanda pengeluaran
+          color: "#ff7f0e",
+        },
+        // Objek konfigurasi irisan keempat buat omset sosmed
+        {
+          // Teks penanda nama potongan omset digital
+          label: "Digital Rev",
+          // Callback narik nilai pendapatan dari platform digital
+          getter: (data) => data.performanceDigital?.revenue ?? 0,
+          // Kode warna ungu buat penanda pundi digital
+          color: "#8b5cf6",
+        },
+        // Objek konfigurasi irisan kelima buat laba rugi bersih pnl
+        {
+          // Teks penanda nama irisan pnl
+          label: "Net PNL",
+          // Callback narik nilai keuntungan bersih pnl
+          getter: (data) => data.financials?.pnl ?? 0,
+          // Kondisional operator penentu warna irisan ijo pas untung dan merah pas rugi
+          color: pnl >= 0 ? "#16a34a" : "#d62728",
         },
       ],
-    };
+    );
+    // Array dependensi mantau pembaruan data pas user ganti periode
   }, [currentPeriodData]);
 
   // Memo konfigurasi tooltip donat

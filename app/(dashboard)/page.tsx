@@ -73,7 +73,7 @@ export default function ExecutiveDashboardPage() {
     setChartDetailType,
     chartDetailTitle,
     setChartDetailTitle,
-    allPnlData,
+    topProgramsDoughnutData,
   } = useDashboard();
 
   // Wadah state buat nilai tab top tv
@@ -312,7 +312,7 @@ export default function ExecutiveDashboardPage() {
                 // Judul
                 title={`Struktur Performa Program (${selectedCategory})`}
                 // Data donat
-                data={allPnlData}
+                data={detailProgramData}
                 // Tinggi
                 height={360}
                 // Style
@@ -594,6 +594,21 @@ export default function ExecutiveDashboardPage() {
           />
         </div>
       </section>
+
+      {/* Buka tag pembungkus utama buat section area layouting grafik baru */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-14">
+        {/* Panggil komponen ChartCard buat nampil grafik berbentuk donat */}
+        <ChartCard
+          // Tentukan tipe jenis visualisasi diagram grafik berbentuk doughnut
+          type="doughnut"
+          // Set isi string teks buat judul komponen card grafik donat
+          title="Kontribusi PNL Seluruh Program"
+          // Masukin properti data chart donat dari variabel hasil hook tadi
+          data={topProgramsDoughnutData}
+          // Atur besaran ukuran tinggi card area grafik dalam piksel
+          height={400}
+        />
+      </div>
 
       {/* Modal detail chart */}
       <ChartDetailModal
