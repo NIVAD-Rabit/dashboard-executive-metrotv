@@ -595,9 +595,8 @@ export default function ExecutiveDashboardPage() {
         </div>
       </section>
 
-      {/* Buka tag pembungkus utama buat section area layouting grafik baru */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-14">
-        {/* Panggil komponen ChartCard buat nampil grafik berbentuk donat */}
+      {/* Grafik donat pnl */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-14">
         <ChartCard
           // Tentukan tipe jenis visualisasi diagram grafik berbentuk doughnut
           type="doughnut"
@@ -608,7 +607,7 @@ export default function ExecutiveDashboardPage() {
           // Atur besaran ukuran tinggi card area grafik dalam piksel
           height={400}
         />
-      </div>
+      </div> */}
 
       {/* Modal detail chart */}
       <ChartDetailModal
