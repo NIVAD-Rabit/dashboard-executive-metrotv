@@ -1,13 +1,12 @@
 // Aktivasi mode client buat jalanin hook react
 "use client";
 
-// Import react dan hooks buat state
 import React, { useState, useSyncExternalStore } from "react";
 // Import createPortal buat ngerender modal di atas body
 import { createPortal } from "react-dom";
 // Import hook tema dari next-themes
 import { useTheme } from "next-themes";
-// Import kumpulan ikon dari lucide
+// Import kumpulan icon dari lucide
 import {
   Plus,
   X,
@@ -40,7 +39,7 @@ import { ColumnConfig } from "@/components/shared/SmartTable";
 // Fungsi buat sinkronisasi store biar aman pas render
 const emptySubscribe = () => () => {};
 
-// Komponen halaman utama master program
+// Komponen page utama master program
 export default function MasterProgramPage() {
   // Ambil tema aplikasi dari next themes
   const { theme } = useTheme();
@@ -55,7 +54,7 @@ export default function MasterProgramPage() {
   const [detailProgramData, setDetailProgramData] =
     useState<ProgramFormData | null>(null);
 
-  // Ambil semua state dan aksi dari hook master program
+  // Ambil semua state danAction dari hook master program
   const {
     programs,
     isLoading,
@@ -105,7 +104,7 @@ export default function MasterProgramPage() {
     return col;
   });
 
-  // Render halaman master program
+  // Render page master program
   return (
     // Container utama
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
@@ -119,7 +118,7 @@ export default function MasterProgramPage() {
         <>
           {/* Tombol buat tambah data baru */}
           <button
-            // Panggil aksi buka modal tambah
+            // Panggil action buka modal tambah
             onClick={actions.openAddModal}
             // Style tombol floating
             className="fixed bottom-8 right-8 z-[40] flex items-center gap-3 bg-primary text-primary-foreground px-6 py-2.5 rounded-full font-bold hover:opacity-90 transition-all hover:-translate-y-1 hover:shadow-xl cursor-pointer shadow-lg"
@@ -128,14 +127,14 @@ export default function MasterProgramPage() {
           </button>
 
           {/* Container tabel */}
-          <div className="bg-card shadow-sm rounded-2xl p-4">
+          <div className="border border-border bg-card shadow-sm rounded-2xl p-4">
             {/* Filter periode */}
             <div className="flex items-center gap-4 mb-4 px-2">
               <label className="text-sm font-bold text-foreground flex items-center gap-2">
                 Filter Tabel Periode:
               </label>
               <select
-                // Nilai periode terpilih
+                // Nilai periode yang dipilih
                 value={selectedPeriod}
                 // Update periode saat berubah
                 onChange={(e) => setSelectedPeriod(e.target.value)}
@@ -198,7 +197,7 @@ export default function MasterProgramPage() {
       <ProgramDetailModal
         // Cek program ada ga buat modal
         isOpen={!!detailProgramData}
-        // Aksi tutup modal
+        //Action tutup modal
         onClose={() => setDetailProgramData(null)}
         // Data program
         program={detailProgramData}
@@ -270,7 +269,7 @@ export default function MasterProgramPage() {
                 {/* Tombol tambah baris */}
                 {!editingId && (
                   <button
-                    // Aksi tambah baris
+                    //Action tambah baris
                     onClick={actions.addRow}
                     // Styling tombol
                     className="mt-4 flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 hover:bg-primary/10 px-4 py-2 rounded-xl transition-colors cursor-pointer border border-dashed border-primary/40 w-fit"

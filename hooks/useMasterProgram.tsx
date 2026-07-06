@@ -14,10 +14,10 @@ import {
   // Import client query
   useQueryClient,
 } from "@tanstack/react-query";
-// Import ikon edit dari lucide
+// Import icon edit dari lucide
 import {
   Edit2,
-  // Import ikon trash dari lucide
+  // Import icon trash dari lucide
   Trash2,
 } from "lucide-react";
 // Import komponen grid dari ag grid react
@@ -53,7 +53,7 @@ import { ProgramFormData, programFormSchema } from "@/schemas/program";
 const getActivePeriod = (
   // Data program
   data: ProgramFormData | undefined,
-  // Periode terpilih
+  // Periode yang dipilih
   selectedPeriod?: string | null,
 ) => {
   // Kalo data gada balikin null
@@ -181,7 +181,7 @@ export function useMasterProgram() {
   const deleteMut = useMutation({
     // Fungsi panggil api hapus
     mutationFn: deleteProgram,
-    // Aksi setelah sukses
+    //Action setelah sukses
     onSuccess: () => {
       // Invalidate data biar update otomatis
       queryClient.invalidateQueries({ queryKey: ["programs"] });
@@ -193,7 +193,7 @@ export function useMasterProgram() {
   });
 
   // Data baris kosong default buat nambah program
-  const defaultEmptyRow: ProgramFormData = {
+  const createEmptyRow = (selectedPeriod: string): ProgramFormData => ({
     // Nama kosong
     name: "",
     // Kategori default
@@ -231,18 +231,19 @@ export function useMasterProgram() {
         status: "Normal",
       },
     ],
-  };
+  });
 
   // Fungsi buat buka modal mode tambah
   const openAddModal = () => {
     // Reset id edit
     setEditingId(null);
     // Setup data kosong 5 baris
-    setRowData(
-      Array(5)
-        .fill(null)
-        .map(() => JSON.parse(JSON.stringify(defaultEmptyRow))),
-    );
+    const initialRows = Array(5)
+      .fill(null)
+      .map(() => createEmptyRow(selectedPeriod));
+
+    setRowData(initialRows);
+
     // Buka modal
     setIsModalOpen(true);
   };
@@ -275,8 +276,9 @@ export function useMasterProgram() {
 
   // Fungsi buat nambah baris kosong di tabel
   const addRow = () => {
+    const newRow = createEmptyRow(selectedPeriod);
     // Gabung data lama sama baris baru
-    const newData = [...rowData, JSON.parse(JSON.stringify(defaultEmptyRow))];
+    const newData = [...rowData, newRow];
     // Update state row
     setRowData(newData);
     // Update grid api
@@ -410,7 +412,7 @@ export function useMasterProgram() {
                 )}
               </span>
               <span className="font-medium text-primary">
-                Actual, Rp{" "}
+                Capaian, Rp{" "}
                 {(latest?.financials?.revenueActual ?? 0).toLocaleString(
                   "id-ID",
                 )}
@@ -514,7 +516,7 @@ export function useMasterProgram() {
           if (editingId) return null;
           return (
             <button
-              // Aksi hapus baris
+              //Action hapus baris
               onClick={() => {
                 // Copy data row
                 const currentData = [...rowData];
@@ -528,7 +530,7 @@ export function useMasterProgram() {
               // Style tombol
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded cursor-pointer transition-colors"
             >
-              {/* Ikon trash */}
+              {/* Icon trash */}
               <Trash2 size={16} />
             </button>
           );
@@ -623,21 +625,21 @@ export function useMasterProgram() {
       },
       {
         // Judul header
-        headerName: "Actual TVR",
+        headerName: "Capaian TVR",
         // Lebar kolom
         width: 130,
         // Aktifin edit
         editable: true,
         // Parser angka
         valueParser: numberParser,
-        // Ambil data actual tvr
+        // Ambil datacapaian tvr
         valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.actualTVR ?? 0,
-        // Setter actual tvr
+        // Settercapaian tvr
         valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual tvr
+          // Kalo periode ada setcapaian tvr
           if (period) {
             period.performanceTV.actualTVR = params.newValue ?? 0;
             return true;
@@ -671,21 +673,21 @@ export function useMasterProgram() {
       },
       {
         // Judul header
-        headerName: "Actual Share (%)",
+        headerName: "Capaian Share (%)",
         // Lebar kolom
         width: 140,
         // Aktifin edit
         editable: true,
         // Parser angka
         valueParser: numberParser,
-        // Ambil data actual share
+        // Ambil datacapaian share
         valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.actualShare ?? 0,
-        // Setter actual share
+        // Settercapaian share
         valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual share
+          // Kalo periode ada setcapaian share
           if (period) {
             period.performanceTV.actualShare = params.newValue ?? 0;
             return true;
@@ -791,21 +793,21 @@ export function useMasterProgram() {
       },
       {
         // Judul header
-        headerName: "Actual Rev (Rp)",
+        headerName: "Capaian Rev (Rp)",
         // Lebar kolom
         width: 160,
         // Aktifin edit
         editable: true,
         // Parser angka
         valueParser: numberParser,
-        // Ambil data actual rev
+        // Ambil datacapaian rev
         valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
           getActivePeriod(params.data, selectedPeriod)?.financials
             ?.revenueActual ?? 0,
-        // Setter actual rev
+        // Settercapaian rev
         valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual rev
+          // Kalo periode ada setcapaian rev
           if (period) {
             period.financials.revenueActual = params.newValue ?? 0;
             return true;

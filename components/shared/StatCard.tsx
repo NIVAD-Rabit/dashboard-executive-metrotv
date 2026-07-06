@@ -24,7 +24,7 @@ export default function StatCard({
   // Ambil objek card dari props
   card,
 }: StatCardProps) {
-  // Balikin elemen jsx buat ngerender kartu statistik
+  // Balikin elemen jsx buat ngerender card statistik
   return (
     // Fragment pembungkus elemen jsx
     <>
@@ -61,7 +61,7 @@ export default function StatCard({
       */}
 
       {/* Kontainer utama card baru dengan style hover yang bikin efek interaktif */}
-      <div className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl p-6">
+      <div className="border border-border flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl p-6">
         {/* Div buat animasi pulse indikator status */}
         <span className="absolute top-6 right-6 flex h-2.5 w-2.5">
           {/* Span ping buat efek animasi */}
@@ -92,7 +92,7 @@ export default function StatCard({
             // Cek status positif buat styling background dan warna teks
             className={`flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
           >
-            {/* Kondisional ikon panah berdasarkan status positif */}
+            {/* Kondisional icon arrow berdasarkan status positif */}
             {card.isPositive ? (
               <ArrowUpRight size={16} strokeWidth={2.5} />
             ) : (

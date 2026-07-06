@@ -1,6 +1,5 @@
 "use client";
 
-// Import React buat bikin komponen
 import React, {
   // Import hook useEffect buat jalanin side effect
   useEffect,
@@ -13,7 +12,7 @@ import React, {
 } from "react";
 // Import createPortal buat ngerender modal di level root dom
 import { createPortal } from "react-dom";
-// Import koleksi ikon dari lucide react
+// Import koleksi icon dari lucide react
 import {
   X,
   Tv,
@@ -38,6 +37,7 @@ import { formatBigNumber, formatNumberIndo } from "@/lib/formatters";
 import { ChartData, ChartOptions, TooltipItem } from "chart.js";
 // Import skema tipe data buat form program
 import { ProgramFormData } from "@/schemas/program";
+import { generateMultiMetricDoughnutData } from "@/lib/chartHelpers";
 
 // Interface buat mendefinisikan tipe properti yang masuk ke modal ini
 interface ProgramDetailModalProps {
@@ -77,6 +77,7 @@ export default function ProgramDetailModal({
   const [trendEndMonth, setTrendEndMonth] = useState<string>("");
   // State buat simpen pilihan filter tren
   const [trendFilter, setTrendFilter] = useState<string>("all");
+
   // State buat simpen bulan yang lagi aktif dipilih
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   // State buat ganti tab antara overview atau tren
@@ -90,13 +91,20 @@ export default function ProgramDetailModal({
     return [...program.periods].sort((a, b) => a.month.localeCompare(b.month));
   }, [program]);
 
-  // Efek buat set bulan terpilih ke periode paling baru pas modal buka
-  useEffect(() => {
-    // Kalo ada data periode, set ke bulan terakhir
-    if (sortedPeriods.length > 0) {
-      setSelectedMonth(sortedPeriods[sortedPeriods.length - 1].month);
-    }
-  }, [sortedPeriods, isOpen]);
+  // Memo buat bulan terakhir dari data periode
+  const lastPeriodMonth = useMemo(
+    () => sortedPeriods[sortedPeriods.length - 1]?.month ?? "",
+    [sortedPeriods],
+  );
+
+  // Bulan yang dipakai sebenernya, fallback ke periode terbaru kalo pilihan kosong atau ga valid
+  const effectiveSelectedMonth = useMemo(
+    () =>
+      selectedMonth && sortedPeriods.some((p) => p.month === selectedMonth)
+        ? selectedMonth
+        : lastPeriodMonth,
+    [selectedMonth, sortedPeriods, lastPeriodMonth],
+  );
 
   // Memo buat dapetin data periode spesifik yang lagi dipilih
   const currentPeriodData = useMemo(() => {
@@ -104,10 +112,10 @@ export default function ProgramDetailModal({
     if (!program?.periods) return null;
     // Cari periode yang bulan-nya cocok sama pilihan user
     return (
-      program.periods.find((p) => p.month === selectedMonth) ||
+      program.periods.find((p) => p.month === effectiveSelectedMonth) ||
       sortedPeriods[sortedPeriods.length - 1]
     );
-  }, [program, selectedMonth, sortedPeriods]);
+  }, [program, effectiveSelectedMonth, sortedPeriods]);
 
   // Memo buat bikin string display periode yang lagi aktif
   const periodDisplay = useMemo(() => {
@@ -123,16 +131,16 @@ export default function ProgramDetailModal({
   const filteredTrendPeriods = useMemo(() => {
     // Awalnya ambil data periode yang udah urut
     let result = sortedPeriods;
-    // Kalo filter YTD, saring data cuma buat tahun ini
+    // Kalo filter YTD, filter data cuma buat tahun ini
     if (trendFilter === "ytd") {
       const currentYear = new Date().getFullYear().toString();
       result = result.filter((p) => p.month.startsWith(currentYear));
     } else if (trendFilter === "mtd") {
-      // Kalo MTD, saring data buat bulan ini aja
+      // Kalo MTD, filter data buat bulan ini aja
       const currentMonth = new Date().toISOString().slice(0, 7);
       result = result.filter((p) => p.month === currentMonth);
     } else if (trendFilter === "custom") {
-      // Kalo custom, saring berdasarkan input user
+      // Kalo custom, filter berdasarkan input user
       if (trendStartMonth) {
         result = result.filter((p) => p.month >= trendStartMonth);
       }
@@ -140,7 +148,7 @@ export default function ProgramDetailModal({
         result = result.filter((p) => p.month <= trendEndMonth);
       }
     }
-    // Balikin hasil saringan
+    // Balikin hasil filteran
     return result;
   }, [sortedPeriods, trendStartMonth, trendEndMonth, trendFilter]);
 
@@ -225,7 +233,7 @@ export default function ProgramDetailModal({
           hidden: false,
         },
         {
-          label: "Revenue Aktual",
+          label: "Capaian Revenue",
           data: filteredTrendPeriods.map((p) => p.financials.revenueActual),
           borderColor: "#1f77b4",
           backgroundColor: "#1f77b4",
@@ -290,8 +298,8 @@ export default function ProgramDetailModal({
       tooltip: {
         callbacks: {
           label: function (context: TooltipItem<"line">) {
-            let label = context.dataset.label || "";
-            let val = context.parsed.y;
+            const label = context.dataset.label || "";
+            const val = context.parsed.y;
             // Kalo tv atau share, ga pake embel2 rupiah
             if (label === "TVR" || label === "Share") {
               return `${label}: ${val}`;
@@ -359,7 +367,7 @@ export default function ProgramDetailModal({
           minBarLength: 10,
         },
         {
-          label: "Aktual",
+          label: "Capaian",
           data: [
             currentPeriodData.performanceTV?.actualTVR ?? 0,
             currentPeriodData.performanceTV?.actualShare ?? 0,
@@ -372,38 +380,68 @@ export default function ProgramDetailModal({
   }, [currentPeriodData]);
 
   // Memo data grafik donat finansial
+  // Susun data chart donat finansial pake helper multi metrik baru
   const financeDoughnutChartData = useMemo<ChartData<"doughnut"> | null>(() => {
-    // Kalo ga ada data periode balikin null
+    // Kondisional cek kalo ga ada data periode balikin null aja biar ga error
     if (!currentPeriodData) return null;
+
+    // Ambil nilai pnl buat nentuin warna ijo penanda untung atau merah tanda rugi
     const pnl = currentPeriodData.financials?.pnl ?? 0;
-    // Balikin data donat
-    return {
-      labels: [
-        "Target Rev",
-        "Aktual Rev",
-        "Cost Direct",
-        "Digital Rev",
-        "Net PNL",
-      ],
-      datasets: [
+
+    // Balikin hasil rakitan chart donat multi metrik dari fungsi helper
+    return generateMultiMetricDoughnutData(
+      // Masukin objek data periode aktif sebagai sumber penarik nilai
+      currentPeriodData,
+      // Array konfigurasi list irisan metrik buat diagram donat
+      [
+        // Objek konfigurasi irisan pertama buat target omset
         {
-          data: [
-            currentPeriodData.financials?.revenueTarget ?? 0,
-            currentPeriodData.financials?.revenueActual ?? 0,
-            currentPeriodData.financials?.costDirect ?? 0,
-            currentPeriodData.performanceDigital?.revenue ?? 0,
-            Math.abs(pnl),
-          ],
-          backgroundColor: [
-            "#4bc0c0",
-            "#1f77b4",
-            "#ff7f0e",
-            "#8b5cf6",
-            pnl >= 0 ? "#16a34a" : "#d62728",
-          ],
+          // Teks penanda nama potongan target revenue
+          label: "Target Rev",
+          // Callback narik nilai uang target revenue dari sumber data
+          getter: (data) => data.financials?.revenueTarget ?? 0,
+          // Kode heksadesimal toska buat warna irisan target
+          color: "#4bc0c0",
+        },
+        // Objek konfigurasi irisan kedua buat omset tv riil
+        {
+          // Teks penanda nama potongan capaian revenue
+          label: "Capaian Rev",
+          // Callback penarik nilai capaian revenue tv
+          getter: (data) => data.financials?.revenueActual ?? 0,
+          // Kode warna biru tua buat potongan capaian tv
+          color: "#1f77b4",
+        },
+        // Objek konfigurasi irisan ketiga buat pengeluaran produksi
+        {
+          // Teks penanda nama potongan pengeluaran modal
+          label: "Cost Direct",
+          // Callback narik jumlah duit pengeluaran cost direct
+          getter: (data) => data.financials?.costDirect ?? 0,
+          // Kode heksadesimal oren buat tanda pengeluaran
+          color: "#ff7f0e",
+        },
+        // Objek konfigurasi irisan keempat buat omset sosmed
+        {
+          // Teks penanda nama potongan omset digital
+          label: "Digital Rev",
+          // Callback narik nilai pendapatan dari platform digital
+          getter: (data) => data.performanceDigital?.revenue ?? 0,
+          // Kode warna ungu buat penanda pundi digital
+          color: "#8b5cf6",
+        },
+        // Objek konfigurasi irisan kelima buat laba rugi bersih pnl
+        {
+          // Teks penanda nama irisan pnl
+          label: "Net PNL",
+          // Callback narik nilai keuntungan bersih pnl
+          getter: (data) => data.financials?.pnl ?? 0,
+          // Kondisional operator penentu warna irisan ijo pas untung dan merah pas rugi
+          color: pnl >= 0 ? "#16a34a" : "#d62728",
         },
       ],
-    };
+    );
+    // Array dependensi mantau pembaruan data pas user ganti periode
   }, [currentPeriodData]);
 
   // Memo konfigurasi tooltip donat
@@ -514,9 +552,9 @@ export default function ProgramDetailModal({
                 </select>
               </div>
 
-              {/* Grid 3 kartu statistik */}
+              {/* Grid 3 card statistik */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Kartu performa tv */}
+                {/* Card performa tv */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <Tv size={16} /> Performa Layar TV
@@ -534,7 +572,9 @@ export default function ProgramDetailModal({
                       <span className="text-xs text-muted-foreground block">
                         Capaian TVR
                       </span>
-                      <span className="text-xl font-bold text-primary">
+                      <span
+                        className={`text-xl font-bold ${(currentPeriodData?.performanceTV?.actualTVR ?? 0) >= (currentPeriodData?.performanceTV?.targetShare ?? 0) ? "text-green-600" : "text-destructive"}`}
+                      >
                         {currentPeriodData?.performanceTV?.actualTVR ?? 0}
                       </span>
                     </div>
@@ -559,7 +599,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu revenue */}
+                {/* Card revenue */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <DollarSign size={16} /> Revenue Finansial
@@ -601,7 +641,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu profitabilitas */}
+                {/* Card profitabilitas */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <TrendingUp size={16} /> Profitabilitas & Anggaran
@@ -652,7 +692,7 @@ export default function ProgramDetailModal({
                   {tvChartData && (
                     <BaseChart
                       type="bar"
-                      title="Performa TV (Target vs Aktual)"
+                      title="Performa TV (Target vs Capaian)"
                       data={tvChartData}
                       height={320}
                     />
@@ -733,7 +773,7 @@ export default function ProgramDetailModal({
               {/* Header kontrol tren */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-border pb-4 gap-4">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity size={16} className="text-primary" /> Multi-Axis
+                  <Activity size={16} className="text-primary" />
                   Trend Historis
                 </h3>
 
@@ -788,7 +828,7 @@ export default function ProgramDetailModal({
                     },
                     {
                       id: "rev",
-                      label: "Rev Aktual",
+                      label: "Capaian Rev",
                       stat: trendStats.rev,
                       prefix: "Rp",
                     },
@@ -817,7 +857,7 @@ export default function ProgramDetailModal({
                       prefix: "",
                     },
                   ].map((item) => (
-                    // Kartu statistik tren per item
+                    // Card statistik tren per item
                     <div
                       key={item.id}
                       className="flex flex-col p-3 bg-muted/20 rounded-xl border border-border/50"

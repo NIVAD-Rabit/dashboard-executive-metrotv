@@ -1,21 +1,21 @@
-// Import ikon house dari lucide
+// Import icon house dari lucide
 import {
   House,
-  // Import ikon bar chart 2 dari lucide
+  // Import icon bar chart 2 dari lucide
   BarChart2,
-  // Import ikon git compare dari lucide
+  // Import icon git compare dari lucide
   GitCompare,
-  // Import ikon database dari lucide
+  // Import icon database dari lucide
   Database,
-  // Import ikon shield alert dari lucide
+  // Import icon shield alert dari lucide
   ShieldAlert,
-  // Import ikon line chart dari lucide
+  // Import icon line chart dari lucide
   LineChart,
-  // Import ikon bar chart 3 dari lucide
+  // Import icon bar chart 3 dari lucide
   BarChart3,
-  // Import ikon x dari lucide
+  // Import icon x dari lucide
   X,
-  // Import ikon layout dashboard dari lucide
+  // Import icon layout dashboard dari lucide
   LayoutDashboard,
 } from "lucide-react";
 

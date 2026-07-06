@@ -1,41 +1,30 @@
 "use client";
 
-// Import ikon dashboard dari lucide
+// Import icon dashboard dari lucide
 import {
   LayoutDashboard,
-  // Import ikon monitor buat media
   MonitorPlay,
-  // Import ikon git compare buat bandingin data
   GitCompare,
-  // Import ikon barchart buat visualisasi
   BarChart3,
-  // Import ikon kalender buat tanggal
   Calendar,
-  // Import ikon shield alert buat notifikasi
   ShieldAlert,
-  // Import ikon settings buat konfigurasi
   Settings,
-  // Import ikon moon buat mode gelap
   Moon,
-  // Import ikon sun buat mode terang
   Sun,
-  // Import ikon menu buat navigasi mobile
   Menu,
-  // Import ikon database buat akses data
   Database,
 } from "lucide-react";
-// Import react buat bangun komponen
 import React, {
   // Import hook state buat nyimpen data lokal
   useState,
   // Import hook sinkronisasi store buat handle render server vs client
   useSyncExternalStore,
 } from "react";
-// Import fungsi buat ngirim aksi ke redux
+// Import fungsi buat ngirim action ke redux
 import { useDispatch } from "react-redux";
 // Import hook buat dapetin lokasi url saat ini
 import { usePathname } from "next/navigation";
-// Import aksi buat buka tutup sidebar
+// Import action buat buka tutup sidebar
 import { toggleSidebar } from "@/store/slices/uiSlice";
 // Import hook buat manage tema aplikasi
 import { useTheme } from "next-themes";
@@ -43,7 +32,7 @@ import { useTheme } from "next-themes";
 import { menuGroups } from "@/constants/menuGroups";
 // Import komponen gambar dari next buat optimasi
 import Image from "next/image";
-// Import komponen link buat pindah halaman
+// Import komponen link buat pindah page
 import Link from "next/link";
 
 // Fungsi buat subscribe kosong supaya memori tetap anteng
@@ -54,7 +43,7 @@ export default function TopHeader() {
   // Ambil lokasi url yang lagi diakses
   const pathname = usePathname();
 
-  // Inisialisasi pengirim aksi ke redux
+  // Inisialisasi pengirim action ke redux
   const dispatch = useDispatch();
 
   // Deteksi apa komponen udah jalan di sisi client
@@ -71,7 +60,7 @@ export default function TopHeader() {
   const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS"];
   // Olah menu groups jadi menu utama yang flat
   const mainTabs = menuGroups
-    // Saring grup berdasarkan daftar yang udah disiapin
+    // Filter grup berdasarkan daftar yang udah disiapin
     .filter((menu) => groups.includes(menu.group))
     // Bongkar menu items biar rata jadi satu array
     .flatMap((menu) => menu.items);
@@ -112,7 +101,7 @@ export default function TopHeader() {
             />
             {/* Teks MTV buat brand */}
             <span className="font-bold">MTV</span>
-            {/* Teks executive buat keterangan halaman */}
+            {/* Teks executive buat keterangan page */}
             <span className="font-normal text-muted-foreground">Executive</span>
           </Link>
         </div>
@@ -138,7 +127,7 @@ export default function TopHeader() {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >
-                {/* Ikon tiap menu dengan stroke tebal kalo aktif */}
+                {/* Icon tiap menu dengan stroke tebal kalo aktif */}
                 <tab.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                 {/* Label nama menu */}
                 {tab.name}
@@ -149,7 +138,7 @@ export default function TopHeader() {
 
         {/* Kontainer sisi kanan buat tools */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Kontainer ikon tool yang disembunyiin di mobile */}
+          {/* Kontainer icon tool yang disembunyiin di mobile */}
           <div className="hidden lg:flex items-center gap-1 border-r border-border/50 pr-2 mr-1">
             {/* Loop render menu tools */}
             {toolTabs.map((tab) => (
@@ -168,7 +157,7 @@ export default function TopHeader() {
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {/* Ikon tool */}
+                {/* Icon tool */}
                 <tab.icon size={20} />
               </Link>
             ))}
@@ -202,7 +191,7 @@ export default function TopHeader() {
                   : "bg-card border-border text-muted-foreground"
               }`}
             >
-              {/* Ikon kecil untuk navigasi mobile */}
+              {/* Icon kecil untuk navigasi mobile */}
               <tab.icon size={14} />
               {/* Nama menu di mobile */}
               {tab.name}

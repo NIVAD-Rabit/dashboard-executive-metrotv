@@ -1,6 +1,5 @@
 "use client";
 
-// Import react
 import React, {
   // Import hook referensi buat akses dom
   useRef,
@@ -9,7 +8,7 @@ import React, {
 } from "react";
 // Import fungsi merge dari lodash buat gabungin objek opsi chart
 import merge from "lodash/merge";
-// Import ikon buat kontrol zoom
+// Import icon buat kontrol zoom
 import { Maximize2, ZoomIn, ZoomOut, RefreshCcw } from "lucide-react";
 // Import modul chart js buat bikin grafik
 import {
@@ -42,6 +41,8 @@ import {
 import { Chart } from "react-chartjs-2";
 // Import helper format angka buat grafik
 import { formatBigNumber, formatTooltipLabel } from "@/lib/formatters";
+// Import palet warna untuk chart
+import { T60_COLORS } from "@/constants/colorsChart";
 
 // Daftarin semua scale sama plugin ke core chart js biar fitur aktif
 ChartJS.register(
@@ -72,30 +73,6 @@ if (typeof window !== "undefined") {
     ChartJS.register(plugin.default);
   });
 }
-
-// Warna palet buat grafik referensi dari tableu
-const T10_COLORS = [
-  // Biru
-  "#1f77b4",
-  // Oren
-  "#ff7f0e",
-  // Hijau
-  "#2ca02c",
-  // Merah
-  "#d62728",
-  // Ungu
-  "#9467bd",
-  // Cokelat
-  "#8c564b",
-  // Pink
-  "#e377c2",
-  // Slate
-  "#5A6B7C",
-  // Hijau zaitun
-  "#bcbd22",
-  // Cyan
-  "#17becf",
-];
 
 // Struktur interface buat properti komponen grafik
 interface BaseChartProps<T extends ChartType> {
@@ -161,12 +138,12 @@ export default function BaseChart<T extends ChartType>({
     ...data,
     // Map tiap dataset buat nambahin style
     datasets: data.datasets.map((dataset, index) => {
-      // Cek apakah tipenya grafik bulat
+      // Cek apakah tipenya grafik bulet
       const isPieOrDoughnut =
         type === "pie" || type === "doughnut" || type === "polarArea";
 
       // Ambil warna default dari palet
-      let defaultColor = T10_COLORS[index % T10_COLORS.length];
+      let defaultColor = T60_COLORS[index % T60_COLORS.length];
 
       // Ganti warna jadi merah kalo labelnya bottom pnl/minus
       if (dataset.label?.includes("Bottom") || dataset.label?.includes("Minus"))
@@ -197,7 +174,7 @@ export default function BaseChart<T extends ChartType>({
         ...flexData,
         // Set warna background
         backgroundColor:
-          flexData.backgroundColor || (isPieOrDoughnut ? T10_COLORS : color),
+          flexData.backgroundColor || (isPieOrDoughnut ? T60_COLORS : color),
         // Set warna border
         borderColor:
           flexData.borderColor || (type === "line" ? color : "#1d1b20"),
@@ -206,7 +183,7 @@ export default function BaseChart<T extends ChartType>({
           flexData.borderWidth ?? (type === "line" || isPieOrDoughnut ? 4 : 0),
         // Set radius sudut kalo bar
         ...(type === "bar" && { borderRadius: flexData.borderRadius ?? 6 }),
-        // Set radius sudut kalo bulat
+        // Set radius sudut kalo bulet
         ...(isPieOrDoughnut && { borderRadius: flexData.borderRadius ?? 6 }),
         // Set style buat grafik garis
         ...(type === "line" && {
@@ -234,7 +211,7 @@ export default function BaseChart<T extends ChartType>({
         display: true,
         // Styling teks legend
         labels: {
-          // Icon kotak
+          // Icon box
           usePointStyle: false,
           // Jarak antar item
           padding: 20,
@@ -242,9 +219,9 @@ export default function BaseChart<T extends ChartType>({
           font: { family: "'Inter', sans-serif", size: 16, weight: 500 },
           // Warna teks legend
           color: "#FFFFFF",
-          // Lebar kotak
+          // Lebar box
           boxWidth: 15,
-          // Tinggi kotak
+          // Tinggi box
           boxHeight: 15,
         },
       },
@@ -267,13 +244,14 @@ export default function BaseChart<T extends ChartType>({
         },
       },
     },
-    // Konfigurasi sumbu buat tipe non-bulat
+    // Konfigurasi sumbu buat tipe non-bulet
     scales: ["pie", "doughnut", "polarArea", "radar"].includes(type)
       ? undefined
       : {
           x: {
             // Hilang garis grid x
-            grid: { display: false },
+            // grid: { display: false },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             // Konfigurasi teks sumbu x
             ticks: {
               // Tampil semua teks
@@ -287,7 +265,7 @@ export default function BaseChart<T extends ChartType>({
                 this: Scale<CoreScaleOptions>,
                 tickValue: string | number,
               ) {
-                // Ambil label berdasar index
+                // Ambil label berdasarkan index
                 const label = this.getLabelForValue
                   ? this.getLabelForValue(tickValue as number)
                   : tickValue;
@@ -304,7 +282,8 @@ export default function BaseChart<T extends ChartType>({
             // Hilang garis border
             border: { display: false },
             // Warna grid y
-            grid: { color: "rgba(0, 0, 0, 0.05)" },
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            // grid: { color: "rgba(0, 0, 0, 0.05)" },
             // Konfigurasi teks sumbu y
             ticks: {
               // Tampil semua teks
@@ -318,7 +297,7 @@ export default function BaseChart<T extends ChartType>({
                 this: Scale<CoreScaleOptions>,
                 tickValue: string | number,
               ) {
-                // Ambil label berdasar index
+                // Ambil label berdasarkan index
                 const label = this.getLabelForValue
                   ? this.getLabelForValue(tickValue as number)
                   : tickValue;
@@ -342,7 +321,7 @@ export default function BaseChart<T extends ChartType>({
   // Hitung lebar grafik setelah zoom
   const finalWidth = zoomPercent > 100 ? `${zoomPercent}%` : "100%";
 
-  // Render halaman
+  // Render page
   return (
     // Bungkus utama
     <div className="flex flex-col w-full p-6 relative">
@@ -358,12 +337,12 @@ export default function BaseChart<T extends ChartType>({
           {/* Tombol expand kalo ada fungsi onExpand */}
           {onExpand && (
             <button
-              // Aksi klik expand
+              //Action klik expand
               onClick={onExpand}
               // Style tombol expand
               className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
             >
-              {/* Ikon maximize */}
+              {/* Icon maximize */}
               <Maximize2 size={18} />
             </button>
           )}

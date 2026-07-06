@@ -1,6 +1,5 @@
 // Import stylesheet global aplikasi
 import "./globals.css";
-// Import react buat kebutuhan komponen
 import React from "react";
 // Import tipe data metadata buat next
 import type { Metadata } from "next";
@@ -22,13 +21,13 @@ import BottomNav from "@/components/layouts/BottomNav";
 
 // Object metadata buat judul dan deskripsi window browser
 export const metadata: Metadata = {
-  // Judul halaman di tab browser
+  // Judul page di tab browser
   title: "MTV Executive",
   // Deskripsi singkat buat seo
   description: "Created by MIS Metro TV",
 };
 
-// Komponen layout utama yang ngebungkus semua halaman
+// Komponen layout utama yang ngebungkus semua page
 export default function RootLayout({
   // Ambil anak komponen dari props
   children,
@@ -66,14 +65,14 @@ export default function RootLayout({
 
                   {/* Wadah konten anak komponen dengan padding bawah buat mobile */}
                   <div className="w-full min-h-full pb-24 md:pb-0 ">
-                    {/* Render konten halaman */}
+                    {/* Render konten page */}
                     {children}
                   </div>
                   <BottomNav/>
                 </main>
                 
               </div>
-              {/* Komponen toaster buat munculin notif aksi user */}
+              {/* Komponen toaster buat munculin notif action user */}
               <Toaster
                 // Posisi notif di atas tengah
                 position="top-center"

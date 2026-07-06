@@ -1,10 +1,9 @@
 "use client";
 
-// Import react dan hooks buat state
 import React, { useState, useMemo, useSyncExternalStore } from "react";
 // Import portal buat ngerender modal di atas body
 import { createPortal } from "react-dom";
-// Import ikon x dan filter x
+// Import icon x dan filter x
 import { X, FilterX } from "lucide-react";
 // Import komponen chart dasar
 import BaseChart from "@/components/shared/BaseChart";
@@ -74,7 +73,7 @@ export default function ChartDetailModal({
     { label: "Custom", value: "custom" },
   ];
 
-  // Saring data program berdasar opsi
+  // Filter data program berdasarkan opsi
   const filteredPrograms = useMemo(() => {
     // Salin data mentah
     let result = [...MOCK_PROGRAMS];
@@ -241,7 +240,7 @@ export default function ChartDetailModal({
             minBarLength: 15,
           },
           {
-            label: "Actual Revenue (Rp)",
+            label: "Capaian Revenue (Rp)",
             data: sorted.map((p) =>
               p.periods.reduce((s, per) => s + per.financials.revenueActual, 0),
             ),
@@ -286,7 +285,7 @@ export default function ChartDetailModal({
               minBarLength: 15,
             },
             {
-              label: "Aktual TVR",
+              label: "Capaian TVR",
               data: sorted.map((p) =>
                 p.periods.reduce(
                   (s, per) => s + per.performanceTV.actualTVR,
@@ -328,7 +327,7 @@ export default function ChartDetailModal({
               minBarLength: 15,
             },
             {
-              label: "Aktual Share (%)",
+              label: "Capaian Share (%)",
               data: sorted.map((p) =>
                 p.periods.reduce(
                   (s, per) => s + per.performanceTV.actualShare,
@@ -364,7 +363,7 @@ export default function ChartDetailModal({
           acc + p.periods.reduce((s, per) => s + per.financials.costDirect, 0),
         0,
       );
-      // Total target
+      // Total net
       const revTarget = filteredPrograms.reduce(
         (acc, p) =>
           acc +
@@ -374,7 +373,7 @@ export default function ChartDetailModal({
 
       // Balikin data performa
       return {
-        labels: ["Revenue Capaian", "Cost Direct", "Target Revenue"],
+        labels: ["Capaian Revenue", "Cost Direct", "Target Revenue"],
         datasets: [
           {
             data: [revCapaian, costDirect, revTarget],

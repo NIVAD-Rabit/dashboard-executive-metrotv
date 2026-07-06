@@ -27,7 +27,7 @@ export const fetchProgramsByRange = async (
   // Copy data mock
   let data = [...MOCK_PROGRAMS] as ProgramFormData[];
 
-  // Kalo ada filter periode saring datanya
+  // Kalo ada filter periode filter datanya
   if (startPeriod && endPeriod) {
     data = data.filter((p) => {
       const month = p.periods?.[0]?.month ?? "";
