@@ -1,3 +1,4 @@
+// Import react dan kawan2
 import React, {
   // Import hook state buat kelola data
   useState,
@@ -8,408 +9,587 @@ import React, {
 } from "react";
 // Import hook query dari tanstack query
 import {
+  // Hook utama buat narik data
   useQuery,
-  // Import hook mutation
+  // Import hook mutation buat eksekusi aksi ubah data
   useMutation,
-  // Import client query
+  // Import client query buat atur cache
   useQueryClient,
 } from "@tanstack/react-query";
-// Import ikon edit dari lucide
-import {
-  Edit2,
-  // Import ikon trash dari lucide
-  Trash2,
-} from "lucide-react";
+// Import icon dari lucide
+import { Edit2, Trash2 } from "lucide-react";
 // Import komponen grid dari ag grid react
 import { AgGridReact } from "ag-grid-react";
 // Import tipe data dari komunitas ag grid
 import {
+  // Tipe definisi kolom
   ColDef,
+  // Tipe penangkap hasil parse nilai sel
   ValueParserParams,
+  // Tipe parameter buat ngerender sel
   ICellRendererParams,
+  // Tipe parameter buat fungsi penarik nilai
   ValueGetterParams,
+  // Tipe parameter buat fungsi penyimpan nilai
   ValueSetterParams,
+  // Tipe parameter buat ngatur class sel
   CellClassParams,
 } from "ag-grid-community";
 // Import fungsi toast dari sonner buat notifikasi
 import { toast } from "sonner";
-
-// Import fungsi fetch program dari service
+// Import fungsi api buat olah data program dari service
 import {
+  // Fungsi penarik list data
   fetchProgramsByRange,
+  // Fungsi penyuntik data baru
   createProgram,
+  // Fungsi peniban data lama
   updateProgram,
+  // Fungsi pembasmi data
   deleteProgram,
 } from "@/services/api/programService";
-// Import config kolom dari smart table
+// Import config kolom dan filter dari komponen tabel
 import {
+  // Tipe data kolom
   ColumnConfig,
+  // Tipe data dropdown filter
   FilterSelectConfig,
 } from "@/components/shared/SmartTable";
-// Import skema validasi program
-import { ProgramFormData, programFormSchema } from "@/schemas/program";
+// Import skema validasi program dari folder schemas
+import {
+  // Tipe cetakan program
+  ProgramFormData,
+  // Objek validator zod
+  programFormSchema,
+} from "@/schemas/program";
 
 // Fungsi buat dapetin objek periode aktif atau bikin baru kalo gada
 const getActivePeriod = (
-  // Data program
+  // Data program utuh
   data: ProgramFormData | undefined,
-  // Periode terpilih
+  // Periode terpilih opsional
   selectedPeriod?: string | null,
 ) => {
-  // Kalo data gada balikin null
+  // Kalo data gada langsung balikin null
   if (!data) return null;
-  // Kalo periods gada atau kosong bikin periode baru
+  // Kondisional ngecek kalo periods gada atau isinya kosong melompong bakal dibikinin array periode baru, kalo ada biarin
   if (!data.periods || data.periods.length === 0) {
     // Bikin array periode dengan objek default
     data.periods = [
+      // Objek periode pertama default
       {
         // Id unik pake timestamp
         id: `d-${Date.now()}`,
-        // Bulan sekarang format iso
+        // Bulan sekarang format iso diiris ampe bulan aja
         month: new Date().toISOString().slice(0, 7),
         // Data performa tv default
         performanceTV: {
+          // Angka target rating
           targetTVR: 0,
+          // Angka target porsi penonton
           targetShare: 0,
+          // Angka asli rating
           actualTVR: 0,
+          // Angka asli porsi
           actualShare: 0,
         },
         // Data performa digital default
-        performanceDigital: { views: 0, revenue: 0 },
+        performanceDigital: {
+          // Jumlah penonton digital
+          views: 0,
+          // Duit masuk digital
+          revenue: 0,
+        },
         // Data finansial default
         financials: {
+          // Pengeluaran operasional
           costDirect: 0,
+          // Patokan target omset
           revenueTarget: 0,
+          // Omset riil yang masuk
           revenueActual: 0,
+          // Untung rugi bersih
           pnl: 0,
         },
         // Data inventori default
-        inventory: { spot: 0, adRate: 0 },
+        inventory: {
+          // Sisa slot iklan
+          spot: 0,
+          // Harga sewa slot
+          adRate: 0,
+        },
         // Status awal normal
         status: "Normal",
       },
     ];
   }
-  // Kalo ada periode yang dipilih cari periodenya
+  // Kondisional ngecek kalo ada input periode yang dipilih bakal nyari isinya, kalo ga bakal langsung ngurutin
   if (selectedPeriod) {
-    // Cari periode yang match sama bulan
+    // Cari periode yang match sama bulan pake find
     const found = data.periods.find((p) => p.month === selectedPeriod);
-    // Kalo ketemu balikin
+    // Kalo ketemu langsung balikin
     if (found) return found;
-    // Kalo ga ketemu bikin objek periode baru
+    // Bikin objek periode baru kalo beneran ga nemu di dalem array
     const newPeriod = {
-      // Id unik random
+      // Id unik random dari waktu dicampur fungsi random
       id: `d-${Date.now()}-${Math.random()}`,
-      // Bulan sesuai pilihan
+      // Bulan diset nyesuaiin pilihan user
       month: selectedPeriod,
-      // Data performa tv default
+      // Data performa tv default nol
       performanceTV: {
+        // Tarjet rating
         targetTVR: 0,
+        // Target porsi
         targetShare: 0,
+        // Rating asli
         actualTVR: 0,
+        // Porsi asli
         actualShare: 0,
       },
-      // Data performa digital default
-      performanceDigital: { views: 0, revenue: 0 },
-      // Data finansial default
-      financials: { costDirect: 0, revenueTarget: 0, revenueActual: 0, pnl: 0 },
-      // Data inventori default
-      inventory: { spot: 0, adRate: 0 },
-      // Status awal kosong
+      // Data performa digital default nol
+      performanceDigital: {
+        // Penonton sosmed
+        views: 0,
+        // Omset sosmed
+        revenue: 0,
+      },
+      // Data finansial default nol
+      financials: {
+        // Modal acara
+        costDirect: 0,
+        // Target duwit
+        revenueTarget: 0,
+        // Duwit asli
+        revenueActual: 0,
+        // Profit bersih
+        pnl: 0,
+      },
+      // Data inventori default nol
+      inventory: {
+        // Ketersediaan iklan
+        spot: 0,
+        // Harga iklan
+        adRate: 0,
+      },
+      // Status awal cuma strip
       status: "-",
     };
-    // Masukin periode baru ke list periode
+    // Masukin periode baru ke list array periode yang lama
     data.periods.push(newPeriod);
-    // Balikin periode baru
+    // Balikin rupa periode baru
     return newPeriod;
   }
-  // Sortir periode dari yang terbaru
+  // Sortir array periode dari yang paling terbaru ke jadul
   const sorted = [...data.periods].sort((a, b) =>
+    // Adu string komparasi mundur
     b.month.localeCompare(a.month),
   );
-  // Balikin periode paling baru
+  // Balikin objek periode urutan pertama yang paling baru
   return sorted[0];
 };
 
-// Hook utama buat manage master program
+// Hook utama buat manage logic master program di ui
 export function useMasterProgram() {
-  // Inisialisasi query client
+  // Inisialisasi pengelola query client
   const queryClient = useQueryClient();
-  // Ref buat akses api ag grid
+  // Ref buat akses jembatan api ag grid react
   const gridRef = useRef<AgGridReact>(null);
 
-  // State buka tutup modal
+  // State bool buka tutup jendela modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // State id data yang lagi diedit
+  // State id data spesifik yang lagi kena edit
   const [editingId, setEditingId] = useState<string | null>(null);
-  // State konfirmasi hapus data
+  // State nampung id target konfirmasi hapus data
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  // State isi data row di modal
+  // State nampung list isi data row yang nongol di modal
   const [rowData, setRowData] = useState<ProgramFormData[]>([]);
-  // State periode yang lagi dipilih
+  // State string periode waktu yang lagi dipilih user
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
-  // Ambil data program dari server
-  const { data: programs = [], isLoading } = useQuery<ProgramFormData[]>({
-    // Key cache data
+  // Jalankan query buat narik koper balasan dari server
+  const {
+    // Sedot objek utuh hasil balikan api terus ganti namanya jadi fetch result
+    data: fetchResult,
+    // Sedot status boolean loading datanya
+    isLoading,
+  } = useQuery({
+    // Nama key label chache biar ga bentrok
     queryKey: ["programs"],
-    // Fungsi panggil api
+    // Fungsi panggil rute api axios tanpa ngasih filter parameter
     queryFn: () => fetchProgramsByRange("", ""),
   });
 
-  // Memo buat daftar periode unik yang ada
+  // Ekstrak array program asli dari dalem koper result atau lepehin array kosong
+  const programs = fetchResult?.data || [];
+
+  // Memo buat nyusun daftar string periode unik yang ada
   const periodOptions = useMemo(() => {
-    // Bongkar semua periode dari program
+    // Bongkar semua data bulan periode dari seluruh program jadi array rata satu dimensi
     const all = programs.flatMap(
+      // Lempar string bulan kalo nemu, atau balikin array kosong
       (p: ProgramFormData) => p.periods?.map((x) => x.month) || [],
     );
-    // Hapus duplikat terus urutin
+    // Hapus duplikat pake set terus urutin naik terus dibalik jadi nurun
     return Array.from(new Set(all)).sort().reverse();
+    // Pantau mulu setiap kali data dari api berubah
   }, [programs]);
 
-  // Mutasi buat tambah data baru
-  const createMut = useMutation({ mutationFn: createProgram });
+  // Rakit mutasi sakti buat tambah data baru
+  const createMut = useMutation({
+    // Kaitin ke fungsi rute api nambahin data
+    mutationFn: createProgram,
+  });
 
-  // Mutasi buat update data lama
+  // Rakit mutasi buat nembak pembaruan data lama
   const updateMut = useMutation({
-    // Fungsi panggil api update
+    // Fungsi panggil api axios khusus update bawa param id ama body
     mutationFn: ({ id, data }: { id: string; data: ProgramFormData }) =>
+      // Eksekusi rute update ke axios
       updateProgram(id, data),
   });
 
-  // Mutasi buat hapus data
+  // Rakit mutasi gahar buat hapus data
   const deleteMut = useMutation({
-    // Fungsi panggil api hapus
+    // Panggil helper hapus di service
     mutationFn: deleteProgram,
-    // Aksi setelah sukses
+    // Eksekusi rentetan aksi setelah proses server kelar sukses
     onSuccess: () => {
-      // Invalidate data biar update otomatis
-      queryClient.invalidateQueries({ queryKey: ["programs"] });
-      // Reset id konfirmasi hapus
+      // Ledakin cache data lama biar maksa nembak api buat refresh
+      queryClient.invalidateQueries({
+        // Target nama cache yang mau diledakin
+        queryKey: ["programs"],
+      });
+      // Bersihin state id konfirmasi target hapus jadi null
       setDeleteConfirmId(null);
-      // Notif sukses
+      // Tembak popup notifikasi ijo ngasih kabar sukses
       toast.success("Data program berhasil dihapus!");
     },
   });
 
-  // Data baris kosong default buat nambah program
+  // Susun data baris kosong patokan standar pas nambah program baru
   const defaultEmptyRow: ProgramFormData = {
-    // Nama kosong
+    // String nama program dikosongin
     name: "",
-    // Kategori default
+    // Kategori default dipatok huruf a
     category: "A",
-    // Deskripsi kategori
+    // Deskripsi kategori standar set general
     descriptionCategory: "General",
-    // Broadcast time kosong
+    // Jam tayang sengaja dikosongin
     broadcastTime: "",
-    // List periode awal
+    // Susun array berisi satu list periode awal
     periods: [
+      // Objek periode perdana
       {
-        // Id unik
+        // Id unik dibikin dari kata new dicampur timer sekarang
         id: `new-${Date.now()}`,
-        // Bulan sekarang
+        // Setelan bulan milih state atau nyomot waktu komputer diiris
         month: selectedPeriod || new Date().toISOString().slice(0, 7),
-        // Data performa default
+        // Data performa standar tv reset bawah
         performanceTV: {
+          // Nol buat tarjet rating
           targetTVR: 0,
+          // Nol buat target share
           targetShare: 0,
+          // Nol buat rating asli
           actualTVR: 0,
+          // Nol buat porsi asli
           actualShare: 0,
         },
-        // Data performa digital default
-        performanceDigital: { views: 0, revenue: 0 },
-        // Data finansial default
+        // Data performa sosmed digital default kosong
+        performanceDigital: {
+          // Nol tayangan
+          views: 0,
+          // Nol pendapatan
+          revenue: 0,
+        },
+        // Data uang finansial default reset abis
         financials: {
+          // Nol biaya acara
           costDirect: 0,
+          // Nol target duwit
           revenueTarget: 0,
+          // Nol duwit asli masuk
           revenueActual: 0,
+          // Nol laba rugi
           pnl: 0,
         },
-        // Data inventori default
-        inventory: { spot: 0, adRate: 0 },
-        // Status awal
+        // Data slot inventori default ludes
+        inventory: {
+          // Nol titik ketersediaan
+          spot: 0,
+          // Nol harga patokan
+          adRate: 0,
+        },
+        // Teks status awalan dibikin standar normal
         status: "Normal",
       },
     ],
   };
 
-  // Fungsi buat buka modal mode tambah
+  // Fungsi buat mancing buka jendela modal mode tambah data massal
   const openAddModal = () => {
-    // Reset id edit
+    // Sapu bersih id state mode edit
     setEditingId(null);
-    // Setup data kosong 5 baris
+    // Rakit lima baris data kosong pake teknik map dan json parse
     setRowData(
+      // Bikin array sepanjang lima kotak
       Array(5)
+        // Isi null dulu semua kotaknya
         .fill(null)
+        // Tancepin salinan independen objek default ke dalem kotak
         .map(() => JSON.parse(JSON.stringify(defaultEmptyRow))),
     );
-    // Buka modal
+    // Pencet tuas buka jendela modal
     setIsModalOpen(true);
   };
 
-  // Fungsi buka modal mode edit
-  const openEditModal = (prog: ProgramFormData) => {
-    // Pisah id dari data
-    const { id, ...formData } = prog as ProgramFormData & {
+  // Fungsi pemantik buka jendela modal buat mode edit satuan spesifik
+  const openEditModal = (
+    // Parameter objek data spesifik yang dipilih user
+    prog: ProgramFormData,
+  ) => {
+    // Bongkar properti objek id misah dari kerumunan properti data form lainnya
+    const {
+      // Tarik id dari bungkusan
+      id,
+      // Kumpulin semua turahan nilai form pake rest operator
+      ...formData
+    } = prog as ProgramFormData & {
+      // Type tambahan opsional string id
       id?: string;
+      // Type tanggal dibuat
       createdAt?: string;
+      // Type tanggal perbaruan
       updatedAt?: string;
     };
-    // Set id edit
+    // Tancepin id yang ketangkep ke wadah penanda mode edit
     setEditingId(id ?? null);
-    // Set row data buat diedit
+    // Jejelin baris data khusus objek satu ini ke grid
     setRowData([formData as ProgramFormData]);
-    // Buka modal
+    // Tuas pembuka paksa kemunculan jendela modal
     setIsModalOpen(true);
   };
 
-  // Fungsi buat nutup modal
+  // Fungsi penembak tutup semua antarmuka modal
   const closeModal = () => {
-    // Tutup modal
+    // Turunin tuas sembunyiin modal dari pandangan
     setIsModalOpen(false);
-    // Reset id edit
+    // Sapu wadah id edit
     setEditingId(null);
-    // Bersihin row data
+    // Kosongin abis wadah tampungan baris grid data
     setRowData([]);
   };
 
-  // Fungsi buat nambah baris kosong di tabel
+  // Fungsi buat nyelipin nambahin baris kosong ke pantat tabel grid
   const addRow = () => {
-    // Gabung data lama sama baris baru
+    // Rakit array tiban bongkahan lama dicampur cetakan objek default di buritannya
     const newData = [...rowData, JSON.parse(JSON.stringify(defaultEmptyRow))];
-    // Update state row
+    // Tiban wujud wadh state pake bungkusan array tiban
     setRowData(newData);
-    // Update grid api
+    // Suntik paksa pembaruan data langsung nembus sistem ag grid
     gridRef.current?.api.setGridOption("rowData", newData);
   };
 
-  // Fungsi submit data bulk ke backend
+  // Fungsi gahar pemicu perakitan kirim bungkusan bulk data ke server
   const submitBulkData = async () => {
-    // Kalo grid kosong balikin
+    // Kondisional cegat kalo dom tabel ag grid blom nyangkut ke ref
     if (!gridRef.current) return;
 
-    // Array buat nampung payload
+    // Siapin wadah array sementara khusus payload mentah yang masuk
     const rawPayload: ProgramFormData[] = [];
 
-    // Loop tiap baris di grid
+    // Lakukan putaran muter dari baris ke baris langsung di jantung mesin ag grid
     gridRef.current.api.forEachNode((node) => {
-      // Kalo ada data dan nama program diisi
+      // Kondisional menyaring khusus baris yang ada isinya dan nama program udah diketik
       if (node.data && node.data.name) {
-        // Ambil periode terbaru buat hitung pnl
+        // Ambil cetakan bulan terbaru buat pondasi hitung kalkulasi otomatis
         const latestPeriod = getActivePeriod(node.data, selectedPeriod);
-        // Kalo ada periode hitung pnl otomatis
+        // Kondisional jalan pas objek periode beneran nyangkut
         if (latestPeriod) {
+          // Suntik kalkulasi pnl gabungan masukin omset tv tambah sosmed kurangin biaya
           latestPeriod.financials.pnl =
             (latestPeriod.financials.revenueActual || 0) +
             (latestPeriod.performanceDigital.revenue || 0) -
             (latestPeriod.financials.costDirect || 0);
         }
-        // Masukin ke payload
+        // Serok data hasil polesan ini ke dalem truk payload
         rawPayload.push(node.data);
       }
     });
 
-    // Array buat payload valid
+    // Siapin wadah array penampung payload lolos verifikasi zod
     const validPayload: ProgramFormData[] = [];
-    // Array buat nampung error
+    // Siapin wadah ember kumpulan pesan string error yang numpuk
     const errors: string[] = [];
 
-    // Validasi tiap data pake zod
+    // Lakukan perulangan bongkar per baris muatan truk raw payload
     rawPayload.forEach((data, index) => {
-      // Cek validasi
+      // Terjangin tameng filter deteksi anomali skema ketat tipe zod
       const validation = programFormSchema.safeParse(data);
-      // Kalo sukses masukin payload
+      // Kondisional bercabang ngecek tembus apa mantul hasil hadangan zod
       if (validation.success) {
+        // Kalo tembus masukin data suci ke dalem truk payload pengiriman
         validPayload.push(validation.data);
       } else {
-        // Kalo gagal ambil pesan error
+        // Ekstrak baris teks error pertama yang kedeteksi library
         const firstErrorMsg = validation.error.issues[0].message;
+        // Gabungin posisi rantai objek masalah pake titik separator
         const fieldPath = validation.error.issues[0].path.join(".");
-        // Masukin ke array error
+        // Suntik rakitan kalimat info salah spesifik ke ember kumpulan error
         errors.push(
           `Baris ${index + 1} (${data.name || "Tanpa Nama"}) - Kolom '${fieldPath}', ${firstErrorMsg}`,
         );
       }
     });
 
-    // Kalo ada error tampilkan notif
+    // Kondisional penghadang akhir pas jumlah error tembus lebih dari nol
     if (errors.length > 0) {
+      // Lempar petasan notifikasi eror gagal save layar
       toast.error("Gagal Menyimpan Data", {
+        // Deskripsi rincian error dibungkus elemen jsx
         description: (
-          <div className="flex flex-col gap-1 mt-1 text-sm">
+          // Buka kontainer pembungkus kepingan error
+          <div
+            // Kasih deretan class flex nurun
+            className="flex flex-col gap-1 mt-1 text-sm"
+          >
+            {/* Lakukan mapping berjejer mencetak teks string merah */}
             {errors.map((err, i) => (
-              <span key={i}>• {err}</span>
+              // Buka pilar span text unik pake nomer index
+              <span
+                // Tempelin no key absolut
+                key={i}
+              >
+                {/* Tempelin cetakan info balok string error */}• {err}
+              </span>
             ))}
           </div>
         ),
+        // Kasih durasi diam melayang lima detik pas
         duration: 5000,
       });
+      // Setop fungsi di sini biar data kotor ga jebol
       return;
     }
 
-    // Log payload yang bakal dikirim
-    console.log("Payload submit:", validPayload);
-
-    // Kalo edit panggil update mutasi
+    // Kondisional cabang aksi ngurusin proses mutasi antara ngedit sama bikin baru, cek kalo id edit nyala
+    // Ngubah data pas emang mode update dan isian valid payload beneran ada isi
     if (editingId && validPayload.length > 0) {
+      // Tunggu sampe server ngabarin data id berasil ditiban paked data baru index pertama
       await updateMut.mutateAsync({ id: editingId, data: validPayload[0] });
+      // Tembak popup bahagia tanda berasil save editan
       toast.success("Perubahan data berhasil disimpan!");
+      // Cabang lajur sebelahnya buat aksi serbuan create numpuk data baru sekaligus
     } else {
-      // Kalo create panggil mutasi create buat tiap item
+      // Kunci laju ampe semua barisan janji mutasi tembakan data kelar semua
       await Promise.all(
+        // Map tiap data suci payload ngerakit tembakan ke server
         validPayload.map((prog) => createMut.mutateAsync(prog)),
       );
+      // Ledakin pop up seneng notif total hasil input yang sukses
       toast.success(
         `${validPayload.length} Data program berhasil ditambahkan!`,
       );
     }
 
-    // Refresh data dan tutup modal
-    queryClient.invalidateQueries({ queryKey: ["programs"] });
+    // Hancurin cache react query dari belakang biar tampilan auto narik saringan update
+    queryClient.invalidateQueries({
+      // Hantam kunci memori data ini
+      queryKey: ["programs"],
+    });
+    // Lempar palu panggil penutupan kerai modal ui
     closeModal();
   };
 
-  // Memo konfigurasi kolom buat tabel read only
+  // Memo rakitan rumit ngatur pondasi nama sama panggil isi sel kolom smart table read only luar
   const tableColumns = useMemo<ColumnConfig<ProgramFormData>[]>(
     () => [
+      // Kolom nama program
       {
+        // Teks kepala header
         header: "Nama Program",
+        // Kunci id penarik data dari list objek
         accessorKey: "name",
+        // Fungsi pemoles rupa sel
         render: (item) => (
-          <span className="font-semibold text-foreground">{item.name}</span>
+          // Bungkus pake span
+          <span
+            // Styling tebelin kata
+            className="font-semibold text-foreground"
+          >
+            {/* Munculin nilai asli ke layar */}
+            {item.name}
+          </span>
         ),
       },
+      // Kolom pembagian kategori tayangan
       {
+        // Info judul pilar di atas
         header: "Kategori",
+        // Alat pancing data kunci kategori
         accessorKey: "category",
+        // Fungsi perakit elemen ui
         render: (item) => (
-          <span className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold">
+          // Bungkus pake span wujud lencana
+          <span
+            // Aturan styling warna rupa kotak kecil lencana
+            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold"
+          >
+            {/* Coretan isi nilai kategori */}
             {item.category}
           </span>
         ),
       },
+      // Kolom penunjuk waktu tayang layar tv
       {
+        // Tulisan rupa nama kolom
         header: "Jam Tayang",
+        // Pencabut nilai dari kunci jam
         accessorKey: "broadcastTime",
+        // Fungsi perias selnya
         render: (item) => (
-          <span className="font-medium text-foreground">
+          // Buka span
+          <span
+            // Sedikit kasih ketebalan sedang murni
+            className="font-medium text-foreground"
+          >
+            {/* Tulis waktu di dalem kotaknya */}
             {item.broadcastTime}
           </span>
         ),
       },
+      // Kolom komparasi target omset nyamping nyata
       {
+        // Nama majemuk judul gabungan
         header: "Target/Cap. Rev",
+        // Fungsi render ngegali properti dobel
         render: (item) => {
+          // Cari bulan terbaru dari data program baris ini
           const latest = getActivePeriod(item, selectedPeriod);
+          // Balik rupa cetakan div tumpuk dua
           return (
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">
+            // Buka div flex baris tumpuk vertical
+            <div
+              // Kasih class nyusun menurun
+              className="flex flex-col"
+            >
+              {/* Tumpukan atas buat ngasih nilai info target */}
+              <span
+                // Tipisin warnanya biar keliatan ga mendominasi
+                className="text-xs text-muted-foreground"
+              >
+                {/* Gabung rp sama angka formattan titik lokal */}
                 Target, Rp{" "}
                 {(latest?.financials?.revenueTarget ?? 0).toLocaleString(
                   "id-ID",
                 )}
               </span>
-              <span className="font-medium text-primary">
+              {/* Tumpukan balok sakti nyatanya bawahnya */}
+              <span
+                // Kasih warna primer kuat mencolok
+                className="font-medium text-primary"
+              >
+                {/* Gabungin hasil omset duit asli nyata formattan */}
                 Actual, Rp{" "}
                 {(latest?.financials?.revenueActual ?? 0).toLocaleString(
                   "id-ID",
@@ -419,534 +599,798 @@ export function useMasterProgram() {
           );
         },
       },
+      // Kolom kalkulasi hasil keuntungan murni
       {
+        // Nama header
         header: "PNL",
+        // Penarik angka laba dari ujung dalam objek periode
         accessorFn: (item) => {
+          // Balikin angka tarikan net pnl
           return getActivePeriod(item, selectedPeriod)?.financials?.pnl;
         },
+        // Fungsi rupa render warna dinamis
         render: (item) => {
+          // Cari tau nilai pnl dari baris
           const pnl =
             getActivePeriod(item, selectedPeriod)?.financials?.pnl ?? 0;
+          // Balikin cetakan span rupa warnanya berubah
           return (
+            // Span
             <span
+              // Kondisional penggabung kelaziman kelas tailwind, cetak merah pas angka rugin, ijo buat profit cuan
               className={`font-bold ${pnl < 0 ? "text-destructive" : "text-green-600"}`}
             >
+              {/* Hasil tarikan duit angka rp */}
               Rp {pnl.toLocaleString("id-ID")}
             </span>
           );
         },
       },
+      // Kolom tuas aksi tombol hapus edit murni
       {
+        // Teks info panel tombol pilar
         header: "Aksi",
+        // Rata pojok biar rapih ui
         className: "text-right",
+        // Tukang gambar elemen tuas kontrol
         render: (item) => (
-          <div className="space-x-2 text-right">
+          // Buka blok pembungkus tuas jejer horizontal
+          <div
+            // Kasih jarak di antara tuas
+            className="space-x-2 text-right"
+          >
+            {/* Tombol sakti picu aksi mode update modal id */}
             <button
+              // Hantem fungsi trigger param ke item sasaran
               onClick={() => openEditModal(item)}
+              // Styling bentuk rupa tombol kotak lonjong
               className="p-2 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors rounded-xl cursor-pointer inline-flex"
             >
-              <Edit2 size={16} />
+              {/* Gambaran icon bolpoin mungil */}
+              <Edit2
+                // Ukuran enam belas
+                size={16}
+              />
             </button>
+            {/* Tombol pemicu buka jendela pop hapus */}
             <button
+              // Panah nimpahin wadah id delete konfirmasi konstan murni
               onClick={() => setDeleteConfirmId(item.id ?? null)}
+              // Rupa celupan bak merah bahaya
               className="p-2 bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors rounded-xl cursor-pointer inline-flex"
             >
-              <Trash2 size={16} />
+              {/* Gambaran rupa kaleng sampah */}
+              <Trash2
+                // Lebar ukuran pas
+                size={16}
+              />
             </button>
           </div>
         ),
       },
     ],
+    // Pengawas memori buat kolom pantau bulan
     [selectedPeriod],
   );
 
-  // Memo konfigurasi filter
+  // Memo racikan konfigurasi deret seleksi list kategori dropdown luar
   const selectFilters = useMemo<FilterSelectConfig[]>(
     () => [
+      // Konfigurasi laci dropdown kategori
       {
+        // Nama field sasaran jaring
         key: "category",
+        // Label teks keterangan depan luar dropdwon
         label: "Semua Kategori",
+        // Kumpulan rupa jajaran nilai dalam menu list pilihan
         options: [
+          // Item pertama
           { label: "A", value: "A" },
+          // Item kedua
           { label: "B", value: "B" },
+          // Item ketiiga
           { label: "C", value: "C" },
+          // Item eksklusif khusus
           { label: "Signature", value: "Signature" },
+          // Item buangan luar biasa
           { label: "Others", value: "Others" },
         ],
       },
     ],
+    // Pengawas mati memori sekali pancang jalan murni
     [],
   );
 
-  // Fungsi parser angka buat input grid
-  const numberParser = (params: ValueParserParams<ProgramFormData, number>) =>
+  // Fungsi pengubah format ketikan text angka ganti balikan bentuk number js murni, cegah nan
+  const numberParser = (
+    // Parameter penangkap wujud rupa nilai sel inputan user
+    params: ValueParserParams<ProgramFormData, number>,
+  ) =>
+    // Paksa tuang jadi angka beneran dari teks aneh kalo jeblok balik nol
     Number(params.newValue) || 0;
 
-  // Memo definisi kolom buat ag grid modal
+  // Memo panjang rumit definisi kolom ag grid super interaktif mode edit bulk form
   const colDefs = useMemo<ColDef<ProgramFormData>[]>(
     () => [
+      // Kolom barisan penghapus hapus tombol buang cell
       {
-        // Judul header
+        // Judul header nama ui
         headerName: "Aksi",
-        // Field data
+        // Kolom hantu ngikut field name biar ga ngaco sistemnya murni
         field: "name",
-        // Lebar kolom
+        // Lebar absolut batas pinggir kiri
         width: 65,
-        // Lebar minimum
+        // Set patokan sempit lebar kiri
         minWidth: 65,
-        // Lebar maksimum
+        // Maksimal kendor kanan pilar
         maxWidth: 65,
-        // Pin kolom di kiri
+        // Suntik mati paksa pantek diam di tepi kolom
         pinned: "left",
-        // Jangan sesuaikan ukuran
+        // Larang ngelentur bebas urusan ukuran
         suppressSizeToFit: true,
-        // Style centering sel
+        // Style keras ngurusin centering tombol di sel
         cellStyle: {
+          // Tata letak wujud flex
           display: "flex",
+          // Sumbu x rata tengah
           justifyContent: "center",
+          // Sumbu y juga dipaksa presisi
           alignItems: "center",
         },
-        // Render tombol hapus
+        // Gambar fungsi ngerakit rupa elemen tombol trash bin
         cellRenderer: (
+          // Parameter tarikan mesin ag grid react murni
           params: ICellRendererParams<ProgramFormData, string>,
         ) => {
-          // Kalo lagi edit jangan tampilin tombol hapus
+          // Kondisional menyegat rupa tombol buat musnah ga muncul pas mode update lagi urusin satu data
           if (editingId) return null;
+          // Balikin cetakan rupa ui button
           return (
+            // Buka tuas
             <button
-              // Aksi hapus baris
+              // Aksi nembak hapus baris dari list perulangan input data bulk create
               onClick={() => {
-                // Copy data row
+                // Saring bungkusan data lama
                 const currentData = [...rowData];
-                // Hapus satu item
+                // Penggal turahan satu kotak sesuai indeks nomer barisan
                 currentData.splice(params.node!.rowIndex!, 1);
-                // Update state
+                // Siram penuhin balik state ke wujud buntung
                 setRowData(currentData);
-                // Update grid api
+                // Perintah darurat sistem tembus ngatur dom jeroan ag grid barisan rownya
                 gridRef.current?.api.setGridOption("rowData", currentData);
               }}
-              // Style tombol
+              // Rupa kelas polesan pewarnaan pas kesenggol tikus transisi mulus
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded cursor-pointer transition-colors"
             >
-              {/* Ikon trash */}
+              {/* Icon tong sampah */}
               <Trash2 size={16} />
             </button>
           );
         },
-        // Disable edit buat kolom ini
+        // Gembok saklar tutup larang diketik mode edit murni
         editable: false,
-        // Disable sort
+        // Matikan tombol pengurut kolom mati murni
         sortable: false,
-        // Disable filter
+        // Copot kemampuan nyaring mati abis
         filter: false,
       },
+      // Kolom perubah nulis nama bulan tabel input
       {
-        // Judul kolom
+        // Info nama ujung pilar
         headerName: "Periode",
-        // Lebar kolom
+        // Luasan pinggir sel
         width: 120,
-        // Aktifin edit
+        // Izin gedor ngubah karakter sel
         editable: true,
-        // Ambil data periode
-        valueGetter: (params: ValueGetterParams<ProgramFormData, string>) =>
+        // Penarik tali angka bulan dari ujung obyek bertingkat murni
+        valueGetter: (
+          // Alat ukur dapetin angka params
+          params: ValueGetterParams<ProgramFormData, string>,
+        ) =>
+          // Balik rupa hasil ulikan periode atau copot strip kosong
           getActivePeriod(params.data, selectedPeriod)?.month ?? "",
-        // Set data periode
-        valueSetter: (params: ValueSetterParams<ProgramFormData, string>) => {
+        // Penusuk modifikasi data baru ngeganti wujud asal
+        valueSetter: (
+          // Penampung kiriman ketikan jarinya user
+          params: ValueSetterParams<ProgramFormData, string>,
+        ) => {
+          // Ekstrak ditarik rupa bulannya dulu buat siap ditiban
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo ada periode dan nilai baru set bulan
+          // Kondisional nyegat celah buat beneran pastiin objek periode ada dan tulisan ga kopong
           if (period && params.newValue) {
+            // Tembak ubah nilai bulan turunan objek
             period.month = params.newValue;
+            // Kirim status ok bener berhasil dimodif
             return true;
           }
+          // Kembalian gagal total
           return false;
         },
       },
+      // Kolom penyimpan input nama judul programnya
       {
-        // Field nama program
+        // Alat field jaring
         field: "name",
-        // Judul header
+        // Info teks atas tabel
         headerName: "Nama Program",
-        // Lebar kolom
+        // Lebar rupa ui
         width: 220,
-        // Aktifin edit
+        // Hidupkan tuas edit buka saklar
         editable: true,
       },
+      // Kolom urusan pilih rupa jenis genrenya tv
       {
-        // Field kategori
+        // Alat jaring nama objek form
         field: "category",
-        // Judul header
+        // Teks info kepala
         headerName: "Kategori",
-        // Lebar kolom
+        // Lebar pinggir murni
         width: 120,
-        // Aktifin edit
+        // Saklar ijin ganti nyala
         editable: true,
-        // Editor pakai dropdown
+        // Gambar dropdown ui celupan select ag grid
         cellEditor: "agSelectCellEditor",
-        // Opsi dropdown kategori
+        // Konfigurasi kiriman jajaran rupa array pilihannya
         cellEditorParams: {
+          // Rakitan teks opsi array murni
           values: ["A", "B", "C", "Signature", "Blocking Reguler", "Others"],
         },
       },
+      // Kolom jadwal nongol
       {
-        // Field jam tayang
+        // Jaring alat penarik langsung ke objek jam
         field: "broadcastTime",
-        // Judul header
+        // Info teks atas
         headerName: "Jam Tayang",
-        // Lebar kolom
+        // Ukuran lebar sel
         width: 120,
-        // Aktifin edit
+        // Saklar buka izinin ketikan
         editable: true,
       },
+      // Kolom input target pancingan rating poin murni
       {
         // Judul header
         headerName: "Target TVR",
-        // Lebar kolom
+        // Lebar rupa sel kolom
         width: 130,
-        // Aktifin edit
+        // Aktifin saklar ubah angka
         editable: true,
-        // Parser angka
+        // Penjaga alat paksa rubah nolak rupa nan ngerusak database
         valueParser: numberParser,
-        // Ambil data target tvr
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Penarik ujung properti data target tvr ngorek jauh ke dalem objek
+        valueGetter: (
+          // Tangkap param bawaan mesin form
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Ekstrak turun jauh dari pancing periode cari rating murni, antisipasi jeblok nol
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.targetTVR ?? 0,
-        // Setter target tvr
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Alat tembak nulis nimpa data target baru
+        valueSetter: (
+          // Bawa rupa lemparan value params
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Cari kepingan objek bungkusan
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set target tvr
+          // Kondisional cegat kalo emang kepingannya nyata ada beneran
           if (period) {
+            // Suntik numpuk isi nilai nol kalo gagal baca rupa lemparan
             period.performanceTV.targetTVR = params.newValue ?? 0;
+            // Kirim bendera berhasil save
             return true;
           }
+          // Kembalian jelek pertanda gagal
           return false;
         },
       },
+      // Kolom nyatet inputan hasil asli nyatanya rating tvr dapet berapa
       {
-        // Judul header
+        // Judul nama
         headerName: "Actual TVR",
-        // Lebar kolom
+        // Lebar jarak murni
         width: 130,
-        // Aktifin edit
+        // Izin rombak data aktif
         editable: true,
-        // Parser angka
+        // Pengubah paksa wujud teks jadi nomor
         valueParser: numberParser,
-        // Ambil data actual tvr
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Alat penggali ngorek dapet poin nilai asli pencapaian rating
+        valueGetter: (
+          // Penangkap bawaan rupa grid
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Tarik bongkahan performa tv ampe actual tvr dari ulikan periode default nol
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.actualTVR ?? 0,
-        // Setter actual tvr
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Pengubah nilai nyimpan nembak data balik
+        valueSetter: (
+          // Bawa rupa ketikan input number
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Panggil fungsi gali letak persis objek bulan aktif
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual tvr
+          // Kondisional nyegat celah buat beneran nulis isi pas pancingan kecantol
           if (period) {
+            // Suntik nilai paksa nol pas meleset
             period.performanceTV.actualTVR = params.newValue ?? 0;
+            // Status lolos nulis
             return true;
           }
+          // Tolak nulis gagal
           return false;
         },
       },
+      // Kolom patokan persentase kue penonton persenan target
       {
         // Judul header
         headerName: "Target Share (%)",
-        // Lebar kolom
+        // Lebar pinggir sel grid
         width: 140,
-        // Aktifin edit
+        // Buka slot penulisan ijin
         editable: true,
-        // Parser angka
+        // Parutan paksa buang teks aneh nyari nomer aslinya murni
         valueParser: numberParser,
-        // Ambil data target share
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Ujung pancingan ngegali data share
+        valueGetter: (
+          // Bawa rupa form param
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Korek laci target share nol
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.targetShare ?? 0,
-        // Setter target share
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Penusuk nilai
+        valueSetter: (
+          // Tangkap param masuk
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Serok laci peride
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set target share
+          // Kondisional kalo ketemu kepingannya bener
           if (period) {
+            // Hantam nimpa target bagian form
             period.performanceTV.targetShare = params.newValue ?? 0;
+            // Berhasil mutasi cell
             return true;
           }
+          // Gagal
           return false;
         },
       },
+      // Kolom buat masukin input aslinya hasil porsi layar penonton persenan murni
       {
-        // Judul header
+        // Judul header atas
         headerName: "Actual Share (%)",
-        // Lebar kolom
+        // Ukuran luasan lebarnya
         width: 140,
-        // Aktifin edit
+        // Saklar tuas pengetikan nyala aktif murni
         editable: true,
-        // Parser angka
+        // Mesin saring jaring paksa bentuk number aman dari kecelakaan nan
         valueParser: numberParser,
-        // Ambil data actual share
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Penarik penggali tali ke data capai persen nyata
+        valueGetter: (
+          // Kantong tangkapan rupa params dari ag
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Tarik bongkahan performa tv ampe actual share dari ulikan bulan lepeh nol
           getActivePeriod(params.data, selectedPeriod)?.performanceTV
             ?.actualShare ?? 0,
-        // Setter actual share
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Penikam data ke ujung letak jeroan sasaran form
+        valueSetter: (
+          // Bawa muatan rupa nilai number
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Gali koordinat titik bulan
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual share
+          // Kondisional nyegat celah kalo titiknya bener ada
           if (period) {
+            // Tancepin gantiin properti actual share ampe beres
             period.performanceTV.actualShare = params.newValue ?? 0;
+            // Balikin bendera ijo bener bisa
             return true;
           }
+          // Merah buntu
           return false;
         },
       },
+      // Kolom khusus catatan info berapa jumlah orang yang mantengin layar hp
       {
         // Judul header
         headerName: "Digital Views",
-        // Lebar kolom
+        // Lebar rupa tepi
         width: 140,
-        // Aktifin edit
+        // Gembok kebuka
         editable: true,
-        // Parser angka
+        // Parut bersih angka doang
         valueParser: numberParser,
-        // Ambil data views
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Gali serok ampe rupa jumlah views laci digital murni
+        valueGetter: (
+          // Tangkep param
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Tarik bongkahan digital
           getActivePeriod(params.data, selectedPeriod)?.performanceDigital
             ?.views ?? 0,
-        // Setter views
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Nimpa
+        valueSetter: (
+          // Bawa param
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Cari wadah
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set views
+          // Kondisional isi ada
           if (period) {
+            // Lempar nilainya masuk nimpuk
             period.performanceDigital.views = params.newValue ?? 0;
+            // Berhasil
             return true;
           }
+          // Error diem
           return false;
         },
       },
+      // Kolom nulisin inputan duit yang masuk perolehan sosmed ig yt
       {
         // Judul header
         headerName: "Digital Revenue (Rp)",
-        // Lebar kolom
+        // Jarak lebar
         width: 160,
-        // Aktifin edit
+        // Aktifin
         editable: true,
-        // Parser angka
+        // Saringan angka rupa number
         valueParser: numberParser,
-        // Ambil data rev digital
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Ulik data narik jumlah duit murni
+        valueGetter: (
+          // Bawa param
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Bongkar digital omset rupa
           getActivePeriod(params.data, selectedPeriod)?.performanceDigital
             ?.revenue ?? 0,
-        // Setter rev digital
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Set
+        valueSetter: (
+          // Tarik param
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Wadah
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set rev digital
+          // Kondisional bener murni
           if (period) {
+            // Tembak ubah nilai
             period.performanceDigital.revenue = params.newValue ?? 0;
+            // Ok
             return true;
           }
+          // Nolak
           return false;
         },
       },
+      // Kolom ngelist berapa juta ongkos bikin produksinya murni
       {
         // Judul header
         headerName: "Cost Direct (Rp)",
-        // Lebar kolom
+        // Lebar sel
         width: 160,
-        // Aktifin edit
+        // Ijin nyala murni
         editable: true,
-        // Parser angka
+        // Buang huruf ngaco dari text murni
         valueParser: numberParser,
-        // Ambil data cost direct
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Gali duit keluar dari objek laci uang finansial
+        valueGetter: (
+          // Bawa
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Bongkar rupa duit modal ampe nol sisa
           getActivePeriod(params.data, selectedPeriod)?.financials
             ?.costDirect ?? 0,
-        // Setter cost direct
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Lempar
+        valueSetter: (
+          // Bawa param
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Cari wadah murni
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set cost direct
+          // Kondisional nyangkut bener
           if (period) {
+            // Suntik rupa angka nyatanya
             period.financials.costDirect = params.newValue ?? 0;
+            // Joss
             return true;
           }
+          // Ngalang
           return false;
         },
       },
+      // Kolom patokan maunya jualan tayangan ni harusnya untung berapa masuk duitnya
       {
-        // Judul header
+        // Judul header murni
         headerName: "Target Rev (Rp)",
-        // Lebar kolom
+        // Lebaran pinggir
         width: 160,
-        // Aktifin edit
+        // Saklar
         editable: true,
-        // Parser angka
+        // Jaring paksa angka
         valueParser: numberParser,
-        // Ambil data target rev
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Serok rupa target untung di kotak duit
+        valueGetter: (
+          // Bawa info murni
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Narik ulik target ampe sisa
           getActivePeriod(params.data, selectedPeriod)?.financials
             ?.revenueTarget ?? 0,
-        // Setter target rev
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Penusuk modif data rupa target duit murni
+        valueSetter: (
+          // Bawa rupa ketikan user
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Bongkar posisi
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set target rev
+          // Kondisional ijo rupa beneran tembus nemu koordinat laci periode beneran valid nyata murni
           if (period) {
+            // Hantem ganti nilai target duwit angka
             period.financials.revenueTarget = params.newValue ?? 0;
+            // Kirim kabar balik lolos mutasi
             return true;
           }
+          // Gagalkan cegat nulis murni
           return false;
         },
       },
+      // Kolom data sebernya ini yang beneran masuk duit aslinya hasil iklan tv tayang
       {
-        // Judul header
+        // Nama info kolom
         headerName: "Actual Rev (Rp)",
-        // Lebar kolom
+        // Lebar batas
         width: 160,
-        // Aktifin edit
+        // Bukain sel gembok murni
         editable: true,
-        // Parser angka
+        // Alat paksa pengubah karakter string nakal jadi nomer suci
         valueParser: numberParser,
-        // Ambil data actual rev
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Kerek katrol narik isi duit capaian rupa angka murni
+        valueGetter: (
+          // Jaring properti bungkusan
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Gali finansial ambil aktualnya duwit murni
           getActivePeriod(params.data, selectedPeriod)?.financials
             ?.revenueActual ?? 0,
-        // Setter actual rev
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Obeng pemutar ngubah ganti nimpah angka lama
+        valueSetter: (
+          // Bungkus input number murni
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Cari kotak kepingan waktu
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set actual rev
+          // Kondisional percabangan kalo nyangkut nemu titiknya bener
           if (period) {
+            // Tembak ngeset wujud propertinya ampe tuntas
             period.financials.revenueActual = params.newValue ?? 0;
+            // Kembalian nyatain ok bener mutasi beres
             return true;
           }
+          // Kembalian apes tolak mentah2
           return false;
         },
       },
+      // Kolom nampilin hitungan laba untung rugin bersih ajaib ngerakit angkanya di tempat auto rupa murni
       {
-        // Judul header
+        // Teks header
         headerName: "Auto PNL (Rp)",
-        // Lebar kolom
+        // Lebar celah murni
         width: 160,
-        // Disable edit
+        // Gembok saklar tutup paksa ga bole diotak atik user
         editable: false,
-        // Getter pnl otomatis
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) => {
+        // Kerek pembuat angka rekayasa otomatis nyomot laci sana sini narik rupa baru
+        valueGetter: (
+          // Jaring tangkep row baris program param ag grid
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) => {
+          // Ambil titik kepingan ujung
           const latest = getActivePeriod(params.data, selectedPeriod);
+          // Gali pemasukan kotor laci rupa tv
           const rev = latest?.financials?.revenueActual ?? 0;
+          // Gali omset dari laci sosmed yutub ig
           const digRev = latest?.performanceDigital?.revenue ?? 0;
+          // Gali besaran tekor modal uang keluar per episode
           const cost = latest?.financials?.costDirect ?? 0;
+          // Balikin kalkulasi gabungan dua pemasukan disikat kurangin sama modal murni
           return rev + digRev - cost;
         },
-        // Style buat sel pnl
-        cellStyle: (params: CellClassParams<ProgramFormData, number>) => {
+        // Fungsi pengoles lipen riasan warna angka pas ngedetek kondisi angka di layar nyala ijo ato mera
+        cellStyle: (
+          // Penarik param cel rupa baris murni
+          params: CellClassParams<ProgramFormData, number>,
+        ) => {
+          // Tarik wujud angkanya atao pantek nol amannya
           const val = params.value ?? 0;
+          // Lempar bungkusan objek style
           return {
-            // Bold tebal
+            // Bold tebal nguat
             fontWeight: "bold",
-            // Warna merah kalo rugi, ijo kalo untung
+            // Kondisional operator penentu rupa cat, kelir merah tajem buat nomer jeblok ngutang di mari, ijo buat hasil laba gemuk cuan murni, selain itu ikut bawaan netral biasa
             color: val < 0 ? "#dc2626" : val > 0 ? "#16a34a" : "inherit",
-            // Background dikit
+            // Background cel dikit tipis ngasih wujud abu samar penanda beda sel ini spesial ga bisa diketik murni
             backgroundColor: "rgba(0,0,0,0.03)",
           };
         },
       },
+      // Kolom input urusan cek masih ada berapa lubang kosong muat selipin sponsor produk di slot acara tayangan murni
       {
-        // Judul header
+        // Info nama ujung
         headerName: "Inventory Spot",
-        // Lebar kolom
+        // Jarak bentangan
         width: 140,
-        // Aktifin edit
+        // Saklar buka izinin ganti wujud sel
         editable: true,
-        // Parser angka
+        // Parut bersih angka teks jadi float bulat suci nol
         valueParser: numberParser,
-        // Ambil data inventory spot
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Tarik alat pancing panggil angka stok spot tayang dari ujung laci
+        valueGetter: (
+          // Bawa properti kantongan pancing param murni
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Korek laci ampe inventor spot nemu nyantol nol
           getActivePeriod(params.data, selectedPeriod)?.inventory?.spot ?? 0,
-        // Setter inventory spot
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Lempar panah injeksi mutasi sel rupa baru nyimpen balik database state murni
+        valueSetter: (
+          // Tangkep wujud kepingan isi barunya param
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Gali nyari titik bulannya akurat
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set inventory spot
+          // Kondisional nyegat celah buat beneran masuk kalo kepingan utuh ga bolong
           if (period) {
+            // Nimpa wujud sisa sisa properti usang murni
             period.inventory.spot = params.newValue ?? 0;
+            // Kabarin lolos verifikasi save ganti data
             return true;
           }
+          // Tolakan balik nihil fungsi nyetop edit
           return false;
         },
       },
+      // Kolom nulisin ongkos angka rupiah tarif patokan jualan nyewa durasi di iklan sela rupa murni
       {
         // Judul header
         headerName: "Rate Iklan (Rp)",
-        // Lebar kolom
+        // Lebaran sekat pilar sel tabel ag murni
         width: 150,
-        // Aktifin edit
+        // Buka slot penulisan ijinin ubah nilai wujud sel murni
         editable: true,
-        // Parser angka
+        // Pasang obeng buang ngawur karakter ketik rubah nol mutlak aman
         valueParser: numberParser,
-        // Ambil data rate iklan
-        valueGetter: (params: ValueGetterParams<ProgramFormData, number>) =>
+        // Kerek narik nyedot bongkahan harta properti tarif dari laci
+        valueGetter: (
+          // Penampung jaring bawaan
+          params: ValueGetterParams<ProgramFormData, number>,
+        ) =>
+          // Ekstrak dalam ampe ketemu besaran angka ratenya nol pelindung
           getActivePeriod(params.data, selectedPeriod)?.inventory?.adRate ?? 0,
-        // Setter rate iklan
-        valueSetter: (params: ValueSetterParams<ProgramFormData, number>) => {
+        // Pisau pembedah modif ganti numpuk ngedit rupa isi sel rate baru update state
+        valueSetter: (
+          // Jaring param penangkep rupa ketikan jari
+          params: ValueSetterParams<ProgramFormData, number>,
+        ) => {
+          // Panggil helper nemuin letak alamat memori rupa objek periode ini beneran tepat sasaran
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode ada set rate iklan
+          // Kondisional jebakan penghadang ijo rupa kalo objeknya nyata exist tanpa halangan
           if (period) {
+            // Tusuk langsung nimpahin bongkahan data yang lama ampe bersih ketutup
             period.inventory.adRate = params.newValue ?? 0;
+            // Bawa bendera sukses lempar balikan oke nyatain save kelar tanpa cela
             return true;
           }
+          // Tolak palang merah mentah operasi dibatalkan ga jelas alasannya
           return false;
         },
       },
+      // Kolom pilihan teks penilaian performa kondisi kpi stabil jelek ato cakep
       {
-        // Judul header
+        // Nama info judul atas kolom
         headerName: "Status",
-        // Lebar kolom
+        // Jarak regangannya lebar ag grid
         width: 150,
-        // Aktifin edit
+        // Saklar buka izinin ketikan
         editable: true,
-        // Editor dropdown status
+        // Pasang rupa bungkusan editor menu pilih lungsur turun ag grid luar biasa gampang
         cellEditor: "agSelectCellEditor",
-        // Ambil status periode
-        valueGetter: (params: ValueGetterParams<ProgramFormData, string>) =>
+        // Alat pancing ujung narik teks label labelnya status acara tv murni
+        valueGetter: (
+          // Kantong tangkapan param
+          params: ValueGetterParams<ProgramFormData, string>,
+        ) =>
+          // Ulik gedor laci nyari nyabut wujud label kalo gada copot sisa kosong aja aman
           getActivePeriod(params.data, selectedPeriod)?.status ?? "",
-        // Setter status
-        valueSetter: (params: ValueSetterParams<ProgramFormData, string>) => {
+        // Penusuk modifikasi nyantolin label pilihan baru ngelempar ganti yang lama murni
+        valueSetter: (
+          // Jaring kiriman
+          params: ValueSetterParams<ProgramFormData, string>,
+        ) => {
+          // Gali letak alamat kepingan beneran akurat
           const period = getActivePeriod(params.data, selectedPeriod);
-          // Kalo periode dan status ada set status
+          // Kondisional gerbang penjaga mastiin titik bulan kepingan form ada nyata plus lemparan milih juga isinya kaga zonk kopong beneran klik option
           if (period && params.newValue) {
+            // Tembak ubah nilai rupa text string bener save state
             period.status = params.newValue;
+            // Kirim pertanda oke bener berhasil save ganti properti
             return true;
           }
+          // Nolak gagal mutasi data sel status murni
           return false;
         },
-        // Opsi status
+        // Konfigurasi rakitan isi muatan perut si menu lungsur turun dropdown rupa option label
         cellEditorParams: {
+          // Kumpulan pasukan array jejeran pilihan string rupa ui dropdown status kpi
           values: [
+            // Cemerlang rupa pecah rekor mantap
             "Overachieve",
+            // Aman sejalan rel rupa pas kpi
             "Sesuai Target",
+            // diem doang ga naik turun rupa murni
             "Stabil",
+            // Buntung rupa jelek njeblok di luar nalar
             "Underperform",
+            // Kacau ampe minus modal ga nutup jualan kaga laku rupa parah
             "Rugi",
+            // Rupa bawaan lahir wujud default sel baru biasa doang aman
             "Normal",
           ],
         },
       },
     ],
+    // Pengawas memori mata mata kalo tiga saklar tuas wadah state id sama bongkahan row tabel plus tulisan bulan rupa ganti kerek ulang racikan panjang lebar ini
     [editingId, rowData, selectedPeriod],
   );
 
-  // Balikin semua fungsi dan state
+  // Lempar semua senjata balikin rupa fungsi turunan dan kotak kotak penampung state siap dirakit nempel dimari laci ui kodingan tempel depan komponen luar biasa rapi
   return {
+    // Array wadah tumpukan program data suci hasil cidukan server backend
     programs,
+    // Status boolean muter nunggu pertanda tarik data kueri nyala
     isLoading,
+    // Jarum sakti penusuk jantung mesin ag grid nembus api tabel saklar
     gridRef,
+    // Penanda boolean rupa jendela pop depan muka idup nyala buka form ui
     isModalOpen,
+    // Wadah khusus ngunci baris nyimpen ktp id dari program yang lagi operasi ketok mejik edit form
     editingId,
+    // Kantong penampung id inceran korban hapus buang sisa abu murni
     deleteConfirmId,
+    // Array penampung tumpukan rupa baris pengisi slot laci tabel edit ag grid
     rowData,
+    // Cetakan racikan kerangka pilar kolom tabel biasa mode baca read murni
     tableColumns,
+    // Rakitan cetak dropdown rupa jaring penyaring sortir data kategori tayangan list
     selectFilters,
+    // Cetakan arsitektur monster mutan pilar baris super komplit edit massal rupa ui nimpah form
     colDefs,
+    // Wadah penampung teks saringan angka kombinasi bulan rupa aktif
     selectedPeriod,
+    // Saklar pengubah state fungsi setter tuang lempar saringan rupa bulan
     setSelectedPeriod,
+    // Tumpukan jajaran rupa teks rentetan baris tanggal bulan turun siap jadi select menu ui
     periodOptions,
-    mutations: { createMut, updateMut, deleteMut },
+    // Keranjang kumpulan mutasi senjata penembak obeng merubah database ngerakit form data bener rupa murni
+    mutations: {
+      // Obeng tuas bikin input baru buat seret database kueri react
+      createMut,
+      // Obeng perubah ketok mejik nimpa data lama jadi cakep form suci beneran nyala update
+      updateMut,
+      // Senapan penghancur delete ngebom row lenyap ilang bakar
+      deleteMut,
+    },
+    // Kumpulan tombol fungsi perakit wujud rupa ui buka klik tombol jeroan form hook use mutlak suci rapi
     actions: {
+      // Tombol pencet buka laci gerbang modal pas nambah banyak borongan
       openAddModal,
+      // Tombol pembuka kotak pandora rupa modal ngebedah baris milih bener satu ketok
       openEditModal,
+      // Tuas saklar tuang banting kerai modal sembunyiin rupa ngilang hapus bersih sampah edit
       closeModal,
+      // Aksi nambah kotak kosong sisa nyantolin baris di ujung pantat form rupa ui ag tabel
       addRow,
+      // Pemicu pendorong gerobak bungkusan paket ngangkut paksa save rupa baris editan berderet ke server nembus tembakan api massal jitu
       submitBulkData,
+      // Tuas ngaitin id sisa inceran target hapus ke wadah tong nunggu di dor
       setDeleteConfirmId,
     },
   };

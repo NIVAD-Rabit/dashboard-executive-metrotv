@@ -1,17 +1,16 @@
 "use client";
 
-// Import react dari library react
 import React from "react";
-// Import komponen tabel pintar
+// Import komponen tabel
 import SmartTable from "@/components/shared/SmartTable";
 // Import modal detail program
 import ProgramDetailModal from "@/components/shared/ProgramDetailModal";
 // Import hook detail program buat ambil data
 import { useDetailProgram } from "@/hooks/useDetailProgram";
-// Import kotak filter periode
+// Import filter box periode
 import PeriodFilterBox from "@/components/shared/PeriodFilterBox";
 
-// Komponen halaman detail program
+// Komponen page detail program
 export default function DetailProgramPage() {
   // Tarik data sama kolom tabel dari hook, ga butuh tvchart atau financechart di sini
   const {
@@ -21,7 +20,7 @@ export default function DetailProgramPage() {
     isLoading,
     // Data program yang lagi dipilih
     selectedProgram,
-    // Fungsi buat ganti program terpilih
+    // Fungsi buat ganti program yang dipilih
     setSelectedProgram,
     // Filter buat dropdown
     selectFilters,
@@ -35,7 +34,7 @@ export default function DetailProgramPage() {
     periodOptions,
   } = useDetailProgram();
 
-  // Render konten halaman
+  // Render konten page
   return (
     // Div kontainer utama dengan styling responsif
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
@@ -47,7 +46,7 @@ export default function DetailProgramPage() {
         </div>
       ) : (
         // Div bungkus tabel pas data udah siap
-        <div className="bg-card shadow-sm rounded-2xl p-4">
+        <div className="border border-border bg-card shadow-sm rounded-2xl p-4">
           {/* Komponen filter box periode */}
           <PeriodFilterBox
             // Kirim periode aktif
@@ -66,8 +65,8 @@ export default function DetailProgramPage() {
             columns={columns}
             // Kirim filter dropdown
             selectFilters={selectFilters}
-            // Aktifin filter rentang tanggal
-            enableDateRange={true}
+            // Set false kalo ga butuh filter tanggal di dalam tabel
+            enableDateRange={false}
             // Fungsi buat ngambil key tanggal dari data
             dateKey={(item) => {
               // Cek periode aktif kalo ada
@@ -100,6 +99,8 @@ export default function DetailProgramPage() {
         onClose={() => setSelectedProgram(null)}
         // Kirim data program
         program={selectedProgram}
+        // Tembak periode awal filteran page ke modal
+        initialPeriod={selectedPeriod}
       />
     </div>
   );

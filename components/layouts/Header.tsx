@@ -1,34 +1,26 @@
 "use client";
 
-// Import ikon menu dari lucide
+// Import icon menu dari lucide
 import {
   Menu,
-  // Import ikon sun buat tema
   Sun,
-  // Import ikon moon buat mode gelap
   Moon,
-  // Import ikon bell buat notifikasi
   Bell,
-  // Import ikon sun dim buat tema
   SunDim,
-  // Import ikon funnel buat filter
   Funnel,
-  // Import ikon bar chart 2
   BarChart2,
-  // Import ikon line chart
   LineChart,
-  // Import ikon pie chart
   PieChart,
 } from "lucide-react";
 // Import fungsi dispatch dari redux
 import { useDispatch } from "react-redux";
 // Import hook buat dapetin path url saat ini
 import { usePathname } from "next/navigation";
-// Import aksi buat toggle sidebar
+// Import action buat toggle sidebar
 import { toggleSidebar } from "@/store/slices/uiSlice";
 // Import hook tema dari next-themes
 import { useTheme } from "next-themes";
-// Import helper buat ambil judul halaman
+// Import helper buat ambil judul page
 import { getTitleFromMenu, MenuGroup } from "@/lib/pageTitle";
 // Import data menu groups dari folder konstan
 import { menuGroups } from "@/constants/menuGroups";
@@ -46,16 +38,16 @@ const emptySubscribe = () => () => {};
 export default function Header() {
   // Ambil url path aktif atau set default ke root
   const pathname = usePathname() || "/";
-  // Inisialisasi dispatch untuk kirim aksi redux
+  // Inisialisasi dispatch untuk kirim action redux
   const dispatch = useDispatch();
-  // Ambil judul halaman berdasarkan menu
+  // Ambil judul page berdasarkan menu
   const titlePage = getTitleFromMenu(pathname, menuGroups);
 
   // Daftar grup yang mau ditampilkan di header
   const groups = ["EXECUTIVE VIEW", "ANALYTICS TOOLS"];
   // Olah menu groups jadi menu utama yang flat
   const menuItems = menuGroups
-    // Saring grup berdasarkan daftar yang disiapin
+    // Filter grup berdasarkan daftar yang disiapin
     .filter((menu) => groups.includes(menu.group))
     // Bongkar menu items jadi array satu dimensi
     .flatMap((menu) => menu.items);
@@ -68,12 +60,12 @@ export default function Header() {
       <div className="flex items-center gap-2">
         {/* Tombol menu buat buka sidebar di mobile */}
         <button
-          // Aksi panggil fungsi toggle sidebar
+          //Action panggil fungsi toggle sidebar
           onClick={() => dispatch(toggleSidebar())}
           // Styling tombol mobile
           className="h-12 w-12 flex items-center -ml-2 text-foreground hover:bg-muted rounded-full md:hidden transition-colors cursor-pointer"
         >
-          {/* Ikon menu */}
+          {/* Icon menu */}
           <Menu size={24} />
         </button>
         {/* Kontainer logo yang disembunyiin di mobile kecil */}
@@ -133,7 +125,7 @@ export default function Header() {
                   : "bg-muted text-foreground hover:text-white"
               }`}
             >
-              {/* Ikon tiap menu */}
+              {/* Icon tiap menu */}
               <item.icon size={18} />
               {/* Render nama menu kalo bukan dashboard */}
               {!isDashboard && item.name}
@@ -146,17 +138,17 @@ export default function Header() {
       <div className="flex gap-3">
         {/* Tombol filter */}
         <button
-          // Aksi kosong sementara
+          //Action kosong sementara
           onClick={() => ""}
           // Styling tombol filter
           className="border-2 border-cyan-700 flex items-center justify-center gap-2 pl-4 pr-6 h-10 rounded-full cursor-pointer text-sm font-medium transition-colors hover:bg-muted"
         >
-          {/* Ikon funnel */}
+          {/* Icon funnel */}
           <Funnel size={18} /> Filter
         </button>
         {/* Tombol buat nama user */}
         <div
-          // Aksi kosong sementara
+          //Action kosong sementara
           onClick={() => ""}
           // Styling nama user
           className="border-2 border-cyan-700 flex items-center justify-center gap-2 pl-4 pr-6 h-10 rounded-full cursor-pointer text-sm font-medium transition-colors hover:bg-muted"

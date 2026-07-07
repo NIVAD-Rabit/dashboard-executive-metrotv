@@ -1,19 +1,9 @@
 "use client";
 
-// Import React buat bikin komponen
-import React, {
-  // Import hook useEffect buat jalanin side effect
-  useEffect,
-  // Import hook useState buat simpen state internal
-  useState,
-  // Import hook useMemo buat optimalisasi hitungan
-  useMemo,
-  // Import hook useSyncExternalStore buat handle data eksternal
-  useSyncExternalStore,
-} from "react";
+import React, { useState } from "react";
 // Import createPortal buat ngerender modal di level root dom
 import { createPortal } from "react-dom";
-// Import koleksi ikon dari lucide react
+// Import koleksi icon dari lucide react
 import {
   X,
   Tv,
@@ -26,18 +16,19 @@ import {
   FileText,
   Activity,
   CalendarRange,
-  ArrowUpRight,
-  ArrowDownRight,
   Clock,
 } from "lucide-react";
-// Import komponen BaseChart buat nampilin grafik
-import BaseChart from "@/components/shared/BaseChart";
+// Import komponen ChartCard gantiin BaseChart langsung
+import ChartCard from "@/components/shared/ChartCard";
+// Import komponen reusable card statistik kecil
+import AdvancedStatCard from "@/components/shared/AdvancedStatCard";
+import TargetComparisonCard from "@/components/shared/TargetComparisonCard";
 // Import fungsi helper format angka biar enak dibaca
-import { formatBigNumber, formatNumberIndo } from "@/lib/formatters";
-// Import tipe data chart js
-import { ChartData, ChartOptions, TooltipItem } from "chart.js";
+import { formatNumberIndo } from "@/lib/formatters";
 // Import skema tipe data buat form program
 import { ProgramFormData } from "@/schemas/program";
+// Import hook khusus penopang logika modal
+import { useProgramDetailModal } from "@/hooks/useProgramDetailModal";
 
 // Interface buat mendefinisikan tipe properti yang masuk ke modal ini
 interface ProgramDetailModalProps {
@@ -47,10 +38,9 @@ interface ProgramDetailModalProps {
   onClose: () => void;
   // Data program yang mau ditampilin detailnya
   program: ProgramFormData | null;
+  // Periode default tarikan page utama
+  initialPeriod?: string;
 }
-
-// Fungsi dummy buat bantu sinkronisasi store eksternal
-const emptySubscribe = () => () => {};
 
 // Komponen utama buat nampilin detail program dalam bentuk modal
 export default function ProgramDetailModal({
@@ -60,378 +50,112 @@ export default function ProgramDetailModal({
   onClose,
   // Ambil data program
   program,
+  // Ambil periode awal
+  initialPeriod,
 }: ProgramDetailModalProps) {
-  // Hook buat mastiin komponen cuma render di browser biar ga error
-  const mounted = useSyncExternalStore(
-    // Pake fungsi kosong
-    emptySubscribe,
-    // Kalo di client balikin true
-    () => true,
-    // Kalo di server balikin false
-    () => false,
-  );
+  // Tancap hook pengolah data
+  const {
+    mounted,
+    trendStartMonth,
+    setTrendStartMonth,
+    trendEndMonth,
+    setTrendEndMonth,
+    trendFilter,
+    setTrendFilter,
+    selectedMonth,
+    setSelectedMonth,
+    activeTab,
+    setActiveTab,
+    currentPeriodData,
+    effectiveSelectedMonth,
+    trendStats,
+    trendLineChartData,
+    trendLineChartOptions,
+    tvChartData,
+    financeDoughnutChartData,
+    financeDoughnutChartOptions,
+  } = useProgramDetailModal(program, initialPeriod);
 
-  // State buat simpen input bulan mulai filter tren
-  const [trendStartMonth, setTrendStartMonth] = useState<string>("");
-  // State buat simpen input bulan akhir filter tren
-  const [trendEndMonth, setTrendEndMonth] = useState<string>("");
-  // State buat simpen pilihan filter tren
-  const [trendFilter, setTrendFilter] = useState<string>("all");
-  // State buat simpen bulan yang lagi aktif dipilih
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  // State buat ganti tab antara overview atau tren
-  const [activeTab, setActiveTab] = useState<"overview" | "trend">("overview");
-
-  // Memo buat urutin data periode biar pas tampil udah rapi
-  const sortedPeriods = useMemo(() => {
-    // Kalo data periode kosong balikin array kosong
-    if (!program?.periods) return [];
-    // Sortir data berdasarkan bulan biar urut
-    return [...program.periods].sort((a, b) => a.month.localeCompare(b.month));
-  }, [program]);
-
-  // Efek buat set bulan terpilih ke periode paling baru pas modal buka
-  useEffect(() => {
-    // Kalo ada data periode, set ke bulan terakhir
-    if (sortedPeriods.length > 0) {
-      setSelectedMonth(sortedPeriods[sortedPeriods.length - 1].month);
-    }
-  }, [sortedPeriods, isOpen]);
-
-  // Memo buat dapetin data periode spesifik yang lagi dipilih
-  const currentPeriodData = useMemo(() => {
-    // Kalo ga ada data balikin null
-    if (!program?.periods) return null;
-    // Cari periode yang bulan-nya cocok sama pilihan user
-    return (
-      program.periods.find((p) => p.month === selectedMonth) ||
-      sortedPeriods[sortedPeriods.length - 1]
-    );
-  }, [program, selectedMonth, sortedPeriods]);
-
-  // Memo buat bikin string display periode yang lagi aktif
-  const periodDisplay = useMemo(() => {
-    // Kalo datanya kosong kasih tanda strip
-    if (sortedPeriods.length === 0) return "-";
-    // Kalo cuma satu periode, tampilin bulan itu aja
-    if (sortedPeriods.length === 1) return sortedPeriods[0].month;
-    // Kalo lebih, tampilin range bulan awal sampe bulan akhir
-    return `${sortedPeriods[0].month} s/d ${sortedPeriods[sortedPeriods.length - 1].month}`;
-  }, [sortedPeriods]);
-
-  // Memo buat nyaring data buat chart tren sesuai filter yang dipasang
-  const filteredTrendPeriods = useMemo(() => {
-    // Awalnya ambil data periode yang udah urut
-    let result = sortedPeriods;
-    // Kalo filter YTD, saring data cuma buat tahun ini
-    if (trendFilter === "ytd") {
-      const currentYear = new Date().getFullYear().toString();
-      result = result.filter((p) => p.month.startsWith(currentYear));
-    } else if (trendFilter === "mtd") {
-      // Kalo MTD, saring data buat bulan ini aja
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      result = result.filter((p) => p.month === currentMonth);
-    } else if (trendFilter === "custom") {
-      // Kalo custom, saring berdasarkan input user
-      if (trendStartMonth) {
-        result = result.filter((p) => p.month >= trendStartMonth);
-      }
-      if (trendEndMonth) {
-        result = result.filter((p) => p.month <= trendEndMonth);
-      }
-    }
-    // Balikin hasil saringan
-    return result;
-  }, [sortedPeriods, trendStartMonth, trendEndMonth, trendFilter]);
-
-  // Fungsi buat hitung statistik tren kenaikan atau penurunan
-  const calculateTrend = (metricKey: string) => {
-    // Kalo data kosong balikin nilai awal default
-    if (filteredTrendPeriods.length === 0) return { val: 0, pct: 0, up: true };
-    // Kalo cuma ada satu data ga bisa bandingin
-    if (filteredTrendPeriods.length === 1) {
-      const p = filteredTrendPeriods[0];
-      return { val: getMetricValue(p, metricKey), pct: 0, up: true };
-    }
-    // Ambil nilai periode terakhir
-    const last = getMetricValue(
-      filteredTrendPeriods[filteredTrendPeriods.length - 1],
-      metricKey,
-    );
-    // Ambil nilai periode sebelumnya
-    const prev = getMetricValue(
-      filteredTrendPeriods[filteredTrendPeriods.length - 2],
-      metricKey,
-    );
-    // Hitung selisihnya
-    const diff = last - prev;
-    // Hitung persentase kenaikan
-    const pct = prev === 0 ? 100 : (diff / prev) * 100;
-    // Balikin status tren naik atau turun
-    return { val: last, pct: Math.abs(pct), up: diff >= 0 };
-  };
-
-  // Fungsi bantu buat ngambil nilai metrik dari objek periode
-  const getMetricValue = (p: ProgramFormData["periods"][0], metric: string) => {
-    // Kalo objek periode ga ada balikin nol
-    if (!p) return 0;
-    // Cek key metrik terus balikin nilainya sesuai tipe
-    switch (metric) {
-      case "rev":
-        return p.financials.revenueActual;
-      case "pnl":
-        return p.financials.pnl;
-      case "cost":
-        return p.financials.costDirect;
-      case "tvr":
-        return p.performanceTV.actualTVR;
-      case "share":
-        return p.performanceTV.actualShare;
-      case "views":
-        return p.performanceDigital.views;
-      default:
-        return 0;
-    }
-  };
-
-  // Memo buat nyimpen hasil hitungan statistik tren buat semua metrik
-  const trendStats = useMemo(
-    () => ({
-      rev: calculateTrend("rev"),
-      pnl: calculateTrend("pnl"),
-      cost: calculateTrend("cost"),
-      tvr: calculateTrend("tvr"),
-      share: calculateTrend("share"),
-      views: calculateTrend("views"),
-    }),
-    [filteredTrendPeriods],
-  );
-
-  // Memo buat susun struktur data grafik garis tren
-  const trendLineChartData = useMemo<ChartData<"line"> | null>(() => {
-    // Kalo ga ada data, balikin null
-    if (filteredTrendPeriods.length === 0) return null;
-    // Balikin objek data chart line
-    return {
-      labels: filteredTrendPeriods.map((p) => p.month),
-      datasets: [
-        {
-          label: "Net PNL",
-          data: filteredTrendPeriods.map((p) => p.financials.pnl),
-          borderColor: "#16a34a",
-          backgroundColor: "#16a34a",
-          yAxisID: "y",
-          tension: 0.4,
-          hidden: false,
-        },
-        {
-          label: "Revenue Aktual",
-          data: filteredTrendPeriods.map((p) => p.financials.revenueActual),
-          borderColor: "#1f77b4",
-          backgroundColor: "#1f77b4",
-          yAxisID: "y",
-          tension: 0.4,
-          hidden: true,
-        },
-        {
-          label: "Cost Direct",
-          data: filteredTrendPeriods.map((p) => p.financials.costDirect),
-          borderColor: "#ff7f0e",
-          backgroundColor: "#ff7f0e",
-          yAxisID: "y",
-          tension: 0.4,
-          hidden: true,
-        },
-        {
-          label: "Digital Views",
-          data: filteredTrendPeriods.map((p) => p.performanceDigital.views),
-          borderColor: "#8b5cf6",
-          backgroundColor: "#8b5cf6",
-          yAxisID: "y",
-          tension: 0.4,
-          hidden: true,
-        },
-        {
-          label: "TVR",
-          data: filteredTrendPeriods.map((p) => p.performanceTV.actualTVR),
-          borderColor: "#ec4899",
-          backgroundColor: "#ec4899",
-          yAxisID: "y1",
-          tension: 0.4,
-          hidden: false,
-        },
-        {
-          label: "Share",
-          data: filteredTrendPeriods.map((p) => p.performanceTV.actualShare),
-          borderColor: "#06b6d4",
-          backgroundColor: "#06b6d4",
-          yAxisID: "y1",
-          tension: 0.4,
-          hidden: false,
-        },
-      ],
-    };
-  }, [filteredTrendPeriods]);
-
-  // Konfigurasi opsi chart line biar interaktif
-  const trendLineChartOptions: ChartOptions<"line"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: "bottom",
-        labels: { usePointStyle: true, boxWidth: 8 },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context: TooltipItem<"line">) {
-            let label = context.dataset.label || "";
-            let val = context.parsed.y;
-            // Kalo tv atau share, ga pake embel2 rupiah
-            if (label === "TVR" || label === "Share") {
-              return `${label}: ${val}`;
-            }
-            // Sisanya pake format rupiah
-            return `${label}: Rp ${formatNumberIndo(val ?? 0)}`;
-          },
-        },
-      },
-      zoom: {
-        zoom: {
-          mode: "xy",
-        },
-        pan: {
-          enabled: true,
-          mode: "xy",
-        },
-      },
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        type: "linear",
-        display: true,
-        position: "left",
-        title: { display: true, text: "Rupiah / Views" },
-        ticks: {
-          // Format angka gede biar ga kepanjangan
-          callback: function (value: string | number) {
-            return formatBigNumber(Number(value));
-          },
-        },
-      },
-      y1: {
-        type: "linear",
-        display: true,
-        position: "right",
-        title: { display: true, text: "TVR / Share" },
-        grid: { drawOnChartArea: false },
-        ticks: {
-          // Format angka biasa buat tvr share
-          callback: function (value: string | number) {
-            return Number(value).toLocaleString("id-ID");
-          },
-        },
-      },
-    },
-  };
-
-  // Memo data grafik bar performa tv
-  const tvChartData = useMemo<ChartData<"bar"> | null>(() => {
-    // Kalo ga ada data periode balikin null
-    if (!currentPeriodData) return null;
-    // Balikin objek data bar
-    return {
-      labels: ["TVR", "Share"],
-      datasets: [
-        {
-          label: "Target",
-          data: [
-            currentPeriodData.performanceTV?.targetTVR ?? 0,
-            currentPeriodData.performanceTV?.targetShare ?? 0,
-          ],
-          backgroundColor: "#4bc0c0",
-          minBarLength: 10,
-        },
-        {
-          label: "Aktual",
-          data: [
-            currentPeriodData.performanceTV?.actualTVR ?? 0,
-            currentPeriodData.performanceTV?.actualShare ?? 0,
-          ],
-          backgroundColor: "#1f77b4",
-          minBarLength: 10,
-        },
-      ],
-    };
-  }, [currentPeriodData]);
-
-  // Memo data grafik donat finansial
-  const financeDoughnutChartData = useMemo<ChartData<"doughnut"> | null>(() => {
-    // Kalo ga ada data periode balikin null
-    if (!currentPeriodData) return null;
-    const pnl = currentPeriodData.financials?.pnl ?? 0;
-    // Balikin data donat
-    return {
-      labels: [
-        "Target Rev",
-        "Aktual Rev",
-        "Cost Direct",
-        "Digital Rev",
-        "Net PNL",
-      ],
-      datasets: [
-        {
-          data: [
-            currentPeriodData.financials?.revenueTarget ?? 0,
-            currentPeriodData.financials?.revenueActual ?? 0,
-            currentPeriodData.financials?.costDirect ?? 0,
-            currentPeriodData.performanceDigital?.revenue ?? 0,
-            Math.abs(pnl),
-          ],
-          backgroundColor: [
-            "#4bc0c0",
-            "#1f77b4",
-            "#ff7f0e",
-            "#8b5cf6",
-            pnl >= 0 ? "#16a34a" : "#d62728",
-          ],
-        },
-      ],
-    };
-  }, [currentPeriodData]);
-
-  // Memo konfigurasi tooltip donat
-  const financeDoughnutChartOptions: ChartOptions<"doughnut"> = useMemo(
-    () => ({
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function (context: TooltipItem<"doughnut">) {
-              const label = context.label || "";
-              const value = context.parsed || 0;
-              const pnl = currentPeriodData?.financials?.pnl ?? 0;
-              // Kalo net pnl minus, kasih tanda minus
-              if (label === "Net PNL" && pnl < 0) {
-                return `${label}: Rp -${formatNumberIndo(value)}`;
-              }
-              // Format normal rupiah
-              return `${label}: Rp ${formatNumberIndo(value)}`;
-            },
-          },
-        },
-      },
-    }),
-    [currentPeriodData],
-  );
+  // State buat mode komparasi target
+  const [compareMode, setCompareMode] = useState("prev");
 
   // Kalo kondisi render belum terpenuhi balikin null
   if (!isOpen || !program || !mounted) return null;
+
+  const sortedPeriodsForOverview = [...(program.periods || [])].sort((a, b) =>
+    a.month.localeCompare(b.month),
+  );
+
+  const currentMonthStr = effectiveSelectedMonth || selectedMonth;
+  const currentOverviewIndex = sortedPeriodsForOverview.findIndex(
+    (p) => p.month === currentMonthStr,
+  );
+
+  // Logika buat nentuin data pembanding berdasarkan mode
+  let referenceData = null;
+  let periodLabel = "vs Prev";
+
+  if (compareMode === "prev") {
+    referenceData =
+      currentOverviewIndex > 0
+        ? sortedPeriodsForOverview[currentOverviewIndex - 1]
+        : null;
+    periodLabel = "vs Bulan Lalu";
+  } else if (compareMode === "yoy") {
+    if (currentMonthStr) {
+      const [year, month] = currentMonthStr.split("-");
+      const yoyMonthStr = `${parseInt(year) - 1}-${month}`;
+      referenceData =
+        sortedPeriodsForOverview.find((p) => p.month === yoyMonthStr) || null;
+    }
+    periodLabel = "vs Tahun Lalu";
+  }
+
+  const calcOverviewStat = (curr = 0, prev = 0) => {
+    const diff = curr - prev;
+    const pct =
+      prev === 0 ? (curr > 0 ? 100 : 0) : Math.abs((diff / prev) * 100);
+    return { val: curr, up: diff >= 0, pct };
+  };
+
+  const overviewStats = {
+    pnl: calcOverviewStat(
+      currentPeriodData?.financials?.pnl,
+      referenceData?.financials?.pnl,
+    ),
+    rev: calcOverviewStat(
+      currentPeriodData?.financials?.revenueActual,
+      referenceData?.financials?.revenueActual,
+    ),
+    cost: calcOverviewStat(
+      currentPeriodData?.financials?.costDirect,
+      referenceData?.financials?.costDirect,
+    ),
+    views: calcOverviewStat(
+      currentPeriodData?.performanceDigital?.views,
+      referenceData?.performanceDigital?.views,
+    ),
+    tvr: calcOverviewStat(
+      currentPeriodData?.performanceTV?.actualTVR,
+      referenceData?.performanceTV?.actualTVR,
+    ),
+    share: calcOverviewStat(
+      currentPeriodData?.performanceTV?.actualShare,
+      referenceData?.performanceTV?.actualShare,
+    ),
+    digiRev: calcOverviewStat(
+      currentPeriodData?.performanceDigital?.revenue,
+      referenceData?.performanceDigital?.revenue,
+    ),
+    spot: calcOverviewStat(
+      currentPeriodData?.inventory?.spot,
+      referenceData?.inventory?.spot,
+    ),
+    adRate: calcOverviewStat(
+      currentPeriodData?.inventory?.adRate,
+      referenceData?.inventory?.adRate,
+    ),
+  };
 
   // Render modal pake createportal buat nempel di body
   return createPortal(
@@ -444,25 +168,25 @@ export default function ProgramDetailModal({
           {/* Info judul program */}
           <div>
             <h2 className="text-xl font-bold text-foreground">
-              {program.name}
+              Detail: {program.name}
             </h2>
             {/* Box badge filter */}
             <div className="flex flex-wrap gap-2 mt-1">
               {/* Cek tab yang lagi aktif */}
-              {activeTab === "overview" ? (
+              {activeTab === "overview" || activeTab === "komparasi" ? (
                 // Badge periode buat tab overview
                 <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-md flex items-center gap-1">
                   <Clock size={12} /> Data Ditampilkan:{" "}
-                  {selectedMonth || periodDisplay}
+                  {effectiveSelectedMonth || "-"}
                 </span>
               ) : (
                 // Badge info buat tab tren
                 <span className="text-xs font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-md flex items-center gap-1">
                   <Activity size={12} /> Rentang Tren:{" "}
-                  {trendFilter === "all"
-                    ? "All Time"
-                    : trendFilter === "ytd"
-                      ? "YTD"
+                  {trendFilter === "ytd"
+                    ? "YTD"
+                    : trendFilter === "all"
+                      ? "All Time"
                       : trendFilter === "mtd"
                         ? "MTD"
                         : `${trendStartMonth || "Awal"} s/d ${trendEndMonth || "Akhir"}`}
@@ -487,14 +211,48 @@ export default function ProgramDetailModal({
           </button>
         </div>
 
+        {/* Tab navigasi buat switch grafik di header bodi */}
+        <div className="flex bg-muted/20 border-b border-border">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-6 py-3 font-bold text-sm transition-colors ${
+              activeTab === "overview"
+                ? "bg-background border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            Overview Periode
+          </button>
+          {/* <button
+            onClick={() => setActiveTab("trend")}
+            className={`px-6 py-3 font-bold text-sm transition-colors ${
+              activeTab === "trend"
+                ? "bg-background border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            Analisis Tren
+          </button> */}
+          <button
+            onClick={() => setActiveTab("komparasi")}
+            className={`px-6 py-3 font-bold text-sm transition-colors ${
+              activeTab === "komparasi"
+                ? "bg-background border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            Komparasi Target
+          </button>
+        </div>
+
         {/* Konten scrollable */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-muted/10">
           {/* Kondisi render tab overview */}
           {activeTab === "overview" && (
             // Fragment isi overview
             <>
               {/* Baris pilihan periode */}
-              <div className="flex items-center gap-3 bg-muted/30 p-4 rounded-2xl border border-border">
+              <div className="flex items-center gap-3 bg-background p-4 rounded-2xl border border-border">
                 <label className="text-sm font-bold text-foreground flex items-center gap-2">
                   <CalendarRange size={16} className="text-primary" />
                   Pilih Periode Detail:
@@ -513,10 +271,9 @@ export default function ProgramDetailModal({
                     ))}
                 </select>
               </div>
-
-              {/* Grid 3 kartu statistik */}
+              {/* Grid 3 card statistik */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Kartu performa tv */}
+                {/* Card performa tv */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <Tv size={16} /> Performa Layar TV
@@ -534,7 +291,9 @@ export default function ProgramDetailModal({
                       <span className="text-xs text-muted-foreground block">
                         Capaian TVR
                       </span>
-                      <span className="text-xl font-bold text-primary">
+                      <span
+                        className={`text-xl font-bold ${(currentPeriodData?.performanceTV?.actualTVR ?? 0) >= (currentPeriodData?.performanceTV?.targetShare ?? 0) ? "text-green-600" : "text-destructive"}`}
+                      >
                         {currentPeriodData?.performanceTV?.actualTVR ?? 0}
                       </span>
                     </div>
@@ -559,7 +318,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu revenue */}
+                {/* Card revenue */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <DollarSign size={16} /> Revenue Finansial
@@ -601,7 +360,7 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
-                {/* Kartu profitabilitas */}
+                {/* Card profitabilitas */}
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <TrendingUp size={16} /> Profitabilitas & Anggaran
@@ -647,22 +406,22 @@ export default function ProgramDetailModal({
 
               {/* Grid 2 grafik */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-card border border-border rounded-2xl shadow-sm p-2 flex flex-col">
-                  {/* Cek data tv chart ada baru render */}
+                <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden">
+                  {/* Cek data tv chart ada baru render pake ChartCard */}
                   {tvChartData && (
-                    <BaseChart
+                    <ChartCard
                       type="bar"
-                      title="Performa TV (Target vs Aktual)"
+                      title="Performa TV (Target vs Capaian)"
                       data={tvChartData}
                       height={320}
                     />
                   )}
                 </div>
 
-                <div className="bg-card border border-border rounded-2xl shadow-sm p-2 flex flex-col">
-                  {/* Cek data finance chart ada baru render */}
+                <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden">
+                  {/* Cek data finance chart ada baru render pake ChartCard */}
                   {financeDoughnutChartData && (
-                    <BaseChart
+                    <ChartCard
                       type="doughnut"
                       title="Struktur Anggaran & Realisasi"
                       data={financeDoughnutChartData}
@@ -729,11 +488,11 @@ export default function ProgramDetailModal({
           {/* Kondisi render tab tren */}
           {activeTab === "trend" && (
             // Fragment isi tren
-            <div className="bg-card border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4 mt-2">
+            <div className="bg-background border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4 mt-2">
               {/* Header kontrol tren */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-border pb-4 gap-4">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Activity size={16} className="text-primary" /> Multi-Axis
+                  <Activity size={16} className="text-primary" />
                   Trend Historis
                 </h3>
 
@@ -744,9 +503,9 @@ export default function ProgramDetailModal({
                     onChange={(e) => setTrendFilter(e.target.value)}
                     className="bg-muted border border-border rounded-xl px-4 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-sm"
                   >
-                    <option value="all">All Time</option>
                     <option value="ytd">YTD</option>
                     <option value="mtd">MTD</option>
+                    <option value="all">All Time</option>
                     <option value="custom">Custom</option>
                   </select>
 
@@ -777,78 +536,11 @@ export default function ProgramDetailModal({
 
               {/* Grid angka summary tren */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                <div className="lg:col-span-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {/* Mapping data statistik tren */}
-                  {[
-                    {
-                      id: "pnl",
-                      label: "Net PNL",
-                      stat: trendStats.pnl,
-                      prefix: "Rp",
-                    },
-                    {
-                      id: "rev",
-                      label: "Rev Aktual",
-                      stat: trendStats.rev,
-                      prefix: "Rp",
-                    },
-                    {
-                      id: "cost",
-                      label: "Cost Direct",
-                      stat: trendStats.cost,
-                      prefix: "Rp",
-                    },
-                    {
-                      id: "views",
-                      label: "Views",
-                      stat: trendStats.views,
-                      prefix: "",
-                    },
-                    {
-                      id: "tvr",
-                      label: "TVR",
-                      stat: trendStats.tvr,
-                      prefix: "",
-                    },
-                    {
-                      id: "share",
-                      label: "Share",
-                      stat: trendStats.share,
-                      prefix: "",
-                    },
-                  ].map((item) => (
-                    // Kartu statistik tren per item
-                    <div
-                      key={item.id}
-                      className="flex flex-col p-3 bg-muted/20 rounded-xl border border-border/50"
-                    >
-                      <span className="text-[11px] font-medium text-muted-foreground">
-                        {item.label}
-                      </span>
-                      <span className="text-sm font-bold text-foreground">
-                        {item.prefix && `${item.prefix} `}
-                        {formatBigNumber(item.stat.val)}
-                      </span>
-                      {/* Badge persentase */}
-                      <div
-                        className={`flex items-center gap-1 font-bold text-[10px] mt-1 ${item.stat.up ? "text-green-600" : "text-destructive"}`}
-                      >
-                        {item.stat.up ? (
-                          <ArrowUpRight size={12} />
-                        ) : (
-                          <ArrowDownRight size={12} />
-                        )}
-                        {item.stat.pct.toFixed(1)}%
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Grafik line tren */}
-                <div className="lg:col-span-12 h-[400px] bg-muted/10 rounded-xl border border-border/50 p-2">
+                {/* Grafik line tren pake ChartCard */}
+                <div className="lg:col-span-12 bg-muted/10 rounded-xl border border-border/50 overflow-hidden">
                   {/* Render chart line kalo ada data */}
                   {trendLineChartData && (
-                    <BaseChart
+                    <ChartCard
                       type="line"
                       title="Komparasi Matrik (Gunakan Legend untuk Tampil/Sembunyi)"
                       data={trendLineChartData}
@@ -857,6 +549,187 @@ export default function ProgramDetailModal({
                       options={trendLineChartOptions}
                     />
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Kondisi render tab komparasi */}
+          {activeTab === "komparasi" && (
+            <div className="flex flex-col gap-6">
+              {/* Baris pilihan periode & select perbandingan */}
+              <div className="flex flex-wrap items-center gap-6 bg-background p-4 rounded-2xl border border-border">
+                {/* Pilihan periode detail */}
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <CalendarRange size={16} className="text-primary" />
+                    Pilih Periode Detail:
+                  </label>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="bg-card border border-border rounded-xl px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer w-48 shadow-sm"
+                  >
+                    {[...(program.periods || [])]
+                      .sort((a, b) => b.month.localeCompare(a.month))
+                      .map((p) => (
+                        <option key={p.id} value={p.month}>
+                          {p.month} {p.status ? `(${p.status})` : ""}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Select opsi komparasi */}
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Activity size={16} className="text-primary" />
+                    Bandingkan:
+                  </label>
+                  <select
+                    value={compareMode}
+                    onChange={(e) => setCompareMode(e.target.value)}
+                    className="bg-card border border-border rounded-xl px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer w-48 shadow-sm"
+                  >
+                    <option value="prev">Bulan Sebelumnya (MoM)</option>
+                    <option value="yoy">Tahun Lalu (YoY)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
+                    <Tv size={16} /> Performa Layar TV
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <TargetComparisonCard
+                      label="Capaian TVR"
+                      actual={currentPeriodData?.performanceTV?.actualTVR ?? 0}
+                      target={currentPeriodData?.performanceTV?.targetTVR ?? 0}
+                    />
+                    <TargetComparisonCard
+                      label="Capaian Share"
+                      actual={
+                        currentPeriodData?.performanceTV?.actualShare ?? 0
+                      }
+                      target={
+                        currentPeriodData?.performanceTV?.targetShare ?? 0
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
+                    <DollarSign size={16} /> Revenue Finansial
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <TargetComparisonCard
+                        label="Total Revenue"
+                        actual={
+                          currentPeriodData?.financials?.revenueActual ?? 0
+                        }
+                        target={
+                          currentPeriodData?.financials?.revenueTarget ?? 0
+                        }
+                        prefix="Rp"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <AdvancedStatCard
+                        label="Digital Revenue"
+                        value={
+                          currentPeriodData?.performanceDigital?.revenue ?? 0
+                        }
+                        prefix="Rp"
+                        isUp={overviewStats.digiRev.up}
+                        percentage={overviewStats.digiRev.pct}
+                        periodLabel={periodLabel}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4 flex flex-col">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
+                    <TrendingUp size={16} /> Profitabilitas & Anggaran
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 flex-1">
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdvancedStatCard
+                        label="Net PNL Akhir"
+                        value={currentPeriodData?.financials?.pnl ?? 0}
+                        prefix="Rp"
+                        isUp={overviewStats.pnl.up}
+                        percentage={overviewStats.pnl.pct}
+                        periodLabel={periodLabel}
+                      />
+                      <AdvancedStatCard
+                        label="Cost Direct"
+                        value={currentPeriodData?.financials?.costDirect ?? 0}
+                        prefix="Rp"
+                        isUp={overviewStats.cost.up}
+                        percentage={overviewStats.cost.pct}
+                        inverse={true}
+                        periodLabel={periodLabel}
+                      />
+                    </div>
+                    <div className="mt-auto bg-muted/20 border border-border/50 p-3 rounded-xl flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">
+                        Status / Evaluasi:
+                      </span>
+                      <span
+                        className={`text-sm font-bold ${(currentPeriodData?.financials?.pnl ?? 0) >= 0 ? "text-green-600" : "text-destructive"}`}
+                      >
+                        {currentPeriodData?.status ?? "Normal"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-border pb-2">
+                    <MonitorPlay size={14} /> Distribusi Digital
+                  </span>
+                  <AdvancedStatCard
+                    label="Total Views Konten"
+                    value={currentPeriodData?.performanceDigital?.views ?? 0}
+                    isUp={overviewStats.views.up}
+                    percentage={overviewStats.views.pct}
+                    periodLabel={periodLabel}
+                  />
+                </div>
+
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-border pb-2">
+                    <Layers size={14} /> Kapasitas Komersial
+                  </span>
+                  <AdvancedStatCard
+                    label="Inventory Spot Iklan"
+                    value={currentPeriodData?.inventory?.spot ?? 0}
+                    suffix=" Slot"
+                    isUp={overviewStats.spot.up}
+                    percentage={overviewStats.spot.pct}
+                    periodLabel={periodLabel}
+                  />
+                </div>
+
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-border pb-2">
+                    <Wallet size={14} /> Nilai Jual Produk
+                  </span>
+                  <AdvancedStatCard
+                    label="Rate Card per Spot"
+                    value={currentPeriodData?.inventory?.adRate ?? 0}
+                    prefix="Rp"
+                    isUp={overviewStats.adRate.up}
+                    percentage={overviewStats.adRate.pct}
+                    periodLabel={periodLabel}
+                  />
                 </div>
               </div>
             </div>

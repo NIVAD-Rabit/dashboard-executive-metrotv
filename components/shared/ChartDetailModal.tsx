@@ -1,15 +1,15 @@
 "use client";
 
-// Import react dan hooks buat state
 import React, { useState, useMemo, useSyncExternalStore } from "react";
 // Import portal buat ngerender modal di atas body
 import { createPortal } from "react-dom";
-// Import ikon x dan filter x
+// Import icon x dan filter x
 import { X, FilterX } from "lucide-react";
 // Import komponen chart dasar
 import BaseChart from "@/components/shared/BaseChart";
-// Import data mock program
-import { MOCK_PROGRAMS } from "@/constants/programMockData";
+// Import data program
+import { useQuery } from "@tanstack/react-query";
+import { fetchProgramsByRange } from "@/services/api/programService";
 // Import tipe data chart
 import { ChartData } from "chart.js";
 // Import helper format angka
@@ -55,7 +55,7 @@ export default function ChartDetailModal({
   // State filter kategori
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   // State filter periode
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("ytd");
   // State bulan mulai
   const [startMonth, setStartMonth] = useState<string>("");
   // State bulan batas
@@ -66,18 +66,26 @@ export default function ChartDetailModal({
   // State ganti tab tv
   const [tvTab, setTvTab] = useState<"tvr" | "share">("tvr");
 
+  // Fetch data menggunakan React Query
+  const { data: programResponse } = useQuery({
+    queryKey: ["programs", "list"],
+    queryFn: () => fetchProgramsByRange(),
+  });
+
+  const programs = programResponse?.data || [];
+
   // Opsi dropdown periode
   const periodOptions = [
-    { label: "All Time", value: "all" },
     { label: "YTD", value: "ytd" },
     { label: "MTD", value: "mtd" },
+    { label: "All Time", value: "all" },
     { label: "Custom", value: "custom" },
   ];
 
-  // Saring data program berdasar opsi
+  // Filter data program berdasarkan opsi
   const filteredPrograms = useMemo(() => {
     // Salin data mentah
-    let result = [...MOCK_PROGRAMS];
+    let result = [...programs];
 
     // Cek kalo periode custom aktif
     if (selectedPeriod === "custom") {
@@ -93,7 +101,7 @@ export default function ChartDetailModal({
           p.periods.some((per) => per.month <= endMonth),
         );
       }
-    } else if (selectedPeriod && selectedPeriod !== "all") {
+    } else if (selectedPeriod && selectedPeriod !== "ytd") {
       // Ambil waktu hari ini
       const today = new Date();
       // Tahun sekarang
@@ -125,7 +133,7 @@ export default function ChartDetailModal({
 
     // Balikin hasil filter
     return result;
-  }, [selectedCategory, startMonth, endMonth, selectedPeriod]);
+  }, [programs, selectedCategory, startMonth, endMonth, selectedPeriod]);
 
   // Tentu tipe chart dari prop metrik
   type ModalChartType = "bar" | "doughnut";
@@ -241,7 +249,7 @@ export default function ChartDetailModal({
             minBarLength: 15,
           },
           {
-            label: "Actual Revenue (Rp)",
+            label: "Capaian Revenue (Rp)",
             data: sorted.map((p) =>
               p.periods.reduce((s, per) => s + per.financials.revenueActual, 0),
             ),
@@ -286,7 +294,7 @@ export default function ChartDetailModal({
               minBarLength: 15,
             },
             {
-              label: "Aktual TVR",
+              label: "Capaian TVR",
               data: sorted.map((p) =>
                 p.periods.reduce(
                   (s, per) => s + per.performanceTV.actualTVR,
@@ -328,7 +336,7 @@ export default function ChartDetailModal({
               minBarLength: 15,
             },
             {
-              label: "Aktual Share (%)",
+              label: "Capaian Share (%)",
               data: sorted.map((p) =>
                 p.periods.reduce(
                   (s, per) => s + per.performanceTV.actualShare,
@@ -364,7 +372,7 @@ export default function ChartDetailModal({
           acc + p.periods.reduce((s, per) => s + per.financials.costDirect, 0),
         0,
       );
-      // Total target
+      // Total net
       const revTarget = filteredPrograms.reduce(
         (acc, p) =>
           acc +
@@ -374,7 +382,7 @@ export default function ChartDetailModal({
 
       // Balikin data performa
       return {
-        labels: ["Revenue Capaian", "Cost Direct", "Target Revenue"],
+        labels: ["Capaian Revenue", "Cost Direct", "Target Revenue"],
         datasets: [
           {
             data: [revCapaian, costDirect, revTarget],
@@ -400,7 +408,7 @@ export default function ChartDetailModal({
       <div className="bg-background w-full max-w-6xl max-h-[95vh] rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-border">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card shrink-0">
           <h2 className="text-xl font-bold text-foreground">
-            Detail Data, {title}
+            Detail Data: {title}
           </h2>
           <button
             onClick={onClose}
@@ -512,13 +520,13 @@ export default function ChartDetailModal({
               {(startMonth ||
                 endMonth ||
                 selectedCategory ||
-                (selectedPeriod && selectedPeriod !== "all")) && (
+                (selectedPeriod && selectedPeriod !== "ytd")) && (
                 <button
                   onClick={() => {
                     setStartMonth("");
                     setEndMonth("");
                     setSelectedCategory("");
-                    setSelectedPeriod("all");
+                    setSelectedPeriod("ytd");
                   }}
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >

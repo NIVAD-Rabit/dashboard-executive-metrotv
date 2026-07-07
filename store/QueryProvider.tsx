@@ -1,6 +1,5 @@
 "use client";
 
-// Import react sama usestate buat nyimpen instance query
 import React, { useState } from "react";
 // Import queryclient sama providernya dari library tanstack
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -15,7 +14,7 @@ export default function QueryProvider({
 }) {
   // Masukin queryclient ke dalem wadah usestate biar ga dibikin ulang pas komponen re render
   const [queryClient] = useState(
-    // Bikin instance baru queryclient pake fungsi panah
+    // Bikin instance baru queryclient pake fungsi arrow
     () =>
       // Eksekusi pembuatannya di sini trus masukin opsi bawaan
       new QueryClient({
@@ -25,7 +24,7 @@ export default function QueryProvider({
           queries: {
             // Anggap data masih seger selama semenit penuh sebelon disuruh refresh
             staleTime: 60 * 1000,
-            // Matiin fitur refetch otomatis pas user bolak balik tab browser
+            // Matiin fitur refetch otomatis pas user bolak-balik tab browser
             refetchOnWindowFocus: false,
             // Kalo request gagal cuma dikasih kesempatan nyoba sekali lagi
             retry: 1,

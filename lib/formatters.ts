@@ -7,7 +7,6 @@ import { Scale, CoreScaleOptions } from "chart.js";
 export const formatNumberIndo = (value: string | number) => {
   // Set format desimal 0 sampe 3
   const formatIndo = { minimumFractionDigits: 0, maximumFractionDigits: 3 };
-
   // Balikin hasil lokalisasi
   return value.toLocaleString("id-ID", formatIndo);
 };
@@ -18,35 +17,16 @@ export const formatBigNumber = function (
   this: Scale<CoreScaleOptions> | void | undefined,
   // Nilai yang mau diformat
   value: string | number,
-): string | number | string[] {
-  // Simpen nilai biar aman
-  const targetValue = value;
+): string {
+  // Convert nilai ke number murni
+  const numValue = Number(value);
+  // Kalo bukan angka atau nol balikin teks mentah
+  if (isNaN(numValue) || numValue === 0) return String(value);
 
-  // Cek konteks chart buat label kategori
-  if (
-    this &&
-    typeof this === "object" &&
-    "type" in this &&
-    this.type === "category"
-  ) {
-    // Ambil label dari index
-    const label = this.getLabelForValue(Number(targetValue));
-    // Balikin label kalo ada
-    if (label !== undefined && label !== null) {
-      return label;
-    }
-  }
-
-  // Convert nilai ke number
-  const numValue = Number(targetValue);
-  // Kalo bukan angka balik mentah
-  if (isNaN(numValue)) return targetValue;
-
-  // Ambil nilai mutlak buat logika konversi
+  // Ambil nilai mutlak buat logika konversi ukuran uang
   const absValue = Math.abs(numValue);
-
-  // Konfigurasi format indo
-  const formatIndo = { minimumFractionDigits: 0, maximumFractionDigits: 3 };
+  // Konfigurasi format desimal standard lokal Indonesia
+  const formatIndo = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
 
   // Kalo tembus Triliun kasih label T
   if (absValue >= 1_000_000_000_000) {
@@ -69,23 +49,23 @@ export const formatBigNumber = function (
     return (numValue / 1_000).toLocaleString("id-ID", formatIndo) + " Ribu";
   }
 
-  // Balikin angka biasa kalo kecil
-  return numValue.toLocaleString("id-ID");
+  // Balikin angka desimal normal kalo kecil banget
+  return numValue.toLocaleString("id-ID", formatIndo);
 };
 
-// Fungsi buat format label di popup tooltip chart
+// Fungsi buat format label di popup tooltip chart biar serasi sama ticks
 export const formatTooltipLabel = (
   // Konteks chart
   context: TooltipItem<"bar" | "doughnut" | "pie" | "polarArea">,
 ): string | void => {
-  // Cek apakah chart bentuk bulat
+  // Cek apakah chart bentuk bulet
   const isCircularChart =
     context.parsed.x === undefined && context.parsed.y === undefined;
 
   // Wadah angka mentah
   let rawValue: number | null | undefined;
 
-  // Ambil data buat chart bulat
+  // Ambil data buat chart bulet
   if (isCircularChart) {
     rawValue = typeof context.parsed === "number" ? context.parsed : undefined;
   } else {
@@ -95,43 +75,23 @@ export const formatTooltipLabel = (
     rawValue = isHorizontal ? context.parsed.x : context.parsed.y;
   }
 
-  // Kalo gada datanya balikin void
+  // Kalo gada datanya balikin void kosong
   if (rawValue === null || rawValue === undefined) return;
 
   // Pastiin jadi number
   let numValue = Number(rawValue);
-
-  // Ambil label dataset
+  // Ambil label dataset legendanya
   const label = isCircularChart
     ? context.label || ""
     : context.dataset.label || "";
 
-  // Normalisasi data khusus performa
-  if (label === "Performa Kinerja (%)") {
-    numValue = numValue / 2_000_000;
+  // Normalisasi data khusus performa persenan
+  if (label.includes("(%)") || label === "Profit Margin") {
+    return `${label}: ${numValue.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
   }
 
-  // Ambil nilai mutlak
-  const absValue = Math.abs(numValue);
-  // Wadah string hasil format
-  let formattedValue: string;
-
-  // Format angka gede buat tooltip
-  if (!label.includes("(%)") && absValue >= 1_000_000_000) {
-    formattedValue =
-      (numValue / 1_000_000_000).toFixed(1).replace(".0", "") + " Miliar";
-  } else if (!label.includes("(%)") && absValue >= 1_000_000) {
-    formattedValue =
-      (numValue / 1_000_000).toFixed(1).replace(".0", "") + " Juta";
-  } else if (!label.includes("(%)") && absValue >= 1_000) {
-    formattedValue = (numValue / 1_000).toFixed(1).replace(".0", "") + " Ribu";
-  } else {
-    // Format persen atau biasa
-    formattedValue = label.includes("(%)")
-      ? `${numValue.toFixed(1).replace(".0", "")}%`
-      : String(numValue);
-  }
-
-  // Balikin teks tooltip
+  // Khusus untuk data non-persen, langsung tembak pake formatBigNumber biar seragam jutaan/miliaran
+  const formattedValue = formatBigNumber(numValue);
+  // Balikin teks tooltip terformat rapi
   return `${label}: ${formattedValue}`;
 };
