@@ -324,7 +324,7 @@ export function useMasterProgram() {
         status: "Normal",
       },
     ],
-  });
+  };
 
   // Fungsi buat mancing buka jendela modal mode tambah data massal
   const openAddModal = () => {

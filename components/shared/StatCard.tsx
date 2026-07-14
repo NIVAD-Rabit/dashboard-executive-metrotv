@@ -34,65 +34,8 @@ export default function StatCard({
   return (
     // Fragment pembungkus elemen jsx
     <>
-      {/* <div className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm rounded-2xl p-6">
-        <span className="absolute top-4 right-4 flex h-3 w-3">
-          <span
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${card.isPositive ? "bg-green-400" : "bg-red-400"}`}
-          ></span>
-          <span
-            className={`relative inline-flex h-3 w-3 rounded-full ${card.isPositive ? "bg-green-500" : "bg-red-500"}`}
-          ></span>
-        </span>
-
-        <span className="text-xl font-bold text-muted-foreground mb-1 pr-4">
-          {card.title}
-        </span>
-        <div className="flex flex-col 2xl:flex-row 2xl:items-center 2xl:justify-between">
-          <span className="text-2xl font-bold text-muted-foreground mb-1">
-            {card.value}
-          </span>
-
-          <div
-            className={`flex items-center gap-1 text-lg font-bold ${card.isPositive ? "text-green-600" : "text-red-500"}`}
-          >
-            {card.isPositive ? (
-              <ArrowUpRight size={18} />
-            ) : (
-              <ArrowDownRight size={18} />
-            )}
-            <span>{card.label}</span>
-          </div>
-        </div>
-      </div>
-      */}
 
       {/* Kontainer utama card baru dengan style hover yang bikin efek interaktif */}
-      {/* <div className="border border-border flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl p-6"> */}
-      <div className="flex flex-col relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl md:p-6 p-4">
-        {/* Div buat animasi pulse indikator status */}
-        <span className=" absolute md:flex hidden top-6 right-6 flex h-2.5 w-2.5">
-          {/* Span ping buat efek animasi */}
-          <span
-            // Cek status positif buat nentuin warna bg
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${card.isPositive ? "bg-green-400" : "bg-red-400"}`}
-          ></span>
-          {/* Span titik buat indikator warna */}
-          <span
-            // Cek status positif buat nentuin warna dot
-            className={`relative inline-flex h-2.5 w-2.5 rounded-full ${card.isPositive ? "bg-green-500" : "bg-red-500"}`}
-          ></span>
-        </span>
-
-        {/* Teks judul statistik */}
-        <span className="text-sm font-semibold text-muted-foreground truncate uppercase tracking-wider mb-2 pr-4">
-          {card.title}
-        </span>
-        {/* Kontainer buat nilai statistik dan label tren */}
-        <div className="flex md:flex-row flex-col  2xl:flex-row md:items-center 2xl:justify-between gap-2 mt-auto">
-          {/* Teks nilai statistik utama */}
-          <span className="md:text-3xl font-bold text-2xl text-foreground tracking-tight truncate">
-            {card.value}
-          </span>
       <div className="border border-border grid grid-cols-5 grid-rows-[auto_auto_1fr] gap-x-4 relative overflow-hidden h-full bg-card shadow-sm hover:shadow-md transition-all rounded-2xl p-6">
         {/* Disembunyikan menggunakan false condition agar komentar asli di dalamnya tidak perlu diubah/dihapus */}
         {false && (
@@ -139,8 +82,6 @@ export default function StatCard({
             className={`flex items-center gap-1 text-sm md:font-bold shrink-0 font-semibold px-1.5 py-0.5 rounded-sm w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
           >
             <span>{card.label}</span>
-            className={`flex items-center gap-1 text-base font-bold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
-          >
             {/* Kondisional icon arrow berdasarkan status positif */}
             {card.isPositive ? (
               <ArrowUpRight size={14} strokeWidth={2.5} />

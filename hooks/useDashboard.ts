@@ -525,25 +525,6 @@ export default function useDashboard() {
       (per) => per.financials.pnl,
       // Judul label buat dataset donat
       "Kontribusi PNL Program",
-      // Array pilihan warna buat potongan donat dashboard dibiarin kosong aja
-      undefined,
-      // Urutan dibikin dari yang paling gede ke kecil
-      true,
-      // Ambil maksimal data program sesuai totalnya
-      filteredPrograms.length,
-    );
-  }, [filteredPrograms]);
-
-  // generateDoughnutChartData
-  const topProgramsDoughnutData = useMemo(() => {
-    // Panggil fungsi buat bikin doughnut chart dari list data program disaring
-    return generateDoughnutChartData(
-      // Masukin data list program saringan
-      filteredPrograms,
-      // Callback buat ngambil metrik pnl per periode
-      (per) => per.financials.pnl,
-      // Judul label buat dataset donat
-      "Kontribusi PNL Program",
       // Array pilihan warna buat potongan donat dashboard
       undefined,
       // Urutan dibikin dari yang paling gede ke kecil
