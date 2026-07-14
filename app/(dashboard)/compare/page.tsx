@@ -24,6 +24,7 @@ import { useCompare } from "@/hooks/useCompare";
 import { formatBigNumber } from "@/lib/formatters";
 // Import dropdown kustom
 import CustomSelect from "@/components/shared/CustomSelect";
+import { CoreScaleOptions, Scale } from "chart.js";
 
 // Bikin trus ekspor fungsi page compare
 export default function CompareProgramPage() {
@@ -360,6 +361,20 @@ export default function CompareProgramPage() {
     ];
   }, [progA, progB, pA, pB, roiA, roiB]);
 
+  const axisYFormatter = {
+      // Atur tick sumbu y
+      ticks: {
+        // Panggil formatter big number buat sumbu y
+        callback: function (
+          this: Scale<CoreScaleOptions>,
+          tickValue: string | number,
+        ) {
+          // Balikin nilai format angka
+          return formatBigNumber(Number(tickValue));
+        },
+      },
+    };
+
   // Filter kalo state isloading lagi ngegantung narik data
   if (isLoading) {
     // Balikin komponen muter2 aja dulu
@@ -376,7 +391,7 @@ export default function CompareProgramPage() {
     // Wadah bungkus polosan layar
     <div className="p-4 md:px-8 md:py-6 space-y-6 max-w-[1800px] mx-auto animate-in fade-in duration-300">
       {/* Box khusus filter dropdown di pucuk atas */}
-      <div className="border border-border bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-end gap-6 justify-between">
+      <div className="border border-border bg-card p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
         {/* Bungkus barisan dropdown pihak a */}
         <div className="w-full flex-1 flex flex-col gap-2">
           {/* Judul kecil milih program */}
@@ -384,7 +399,7 @@ export default function CompareProgramPage() {
             Pilih Program
           </label>
           {/* Box deret flex */}
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex md:flex-col flex-row gap-2">
             {/* Panggil select kustom milih nama a */}
             <CustomSelect
               // Seting nilai a
@@ -439,7 +454,7 @@ export default function CompareProgramPage() {
             Pilih Program
           </label>
           {/* Flex deret select */}
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex md:flex-col flex-row gap-2">
             {/* Select nama b */}
             <CustomSelect
               // Set nilai b
@@ -516,6 +531,19 @@ export default function CompareProgramPage() {
             height={300}
             // Classnya ambil jatah sembilan box grid
             className="lg:col-span-9 bg-card shadow-sm rounded-2xl flex flex-col p-2 min-h-[400px]"
+          
+          options={{
+            // Nonaktifkan legend, display false
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            // Formatter sumbu y
+            scales: { y: axisYFormatter },
+            // Event klik bar
+           
+          }}
           />
 
           {/* Area card2 kpi pameran the best siapa */}
@@ -525,11 +553,7 @@ export default function CompareProgramPage() {
               // Atur warna classnya dinamis narik pnl a vs b
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.financials?.pnl ?? 0, pB?.financials?.pnl ?? 0)}`}
             >
-              {/* Teks tipis di atasnya */}
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                {/* Icon dompet */}
-                <Wallet size={14} /> Pemenang Net PNL
-              </span> 
+              {/* Teks tipis di atasnya */} 
 
               <span className="text-sm md:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <Wallet className="md:size-[14] size-[20]" /> Pemenang Net PNL
@@ -567,11 +591,7 @@ export default function CompareProgramPage() {
               // Kasih warna dinamis cek sharenya
               className={`flex-1 p-5 rounded-2xl border-2 flex flex-col justify-center transition-colors duration-300 ${getCardStyle(pA?.performanceTV?.actualShare ?? 0, pB?.performanceTV?.actualShare ?? 0)}`}
             >
-              {/* Teks cilik atas */}
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                {/* Grafik naik icon */}
-                <TrendingUp size={14} /> Pemenang Share TV
-              </span> 
+              {/* Teks cilik atas */} 
 
               <span className="text-sm md:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <TrendingUp className="md:size-[14] size-[20]" /> Pemenang Share TV

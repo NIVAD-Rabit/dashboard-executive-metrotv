@@ -8,6 +8,7 @@ import {
   GitCompare,
   FileText,
   LucideIcon,
+  Database,
   Table2
 } from 'lucide-react';
 
@@ -57,6 +58,7 @@ export default function BottomNav() {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Detail', href: '/details', icon: FileText },
     { name: 'Bandingkan', href: '/compare', icon: GitCompare,},
+    { name: 'Master', href: '/master-program', icon: Database,},
     // { name: 'Master', href: '/master-program', icon: Table2 },
   ];
 

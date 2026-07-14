@@ -82,17 +82,18 @@ export default function StatCard({
           {card.title}
         </span>
         {/* Kontainer buat nilai statistik dan label tren */}
-        <div className="flex flex-col 2xl:flex-row 2xl:items-center 2xl:justify-between gap-2 mt-auto">
+        <div className="flex md:flex-row flex-col  2xl:flex-row md:items-center 2xl:justify-between gap-2 mt-auto">
           {/* Teks nilai statistik utama */}
-          <span className="md:text-3xl font-bold text-xl text-foreground tracking-tight">
+          <span className="md:text-3xl font-bold text-2xl text-foreground tracking-tight truncate">
             {card.value}
           </span>
 
           {/* Kontainer buat nampilin label tren naik atau turun */}
           <div
             // Cek status positif buat styling background dan warna teks
-            className={`flex items-center gap-1 text-sm md:font-bold font-semibold px-2.5 py-1 rounded-lg w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+            className={`flex items-center gap-1 text-sm md:font-bold shrink-0 font-semibold px-1.5 py-0.5 rounded-sm w-fit ${card.isPositive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
           >
+            <span>{card.label}</span>
             {/* Kondisional icon arrow berdasarkan status positif */}
             {card.isPositive ? (
               <ArrowUpRight size={16} strokeWidth={2.5} />
@@ -100,7 +101,6 @@ export default function StatCard({
               <ArrowDownRight size={16} strokeWidth={2.5} />
             )}
             {/* Teks label keterangan tren */}
-            <span>{card.label}</span>
           </div>
         </div>
       </div>
