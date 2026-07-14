@@ -7,12 +7,17 @@ import { createPortal } from "react-dom";
 import { X, FilterX } from "lucide-react";
 // Import komponen chart dasar
 import BaseChart from "@/components/shared/BaseChart";
-// Import data mock program
-import { MOCK_PROGRAMS } from "@/constants/programMockData";
+// Import data program
+import { useQuery } from "@tanstack/react-query";
+import { fetchProgramsByRange } from "@/services/api/programService";
 // Import tipe data chart
-import { ChartData } from "chart.js";
+import { ChartData, TooltipItem } from "chart.js";
 // Import helper format angka
-import { formatBigNumber } from "@/lib/formatters";
+import { formatBigNumber, formatNumberIndo } from "@/lib/formatters";
+// Import tipe plugin datalabels
+import ChartDataLabels, {
+  Context as DataLabelContext,
+} from "chartjs-plugin-datalabels";
 
 // Fungsi buat subscribe kosong supaya memori tetap anteng
 const emptySubscribe = () => () => {};
@@ -54,29 +59,37 @@ export default function ChartDetailModal({
   // State filter kategori
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   // State filter periode
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("ytd");
   // State bulan mulai
   const [startMonth, setStartMonth] = useState<string>("");
   // State bulan batas
   const [endMonth, setEndMonth] = useState<string>("");
-  // State urut data
-  const [sortOrder, setSortOrder] = useState<string>("desc");
+  // State urut data default string kosong
+  const [sortOrder, setSortOrder] = useState<string>("");
 
   // State ganti tab tv
   const [tvTab, setTvTab] = useState<"tvr" | "share">("tvr");
 
+  // Fetch data menggunakan React Query
+  const { data: programResponse } = useQuery({
+    queryKey: ["programs", "list"],
+    queryFn: () => fetchProgramsByRange(),
+  });
+
+  const programs = programResponse?.data || [];
+
   // Opsi dropdown periode
   const periodOptions = [
-    { label: "All Time", value: "all" },
     { label: "YTD", value: "ytd" },
     { label: "MTD", value: "mtd" },
+    { label: "All Time", value: "all" },
     { label: "Custom", value: "custom" },
   ];
 
   // Filter data program berdasarkan opsi
   const filteredPrograms = useMemo(() => {
     // Salin data mentah
-    let result = [...MOCK_PROGRAMS];
+    let result = [...programs];
 
     // Cek kalo periode custom aktif
     if (selectedPeriod === "custom") {
@@ -92,7 +105,7 @@ export default function ChartDetailModal({
           p.periods.some((per) => per.month <= endMonth),
         );
       }
-    } else if (selectedPeriod && selectedPeriod !== "all") {
+    } else if (selectedPeriod && selectedPeriod !== "ytd") {
       // Ambil waktu hari ini
       const today = new Date();
       // Tahun sekarang
@@ -124,7 +137,7 @@ export default function ChartDetailModal({
 
     // Balikin hasil filter
     return result;
-  }, [selectedCategory, startMonth, endMonth, selectedPeriod]);
+  }, [programs, selectedCategory, startMonth, endMonth, selectedPeriod]);
 
   // Tentu tipe chart dari prop metrik
   type ModalChartType = "bar" | "doughnut";
@@ -141,11 +154,11 @@ export default function ChartDetailModal({
 
     // Kalo metrik pnl
     if (metricType === "pnl") {
-      // Sortir pnl
+      // Sortir pnl default descending kalo string urut kosong
       const sorted = [...filteredPrograms].sort((a, b) => {
         const pnlB = b.periods.reduce((s, per) => s + per.financials.pnl, 0);
         const pnlA = a.periods.reduce((s, per) => s + per.financials.pnl, 0);
-        return sortOrder === "desc" ? pnlB - pnlA : pnlA - pnlB;
+        return sortOrder === "asc" ? pnlA - pnlB : pnlB - pnlA;
       });
 
       // Balikin data pnl
@@ -164,7 +177,7 @@ export default function ChartDetailModal({
               );
               return pnl >= 0 ? "#16a34a" : "#d62728";
             }),
-            minBarLength: 15,
+            minBarLength: 60,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -172,7 +185,7 @@ export default function ChartDetailModal({
 
     // Kalo metrik digital
     if (metricType === "digital") {
-      // Sortir digital
+      // Sortir digital default descending
       const sorted = [...filteredPrograms].sort((a, b) => {
         const revB = b.periods.reduce(
           (s, per) => s + per.performanceDigital.revenue,
@@ -182,7 +195,7 @@ export default function ChartDetailModal({
           (s, per) => s + per.performanceDigital.revenue,
           0,
         );
-        return sortOrder === "desc" ? revB - revA : revA - revB;
+        return sortOrder === "asc" ? revA - revB : revB - revA;
       });
 
       // Balikin data digital
@@ -198,7 +211,7 @@ export default function ChartDetailModal({
               ),
             ),
             backgroundColor: "#1f77b4",
-            minBarLength: 15,
+            minBarLength: 60,
           },
           {
             label: "Digital Views",
@@ -206,7 +219,7 @@ export default function ChartDetailModal({
               p.periods.reduce((s, per) => s + per.performanceDigital.views, 0),
             ),
             backgroundColor: "#17becf",
-            minBarLength: 15,
+            minBarLength: 60,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -214,7 +227,7 @@ export default function ChartDetailModal({
 
     // Kalo metrik revenue
     if (metricType === "combo" || metricType === "revenue") {
-      // Sortir revenue
+      // Sortir revenue default descending
       const sorted = [...filteredPrograms].sort((a, b) => {
         const revB = b.periods.reduce(
           (s, per) => s + per.financials.revenueActual,
@@ -224,7 +237,7 @@ export default function ChartDetailModal({
           (s, per) => s + per.financials.revenueActual,
           0,
         );
-        return sortOrder === "desc" ? revB - revA : revA - revB;
+        return sortOrder === "asc" ? revA - revB : revB - revA;
       });
 
       // Balikin data revenue
@@ -237,7 +250,7 @@ export default function ChartDetailModal({
               p.periods.reduce((s, per) => s + per.financials.revenueTarget, 0),
             ),
             backgroundColor: "#4bc0c0",
-            minBarLength: 15,
+            minBarLength: 60,
           },
           {
             label: "Capaian Revenue (Rp)",
@@ -246,7 +259,7 @@ export default function ChartDetailModal({
             ),
             // Warna hijau buat revenue
             backgroundColor: "#2ca02c",
-            minBarLength: 15,
+            minBarLength: 60,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -256,7 +269,7 @@ export default function ChartDetailModal({
     if (metricType === "tv") {
       // Kalo tvr aktif
       if (tvTab === "tvr") {
-        // Sortir tvr
+        // Sortir tvr default descending
         const sorted = [...filteredPrograms].sort((a, b) => {
           const actB = b.periods.reduce(
             (s, per) => s + per.performanceTV.actualTVR,
@@ -266,7 +279,7 @@ export default function ChartDetailModal({
             (s, per) => s + per.performanceTV.actualTVR,
             0,
           );
-          return sortOrder === "desc" ? actB - actA : actA - actB;
+          return sortOrder === "asc" ? actA - actB : actB - actA;
         });
 
         // Balikin data tvr
@@ -282,7 +295,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#1f77b4",
-              minBarLength: 15,
+              minBarLength: 60,
             },
             {
               label: "Capaian TVR",
@@ -293,12 +306,12 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#ff7f0e",
-              minBarLength: 15,
+              minBarLength: 60,
             },
           ],
         } as ChartData<ModalChartType, number[], unknown>;
       } else {
-        // Sortir share
+        // Sortir share default descending
         const sorted = [...filteredPrograms].sort((a, b) => {
           const actB = b.periods.reduce(
             (s, per) => s + per.performanceTV.actualShare,
@@ -308,7 +321,7 @@ export default function ChartDetailModal({
             (s, per) => s + per.performanceTV.actualShare,
             0,
           );
-          return sortOrder === "desc" ? actB - actA : actA - actB;
+          return sortOrder === "asc" ? actA - actB : actB - actA;
         });
 
         // Balikin data share
@@ -324,7 +337,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#1f77b4",
-              minBarLength: 15,
+              minBarLength: 60,
             },
             {
               label: "Capaian Share (%)",
@@ -335,7 +348,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#ff7f0e",
-              minBarLength: 15,
+              minBarLength: 60,
             },
           ],
         } as ChartData<ModalChartType, number[], unknown>;
@@ -399,7 +412,7 @@ export default function ChartDetailModal({
       <div className="bg-background w-full max-w-6xl max-h-[95vh] rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-border">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card shrink-0">
           <h2 className="text-xl font-bold text-foreground">
-            Detail Data, {title}
+            Detail Data: {title}
           </h2>
           <button
             onClick={onClose}
@@ -417,9 +430,14 @@ export default function ChartDetailModal({
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="appearance-none border border-border bg-muted/40 text-foreground text-sm font-medium rounded-full px-4 py-2 h-10 outline-none cursor-pointer w-full lg:w-auto"
               >
-                {/* Opsi kategori semua */}
-                <option value="" className="bg-background text-foreground">
-                  Semua Kategori
+                {/* Opsi kategori */}
+                <option
+                  value=""
+                  className="bg-background text-foreground"
+                  disabled
+                  hidden
+                >
+                  Pilih Kategori
                 </option>
                 {programCategories.map((c, i) => (
                   <option
@@ -439,6 +457,14 @@ export default function ChartDetailModal({
                   onChange={(e) => setSortOrder(e.target.value)}
                   className="appearance-none border border-border bg-muted/40 text-foreground text-sm font-medium rounded-full px-4 py-2 h-10 outline-none cursor-pointer w-full lg:w-auto"
                 >
+                  <option
+                    value=""
+                    className="bg-background text-foreground"
+                    disabled
+                    hidden
+                  >
+                    Pilih Urutan
+                  </option>
                   <option
                     value="desc"
                     className="bg-background text-foreground"
@@ -511,17 +537,19 @@ export default function ChartDetailModal({
               {(startMonth ||
                 endMonth ||
                 selectedCategory ||
-                (selectedPeriod && selectedPeriod !== "all")) && (
+                sortOrder ||
+                (selectedPeriod && selectedPeriod !== "ytd")) && (
                 <button
                   onClick={() => {
                     setStartMonth("");
                     setEndMonth("");
                     setSelectedCategory("");
-                    setSelectedPeriod("all");
+                    setSelectedPeriod("ytd");
+                    setSortOrder("");
                   }}
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >
-                  <FilterX size={14} /> Reset Filter
+                  <FilterX size={14} /> Reset
                 </button>
               )}
             </div>
@@ -561,6 +589,55 @@ export default function ChartDetailModal({
                       pan: {
                         enabled: true,
                         mode: "xy",
+                      },
+                    },
+                    // Konfigurasi datalabels lokal di modal ini
+                    datalabels: {
+                      // Paksa munculin teksnya
+                      display: true,
+                      // Atur posisi teks di ujung dalem bar
+                      anchor: "end",
+                      align: "start",
+                      // Warna teks putih biar kontras
+                      color: "#ffffff",
+                      font: {
+                        weight: "bold",
+                        size: 11,
+                      },
+                      // Pake formatter big number
+                      formatter: function (
+                        value: unknown,
+                        context: DataLabelContext,
+                      ) {
+                        // Kalo mau ada tulisan Rp di depan
+                        // // Ambil nilai angka asli dari data grafik
+                        // const rawValue =
+                        //   context.dataset.data[context.dataIndex];
+                        // // Format angkanya jadi big number
+                        // const formattedValue = formatBigNumber(
+                        //   Number(rawValue),
+                        // );
+                        // // Tambahin Rp di depannya
+                        // return `Rp ${formattedValue}`;
+
+                        // Ambil nilai angka asli dari data grafik
+                        const rawValue =
+                          context.dataset.data[context.dataIndex];
+                        return formatBigNumber(Number(rawValue));
+                      },
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context: TooltipItem<"bar">) {
+                          // Ambil nama dataset (Net PNL (Rp))
+                          const datasetLabel = context.dataset.label || "";
+                          // Pake formatter indo buat angkanya
+                          const formattedValue = formatNumberIndo(
+                            Number(context.raw),
+                          );
+                          // Gabungin label sama angka
+                          return `${datasetLabel}: ${formattedValue}`;
+                        },
                       },
                     },
                   },

@@ -1,13 +1,11 @@
-// Import hook state buat kelola data lokal
-import {
-  useState,
-  // Import hook memo buat efisiensi hitungan
-  useMemo,
-} from "react";
+import { useState, useMemo } from "react";
 // Import hook query dari tanstack buat manage data server
 import { useQuery } from "@tanstack/react-query";
-// Import fungsi api buat ambil data program
-import { fetchProgramsByRange } from "@/services/api/programService";
+// Import fungsi api buat ambil data program sama tipe balasannya
+import {
+  fetchProgramsByRange,
+  FetchProgramsResponse,
+} from "@/services/api/programService";
 // Import tipe data chart js
 import { ChartData } from "chart.js";
 // Import skema tipe data program
@@ -26,31 +24,62 @@ const emptyPeriod = (
   // Bulan periode
   month,
   // Performa tv default nol
-  performanceTV: { targetTVR: 0, targetShare: 0, actualTVR: 0, actualShare: 0 },
+  performanceTV: {
+    // Tarjet rating
+    targetTVR: 0,
+    // Target porsi share
+    targetShare: 0,
+    // Capaian asli rating
+    actualTVR: 0,
+    // Capaian asli porsi
+    actualShare: 0,
+  },
   // Performa digital default nol
-  performanceDigital: { views: 0, revenue: 0 },
+  performanceDigital: {
+    // Tontonan sosmed
+    views: 0,
+    // Omset sosmed
+    revenue: 0,
+  },
   // Finansial default nol
-  financials: { costDirect: 0, revenueTarget: 0, revenueActual: 0, pnl: 0 },
+  financials: {
+    // Duit modal
+    costDirect: 0,
+    // Duit target
+    revenueTarget: 0,
+    // Duit beneran
+    revenueActual: 0,
+    // Untung bersih
+    pnl: 0,
+  },
   // Inventori default nol
-  inventory: { spot: 0, adRate: 0 },
+  inventory: {
+    // Sisa slot
+    spot: 0,
+    // Harga slot
+    adRate: 0,
+  },
   // Status default strip
   status: "-",
 });
 
 // Hook buat handle logic bandingin dua program
 export function useCompare() {
-  // Ambil data program dari api pake usequery
+  // Ambil koper data program dari api pake usequery
   const {
-    // Data program dari api
-    data: programs = [],
+    // Koper balasan dari api
+    data: fetchResult,
     // Status loading
     isLoading,
-  } = useQuery({
-    // Key cache
-    queryKey: ["programs"],
-    // Fungsi panggil api
-    queryFn: () => fetchProgramsByRange("", ""),
+  } = useQuery<FetchProgramsResponse>({
+    // Key cache disamain persis kaya dashboard biar ngirit narik data
+    queryKey: ["programsDashboard"],
+    // Fungsi panggil api tanpa parameter
+    queryFn: () => fetchProgramsByRange(),
   });
+
+  // Ekstrak array program dari dalem koper result atau lepehin array kosong
+  const programs = fetchResult?.data || [];
 
   // State buat nyimpen id program pertama
   const [progAId, setProgAId] = useState<string>("");
@@ -65,22 +94,25 @@ export function useCompare() {
   const periodOptions = useMemo(() => {
     // Bongkar semua bulan dari semua program
     const all = programs.flatMap(
+      // Tarik bulannya
       (p: ProgramFormData) => p.periods?.map((x) => x.month) || [],
     );
     // Hapus duplikat terus urutin dari yang terbaru
     return Array.from(new Set(all)).sort().reverse();
+    // Pantau array programs
   }, [programs]);
 
   // Cari objek program pertama berdasarkan id
   const progA = useMemo(
-    // Cari program yang match sama progAId
+    // Cari program yang match sama id pilihan
     () => programs.find((p: ProgramFormData) => p.id === progAId) || null,
     // Dependency list
     [programs, progAId],
   );
+
   // Cari objek program kedua berdasarkan id
   const progB = useMemo(
-    // Cari program yang match sama progBId
+    // Cari program yang match sama id pilihan kedua
     () => programs.find((p: ProgramFormData) => p.id === progBId) || null,
     // Dependency list
     [programs, progBId],
@@ -88,65 +120,87 @@ export function useCompare() {
 
   // Ambil data periode aktif program pertama
   const pA = useMemo(() => {
-    // Kalo program gada periode balikin null
+    // Kondisional ngecek kelengkapan balikin null kalo beneran kosong, ato lanjut proses kalo nyata ada
     if (!progA?.periods?.length) return null;
-    // Kalo user milih periode cari di array periode
-    if (selectedPeriodA)
-      return (
-        progA.periods.find((p) => p.month === selectedPeriodA) ||
-        emptyPeriod(selectedPeriodA)
-      );
-    // Default ambil yang paling baru
-    return [...progA.periods].sort((a, b) => b.month.localeCompare(a.month))[0];
+    // Kondisional stop kalo belom milih mending balikin null
+    if (!selectedPeriodA) return null;
+    // Balikin wujud periode inceran
+    return (
+      // Gali pake fungsi find
+      progA.periods.find((p) => p.month === selectedPeriodA) ||
+      // Lempar objek kopong
+      emptyPeriod(selectedPeriodA)
+    );
+    // Pantau
   }, [progA, selectedPeriodA]);
 
   // Ambil data periode aktif program kedua
   const pB = useMemo(() => {
-    // Kalo program gada periode balikin null
+    // Kondisional ngecek laci kosong balikin null kalo bener kopong, ato eksekusi lanjut kalo beneran isi
     if (!progB?.periods?.length) return null;
-    // Kalo user milih periode cari di array periode
-    if (selectedPeriodB)
-      return (
-        progB.periods.find((p) => p.month === selectedPeriodB) ||
-        emptyPeriod(selectedPeriodB)
-      );
-    // Default ambil yang paling baru
-    return [...progB.periods].sort((a, b) => b.month.localeCompare(a.month))[0];
+    // Kondisional serok periode inceran balikin wujud asli pas nemu, ato cetak null pas belom milih
+    if (!selectedPeriodB) return null;
+    // Lemparan balik
+    return (
+      // Gali nyari
+      progB.periods.find((p) => p.month === selectedPeriodB) ||
+      // Lempar kosong
+      emptyPeriod(selectedPeriodB)
+    );
+    // Pantau
   }, [progB, selectedPeriodB]);
 
   // Hitung total revenue program pertama
+  // Kondisional ngecek ketersediaan data p a balikin gabungan duit tv ama sosmed pas bener ada, ato lempar nol pas kaga nemu
   const totalRevA = pA
-    ? (pA.financials?.revenueActual ?? 0) +
+    ? // Eksekusi jalan bener
+      (pA.financials?.revenueActual ?? 0) +
       (pA.performanceDigital?.revenue ?? 0)
-    : 0;
+    : // Eksekusi jalur gagal
+      0;
+
   // Hitung roi program pertama
+  // Kondisional nentuin hitungan roi a balikin wujud pembagian persenan pas nyata nemu data, ato lepehin nol pas palsu
   const roiA = pA
-    ? ((totalRevA - (pA.financials?.costDirect ?? 0)) /
+    ? // Hitungan jalan pas beneran ada
+      ((totalRevA - (pA.financials?.costDirect ?? 0)) /
         ((pA.financials?.costDirect ?? 0) || 1)) *
       100
-    : 0;
+    : // Tolakan gagal
+      0;
 
   // Hitung total revenue program kedua
+  // Kondisional nyari cuan b balikin tambeman omset dobel pas data ada, ato kasih nol pas nyatanya kopong
   const totalRevB = pB
-    ? (pB.financials?.revenueActual ?? 0) +
+    ? // Jalan tol bener
+      (pB.financials?.revenueActual ?? 0) +
       (pB.performanceDigital?.revenue ?? 0)
-    : 0;
+    : // Jalan tolakan
+      0;
+
   // Hitung roi program kedua
+  // Kondisional perakit roi b balikin ulikan matematika persen pas komplit, ato sembur angka nol pas kosong
   const roiB = pB
-    ? ((totalRevB - (pB.financials?.costDirect ?? 0)) /
+    ? // Rakitan jalan
+      ((totalRevB - (pB.financials?.costDirect ?? 0)) /
         ((pB.financials?.costDirect ?? 0) || 1)) *
       100
-    : 0;
+    : // Rakitan mati
+      0;
 
   // Fungsi buat swap posisi program dan periodenya
   const handleSwap = () => {
-    // Kalo duanya kosong balikin
+    // Kondisional ngecek posisi ga valid balikin setopan pas dua2nya kosong, ato jalan ampe kelar pas valid
     if (!progAId && !progBId) return;
-    // Deklarasi temp swap
+    // Deklarasi temp swap pake array
     const [currentA, currentB, currentPerA, currentPerB] = [
+      // Elemen a
       progAId,
+      // Elemen b
       progBId,
+      // Elemen periode a
       selectedPeriodA,
+      // Elemen periode b
       selectedPeriodB,
     ];
     // Set program a ke b
@@ -166,11 +220,11 @@ export function useCompare() {
     // Nilai B
     valB: number,
   ) => {
-    // Kalo a lebih gede kasih warna biru
+    // Kondisional cek dominasi balikin wujud biru pas a juara
     if (valA > valB) return "bg-[#1f77b4]/10 border-[#1f77b4]/30";
-    // Kalo b lebih gede kasih warna oren
+    // Kondisional cek lempar warna oren pas b yang juara
     if (valB > valA) return "bg-[#ff7f0e]/10 border-[#ff7f0e]/30";
-    // Default style
+    // Default style pas kaga ada yang menang netral
     return "bg-card border-border";
   };
 
@@ -181,81 +235,124 @@ export function useCompare() {
     // Nilai B
     valB: number,
   ) => {
-    // Kalo a menang teks biru
+    // Kondisional urusan pewarnaan teks balikin biru spesifik pas a bener nangkring di atas
     if (valA > valB) return "text-[#1f77b4]";
-    // Kalo b menang teks oren
+    // Kondisional tiban warna lempar oren pas si b ngerajain klasemen
     if (valB > valA) return "text-[#ff7f0e]";
-    // Default teks
+    // Default teks kalem
     return "text-foreground";
   };
 
   // Memo buat susun data chart perbandingan
   const comparisonData = useMemo<ChartData<"bar">>(() => {
-    // Kalo program gada balikin objek data kosong
+    // Kondisional penyetop langkah balikin wujud chart json kosong pas salah satu peserta ga nampil
     if (!progA || !progB) return { labels: [], datasets: [] };
 
     // Balikin objek data buat bar chart
     return {
       // Label sumbu x
       labels: [
+        // Label pertama
         "Target Revenue",
-        "Capaian TV Rev",
+        // Label kedua
+        "Actual TV Rev",
+        // Label ketiga
         "Digital Rev",
+        // Label keempat
         "Cost Direct",
+        // Label kelima
         "Net PNL",
       ],
       // Dataset buat perbandingan
       datasets: [
         // Dataset program pertama
         createBarDataset(
+          // Kirim nama program
           progA.name,
+          // Buka array susunan duit
           [
+            // Pancing duit target
             pA?.financials?.revenueTarget ?? 0,
+            // Pancing cuan nyata
             pA?.financials?.revenueActual ?? 0,
+            // Pancing duwit sosmed
             pA?.performanceDigital?.revenue ?? 0,
+            // Pancing modal ongkos
             pA?.financials?.costDirect ?? 0,
+            // Pancing bersih untung
             pA?.financials?.pnl ?? 0,
           ],
+          // biru
           "#1f77b4",
         ),
         // Dataset program kedua
         createBarDataset(
+          // Panggil nametag
           progB.name,
+          // Susun array kepingan uang
           [
+            // Incer untung di depan
             pB?.financials?.revenueTarget ?? 0,
+            // Pancing masuk duit beneran
             pB?.financials?.revenueActual ?? 0,
+            // Tarik fulus jejaring digital
             pB?.performanceDigital?.revenue ?? 0,
+            // Buka ongkos
             pB?.financials?.costDirect ?? 0,
+            // Ulik untung bersih
             pB?.financials?.pnl ?? 0,
           ],
+          // oren
           "#ff7f0e",
         ),
       ],
     };
+    // Pantau variabel
   }, [progA, progB, pA, pB]);
 
   // Return data dan fungsi buat dipake ui
   return {
+    // Array program
     programs,
+    // Loader boolean
     isLoading,
+    // Id acara a
     progAId,
+    // Setter id a
     setProgAId,
+    // Id acara b
     progBId,
+    // Setter id b
     setProgBId,
+    // Obyek utuh acara a
     progA,
+    // Obyek utuh acara b
     progB,
+    // Periode bulan a
     pA,
+    // Periode bulan b
     pB,
+    // Hitungan roi a
     roiA,
+    // Hitungan roi b
     roiB,
+    // Simpanan bulan a
     selectedPeriodA,
+    // Setter bulan a
     setSelectedPeriodA,
+    // Simpanan bulan b
     selectedPeriodB,
+    // Setter bulan b
     setSelectedPeriodB,
+    // Array menu dropdown
     periodOptions,
+    // Helper bolak balik wujud
     handleSwap,
+    // Helper poles tampilan bodi
     getCardStyle,
+    // Helper warna tulisan
     getWinnerTextColor,
+    // Bungkusan json buat masuk mesin grafik
     comparisonData,
   };
 }

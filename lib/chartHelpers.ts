@@ -17,6 +17,19 @@ export const sumPeriodValue = (
   return prog.periods.reduce((s, per) => s + valueGetter(per), 0);
 };
 
+// Fungsi baru buat ngitung rata-rata nilai dari array periode khusus metrik seperti rating/share
+export const avgPeriodValue = (
+  // Data program
+  prog: ProgramFormData,
+  // Callback buat ambil nilai
+  valueGetter: (per: ProgramPeriod) => number,
+): number => {
+  // Hitung total nilai kotor periode
+  const total = prog.periods.reduce((s, per) => s + valueGetter(per), 0);
+  // Balikin nilai rata-rata, kasih penjaga nol biar ga error pas dibagi array kosong
+  return prog.periods.length > 0 ? total / prog.periods.length : 0;
+};
+
 // Fungsi buat ngurutin dan motong array program sesuai nilai kalkulasi
 export const sortAndSlicePrograms = (
   // Data list program
@@ -27,6 +40,11 @@ export const sortAndSlicePrograms = (
   isDesc: boolean = true,
   // Maksimal data yang diambil
   limit: number = 5,
+  // Opsi fungsi agregator buat nentuin di total apa di rata-rata, patokan awal pake sum
+  aggregator: (
+    prog: ProgramFormData,
+    getter: (per: ProgramPeriod) => number,
+  ) => number = sumPeriodValue,
 ): ProgramFormData[] => {
   // Copy array terus sortir berdasar nilai
   return (
@@ -34,10 +52,10 @@ export const sortAndSlicePrograms = (
     [...programs]
       // Fungsi sortir
       .sort((a, b) => {
-        // Hitung total nilai a
-        const valA = sumPeriodValue(a, valueGetter);
-        // Hitung total nilai b
-        const valB = sumPeriodValue(b, valueGetter);
+        // Hitung total/rata nilai a pake agregator
+        const valA = aggregator(a, valueGetter);
+        // Hitung total/rata nilai b pake agregator
+        const valB = aggregator(b, valueGetter);
         // Balikin hasil sortir
         // Kondisional nentuin posisi array pas disortir, kurangin valB pake valA kalo bener turun, atau kurangin valA pake valB kalo palsu biar naik
         return isDesc ? valB - valA : valA - valB;
@@ -75,7 +93,7 @@ export const createBarDataset = (
 export const createDoughnutDataset = (
   // Label buat dataset
   label: string,
-  // Array data angka murni tanpa null khusus buat donat
+  // Array data angka tanpa null khusus buat donat
   data: number[],
   // Warna background potongan doughnut dibikin opsional biar nyesuaiin basechart
   backgroundColor?: string | string[],
@@ -129,9 +147,20 @@ export const generateBarChartData = (
   isDesc: boolean = true,
   // Limit data
   limit: number = 5,
+  // Opsi penyuntik cara kalkulasi nilai, patokan bawaan sumPeriodValue
+  aggregator: (
+    prog: ProgramFormData,
+    getter: (per: ProgramPeriod) => number,
+  ) => number = sumPeriodValue,
 ): ChartData<"bar", (number | null)[], unknown> => {
-  // Panggil fungsi sortir
-  const sorted = sortAndSlicePrograms(programs, valueGetter, isDesc, limit);
+  // Panggil fungsi sortir sambil bawa fungsi agregatornya
+  const sorted = sortAndSlicePrograms(
+    programs,
+    valueGetter,
+    isDesc,
+    limit,
+    aggregator,
+  );
 
   // Balikin objek data siap pakai
   return {
@@ -143,8 +172,8 @@ export const generateBarChartData = (
       createBarDataset(
         // Isi properti string nama labelnya
         label,
-        // Ekstrak akumulasi periode pake setter
-        sorted.map((p) => sumPeriodValue(p, valueGetter)),
+        // Ekstrak kalkulasi periode pake agregator yang dipilih (bisa sum atau avg)
+        sorted.map((p) => aggregator(p, valueGetter)),
         // Tempelin opsi warnanya ke fungsi pembungkus
         color,
       ),
@@ -222,7 +251,7 @@ export const generateDoughnutChartData = (
   // Kalo kekecilan paksa naik ke batas minimum visual selain itu biarin normal
   const visualValues = realValues.map((val) => {
     // Kalo emang datanya nol langsung balikin nol biar ga ngerusak chart
-    // Kondisional nyegat data nol, balikin wujud nol murni kalo bener tanpa lanjut ngeksekusi logic di bawahnya
+    // Kondisional nyegat data nol, balikin wujud nol kalo bener tanpa lanjut ngeksekusi logic di bawahnya
     if (val === 0) return 0;
     // Cek kalo lebih kecil dari batas paksa naik ke nilai minimum
     // Kondisional adu besar nilai, lempar angka patokan visual kalo bener kelewat kecil, atau biarin angka aslinya mejeng kalo palsu
@@ -235,7 +264,7 @@ export const generateDoughnutChartData = (
     labels: sorted.map((p) => p.name),
     // List dataset
     datasets: [
-      // Panggil fungsi create dataset doughnut pake tipe angka murni
+      // Panggil fungsi create dataset doughnut pake tipe angka
       createDoughnutDataset(
         // Lempar label chartnya ke pembungkus
         label,
@@ -313,7 +342,7 @@ export const generateMultiLineChartData = (
   // Lakukan irisan dan sortir data pake helper pusat
   const sorted = sortAndSlicePrograms(programs, sortGetter, isDesc, limit);
 
-  // Lempar bongkahan data murni yang udah dirakit nyesuaiin tipe json chart
+  // Lempar bongkahan data yang udah dirakit nyesuaiin tipe json chart
   return {
     // Petakan deretan nama program ke koordinat sumbu alas chart
     labels: sorted.map((p) => p.name),
@@ -361,7 +390,7 @@ export const generateMultiMetricDoughnutData = <T>(
     return {
       // Wadah label dibiarin kosong ga ada isi
       labels: [],
-      // Wadah dataset juga diset murni kopong
+      // Wadah dataset juga diset kopong
       datasets: [],
     };
   }
@@ -375,7 +404,7 @@ export const generateMultiMetricDoughnutData = <T>(
   // Kalo kekecilan paksa naik ke batas minimum visual selain itu biarin normal
   const visualValues = realValues.map((val) => {
     // Kalo emang datanya nol langsung balikin nol biar ga ngerusak proporsi chart
-    // Kondisional ngehalau nol persen di dalem irisan, kelar di sini terus seburin angka nol murni kalo bener terjadi
+    // Kondisional ngehalau nol persen di dalem irisan, kelar di sini terus seburin angka nol kalo bener terjadi
     if (val === 0) return 0;
     // Bikin wadah nilai absolut biar ga kacau pas ada angka minus
     const absVal = Math.abs(val);
@@ -398,13 +427,13 @@ export const generateMultiMetricDoughnutData = <T>(
     labels: metrics.map((m) => m.label),
     // List dataset chart
     datasets: [
-      // Panggil fungsi create dataset doughnut pake tipe angka murni
+      // Panggil fungsi create dataset doughnut pake tipe angka
       createDoughnutDataset(
         // Masukin nama dataset ke label
         datasetLabel,
         // Pake data visual biar irisan kecil ga tenggelem
         visualValues,
-        // Templokin hasil kumpulan warna murni yang udah lolos kondisional
+        // Templokin hasil kumpulan warna yang udah lolos kondisional
         mappedColors,
       ),
     ],

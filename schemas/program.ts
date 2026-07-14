@@ -17,11 +17,13 @@ export const programFormSchema = z.object({
   // Nama program wajib ada
   name: z.string().min(1, "Nama program wajib diisi"),
   // Jam tayang wajib ada
-  broadcastTime: z.string().min(1, "Jam tayang wajib diisi"),
+  // broadcastTime: z.string().min(1, "Jam tayang wajib diisi"),
+  broadcastTime: z.string().optional(),
   // Kategori wajib ada
   category: z.string().min(1, "Kategori wajib dipilih"),
   // Deskripsi wajib ada
-  descriptionCategory: z.string().min(1, "Deskripsi wajib diisi"),
+  // descriptionCategory: z.string().min(1, "Deskripsi wajib diisi"),
+  descriptionCategory: z.string().optional(),
 
   // Array data periode
   periods: z.array(
@@ -68,13 +70,16 @@ export const programFormSchema = z.object({
       // Inventori spot
       inventory: z.object({
         // Spot tersedia
-        spot: z.number().min(0, "Tidak boleh minus"),
+        // spot: z.number().min(0, "Tidak boleh minus"),
+        spot: z.number().optional(),
         // Harga iklan
-        adRate: z.number().min(0, "Tidak boleh minus"),
+        // adRate: z.number().min(0, "Tidak boleh minus"),
+        adRate: z.number().optional(),
       }),
 
       // Status periode
-      status: z.string().min(1, "Keterangan wajib diisi"),
+      // status: z.string().min(1, "Keterangan wajib diisi"),
+      status: z.string().optional(),
     }),
   ),
 });

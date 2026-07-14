@@ -1,13 +1,10 @@
-// Import hook memo dan state dari react
-import {
-  // Hook buat optimalisasi hitungan biar ga hitung ulang
-  useMemo,
-  // Hook buat kelola state lokal komponen
-  useState,
-} from "react";
-// Import data mock program buat dashboard
-import { MOCK_PROGRAMS } from "@/constants/programMockData";
-// Import tipe data chart
+import { useMemo, useState } from "react";
+import { Wallet, TrendingUp, Percent, Trophy } from "lucide-react";
+// Import hook usequery dari tanstack react query buat nyedot data
+import { useQuery } from "@tanstack/react-query";
+// Import fungsi narik data axios dari service
+import { fetchProgramsByRange } from "@/services/api/programService";
+// Import tipe data chart dari chart js
 import { ChartData } from "chart.js";
 // Import fungsi format angka biar rapi
 import { formatBigNumber } from "@/lib/formatters";
@@ -15,6 +12,8 @@ import { formatBigNumber } from "@/lib/formatters";
 import {
   // Fungsi buat hitung total nilai dari array periode
   sumPeriodValue,
+  // Tambahan import buat helper itungan rata rata
+  avgPeriodValue,
   // Fungsi buat ngurutin dan motong array program sesuai nilai kalkulasi
   sortAndSlicePrograms,
   // Fungsi buat ngerakit dataset bar chart standar
@@ -25,17 +24,34 @@ import {
   generateDoubleBarChartData,
   // Fungsi buat bikin data chart doughnut satu dataset otomatis biar ga ribet
   generateDoughnutChartData,
+  // Fungsi perakit donat multi metrik fleksibel
   generateMultiMetricDoughnutData,
 } from "@/lib/chartHelpers";
 
 // Fungsi komponen custom hook buat logic dashboard
 export default function useDashboard() {
+  // Eksekusi hook usequery buat narik bongkahan balasan asli dari server
+  const {
+    // Tarik properti data terus ganti namanya jadi fetch result
+    data: fetchResult,
+    // Tarik status loading buat dikasih ke ui
+    isLoading,
+  } = useQuery({
+    // Kasih nama kunci query biar cache gampang diatur
+    queryKey: ["programsDashboard"],
+    // Tancepin fungsi fetch tanpa parameter biar narik semua data
+    queryFn: () => fetchProgramsByRange(),
+  });
+
+  // Ekstrak array program asli dari dalem koper result atau lepehin array kosong
+  const rawPrograms = fetchResult?.data || [];
+
   // Wadah buat ngeset kategori apa yang lagi dipilih ama user
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const [isMobile, setIsMobile] = useState(false)
   // Wadah buat nyimpen periode waktu pake pancingan awal all
-  const [selectedPeriod, setSelectedPeriod] = useState<string | null>("all");
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>("ytd");
 
   // Wadah buat nandain id program mana yang lagi diklik
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(
@@ -61,13 +77,6 @@ export default function useDashboard() {
 
   // Wadah buat ngumpulin semua pilihan opsi periode yang ada
   const periodOptions = [
-    // Objek pilihan data buat jangka waktu all time
-    {
-      // Label teks buat nampilin tulisan all time di menu dropdown
-      label: "All Time",
-      // Nilai string buat penanda saringan semua waktu data
-      value: "all",
-    },
     // Objek pilihan data buat jangka waktu year to date tahun berjalan
     {
       // Label teks buat nampilin tulisan ytd di menu dropdown
@@ -81,26 +90,32 @@ export default function useDashboard() {
       label: "MTD",
       // Nilai penanda buat saringan waktu di bulan berjalan sekarang
       value: "mtd",
+    }, // Objek pilihan data buat jangka waktu all time
+    {
+      // Label teks buat nampilin tulisan all time di menu dropdown
+      label: "All Time",
+      // Nilai string buat penanda saringan semua waktu data
+      value: "all",
     },
-    // Objek pilihan data buat rentang waktu kustom bebas pilih sendiri
+    // Objek pilihan data buat rentang waktu costum bebas pilih sendiri
     {
       // Label teks buat nampilin tulisan custom di menu dropdown
       label: "Custom",
-      // Nilai penanda buat aktifin input rentang tanggal kustom manual
+      // Nilai penanda buat aktifin input rentang tanggal costum manual
       value: "custom",
     },
   ];
 
-  // Set tanggal paling baru dasar mock data
+  // Set tanggal paling baru dasar data mentah asli
   const lastUpdated = useMemo(() => {
-    // Buat wadah tanggal paling jadul (1 Jan 1970) buat pancingan nilai awal bandingan
+    // Buat wadah tanggal paling jadul buat pancingan nilai awal bandingan
     let latest = new Date(0);
 
-    // Cek semua data program satu2 di dalem array
-    MOCK_PROGRAMS.forEach((p) => {
-      // Kondisi cek kalo properti updatedAt ada di dalem objek program p
+    // Cek semua data program satu per satu di dalem array mentah
+    rawPrograms.forEach((p) => {
+      // Kondisi cek kalo properti update ada di dalem objek program p
       if (p.updatedAt) {
-        // Buat wadah baru buat ubah string updatedAt jadi tipe Date
+        // Buat wadah baru buat ubah string update jadi tipe date
         const d = new Date(String(p.updatedAt));
 
         // Kondisi cek kalo variabel d nilainya lebih baru ketimbang latest
@@ -114,7 +129,7 @@ export default function useDashboard() {
         // Bongkar string teks periode terus pisah jadi angka tahun sama bulan pake tanda strip
         const [year, month] = per.month.split("-").map(Number);
 
-        // Buat wadah baru tanggal periode (bulan dikurang 1 soalnya indeks bulan JavaScript mulainya dari angka 0)
+        // Buat wadah baru tanggal periode pake format wajar
         const d = new Date(year, month - 1);
 
         // Kondisi cek kalo objek tanggal d dari periode lebih baru dari latest
@@ -134,25 +149,27 @@ export default function useDashboard() {
           // Format buat nampilin angka tahun lengkap
           year: "numeric",
         });
-  }, []);
+    // Pantau variabel rawprograms
+  }, [rawPrograms]);
 
   // Wadah buat ngumpulin semua pilihan kategori yang ada
   const programCategories = useMemo(() => {
-    // Jalankan reduce buat filter nama kategori dari objek program
-    return MOCK_PROGRAMS.reduce((acc, curr) => {
-      // Kondisi cek buat mastiin nama kategori belum masuk ke wadah penampung acc
+    // Jalankan reduce buat filter nama kategori dari objek program asli
+    return rawPrograms.reduce((acc, curr) => {
+      // Kondisi cek buat mastiin nama kategori belum masuk ke wadah penampung
       if (!acc.includes(curr.category))
         // Masukin nama kategori ke wadah array kalo emang belum ada
         acc.push(curr.category);
       // Balikin wadah array biar bisa lanjut dibongkar di putaran berikutnya
       return acc;
     }, [] as string[]);
-  }, []);
+    // Pantau datanya
+  }, [rawPrograms]);
 
   // Bongkar data secara dinamis berdasarkan kategori ama periode yang lagi dipilih
   const filteredPrograms = useMemo(() => {
-    // Wadah sementara buat nyalin semua data mentah program
-    let result = [...MOCK_PROGRAMS];
+    // Wadah sementara buat nyimpen data mentah program asli
+    let result = [...rawPrograms];
 
     // Kondisional cek kalo periode custom dipilih buat filter tanggal secara manual
     if (selectedPeriod === "custom") {
@@ -169,7 +186,7 @@ export default function useDashboard() {
           p.periods.some((per) => per.month <= endMonth),
         );
       // Kondisi cabang lain kalo periode diisi selain kata all
-    } else if (selectedPeriod && selectedPeriod !== "all") {
+    } else if (selectedPeriod && selectedPeriod !== "ytd") {
       // Wadah pancingan buat ngambil info tanggal hari ini
       const today = new Date();
       // Wadah buat nyimpen angka tahun yang sekarang lagi jalan
@@ -181,9 +198,9 @@ export default function useDashboard() {
 
       // Wadah pancingan kosong buat nyimpen batas bawah bulan filteran
       let minMonth = "";
-      // Kondisional percabangan buat nentuin isi dari variabel minMonth
+      // Kondisional percabangan buat nentuin isi dari variabel minmonth
       if (selectedPeriod === "ytd")
-        // Kalo periodenya ytd berarti batas bawahnya di-set ke januari tahun ini
+        // Kalo periodenya ytd berarti batas bawahnya set ke januari tahun ini
         minMonth = firstMonthOfYear;
       else if (selectedPeriod === "mtd")
         // Kalo periodenya mtd berarti batas bawahnya langsung tiban pake bulan sekarang
@@ -197,13 +214,14 @@ export default function useDashboard() {
       );
     }
 
-    // Kondisional filter kategori pas variabel selectedCategory ga kosong
+    // Kondisional filter kategori pas variabel selectedcategory ga kosong
     if (!selectedCategory)
       // Kalo kategori kosong kasih semua data
       return result;
     // Filter array berdasar kategori
     return result.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory, startMonth, endMonth, selectedPeriod]);
+    // Pantau variabel berikut biar data saringan tetep mutakhir
+  }, [rawPrograms, selectedCategory, startMonth, endMonth, selectedPeriod]);
 
   // Cari rentang waktu dari data filter buat label dashboard
   const displayedPeriodLabel = useMemo(() => {
@@ -240,17 +258,19 @@ export default function useDashboard() {
     // Pakai reduce buat kumpul total data revenue sama cost pnl
     const totals = filteredPrograms.reduce(
       (acc, curr) => {
-        // Tambah revenue
+        // Tambah revenue siaran tv dan digital
         acc.revenue += sumPeriodValue(
           curr,
           (per) =>
-            per.financials.revenueActual +
-            (per.performanceDigital.revenue || 0),
+            Number(per.financials.revenueActual) +
+            Number(per.performanceDigital.revenue || 0),
         );
         // Tambah cost
-        acc.cost += sumPeriodValue(curr, (per) => per.financials.costDirect);
+        acc.cost += sumPeriodValue(curr, (per) =>
+          Number(per.financials.costDirect),
+        );
         // Tambah pnl
-        acc.pnl += sumPeriodValue(curr, (per) => per.financials.pnl);
+        acc.pnl += sumPeriodValue(curr, (per) => Number(per.financials.pnl));
         // Balikin akumulator
         return acc;
       },
@@ -262,12 +282,20 @@ export default function useDashboard() {
     const safeDiv = (num: number, denom: number) =>
       // Kondisional pengaman pembagian matematika biar ga error pas nol
       denom !== 0 ? num / denom : 0;
-    // Format persen biar rapi
-    const formatPct = (val: number) =>
-      // Ubah angka desimal jadi persen string ganti tanda titik ke koma
-      val.toFixed(0).replace(".", ",");
+
+    // Format persen biar rapi zero any bebas keriting desimal dipatok kaku 2 digit desimal
+    const formatPct = (val: number) => {
+      // Kalo nilai error atau infinity (dibagi nol), paksa jadi nol
+      if (isNaN(val) || !isFinite(val)) return "0.00";
+      // Buletein maksimal 2 desimal tanpa toleransi koma keriting panjang
+      return Number(val.toFixed(2)).toLocaleString("id-ID", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    };
+
     // Hitung persen profit bersih dari revenue
-    const profitMarginPct = safeDiv(totals.pnl, totals.revenue) * 100;
+    const netProfitMarginPct = safeDiv(totals.pnl, totals.revenue) * 100;
 
     // Cari program sumbang pnl paling gede
     const topContributor =
@@ -285,22 +313,26 @@ export default function useDashboard() {
     return {
       // Masukin objek totals
       totals,
-      // Array berisi data2 card statistik dashboard
+      // Array berisi data card statistik dashboard
       cards: [
         // Objek data buat card revenue
         {
           // Properti judul card
           title: "Total Revenue",
-          // Nilai uang terformat
+          // Nilai uang terformat rapi sesuai singkatan
           value: `Rp ${formatBigNumber(totals.revenue)}`,
           // Status boolean tanda positif
           isPositive: totals.revenue > 0,
           // Keterangan label tren
           label: "Pendapatan",
+          // Icon representasi untuk pendapatan
+          icon: Wallet,
+          // Warna custom: Biru
+          color: "#1fb0cf",
         },
         // Objek data buat card net profit
         {
-          // Properti judul card profit margin
+          // Properti judul card net profit
           title: "Net Profit",
           // Nilai profit terformat
           value: `Rp ${formatBigNumber(totals.pnl)}`,
@@ -308,22 +340,30 @@ export default function useDashboard() {
           isPositive: totals.pnl >= 0,
           // Label keterangan kondisional profit atau rugi bersih
           label: totals.pnl >= 0 ? "Profit Bersih" : "Rugi Bersih",
+          // Icon representasi untuk profit/rugi
+          icon: TrendingUp,
+          // Warna custom: Oren
+          color: "#ff7f0e",
         },
         // Objek data buat card profit margin persen
         {
           // Properti judul card margin persen
-          title: "Profit Margin",
-          // Nilai persen terformat string
-          value: `${formatPct(profitMarginPct)}%`,
+          title: "Net Margin",
+          // Nilai persen terformat string dengan helper anti keriting terkunci 2 digit desimal
+          value: `${formatPct(netProfitMarginPct)}%`,
           // Status tanda positif margin
-          isPositive: profitMarginPct >= 0,
+          isPositive: netProfitMarginPct >= 0,
           // Label keterangan kondisional margin sehat atau negatif
-          label: profitMarginPct >= 0 ? "Margin Sehat" : "Margin Negatif",
+          label: netProfitMarginPct >= 0 ? "Margin Sehat" : "Margin Negatif",
+          // Icon representasi untuk margin persentase
+          icon: Percent,
+          // Warna custom: Ungu
+          color: "#9467bd",
         },
         // Objek data buat card program penyumbang terbesar
         {
           // Properti judul card nama program contributor teratas
-          title: "Top Contributor Program",
+          title: "Top Contributor",
           // Nilai nama program kondisional teks
           value: topContributor?.name || "-",
           // Status boolean penentu warna positif dari pnl contributor
@@ -334,6 +374,10 @@ export default function useDashboard() {
           label: topContributor
             ? `Rp ${formatBigNumber(sumPeriodValue(topContributor, (per) => per.financials.pnl))}`
             : "-",
+          // Icon representasi untuk performa terbaik
+          icon: Trophy,
+          // Warna custom: Pink
+          color: "#e377c2",
         },
       ],
     };
@@ -355,8 +399,8 @@ export default function useDashboard() {
 
   // Susun data pnl gabung semua program
   const allProgramData = useMemo<ChartData<"bar">>(() => {
-    // Gabung nilai pnl dasar grup kategori
-    const grouped = MOCK_PROGRAMS.reduce(
+    // Gabung nilai pnl dasar grup kategori pake data mentah
+    const grouped = rawPrograms.reduce(
       (acc, curr) => {
         // Kondisi cek kalo kategori produk belum ada di objek akumulator
         if (!acc[curr.category])
@@ -364,7 +408,7 @@ export default function useDashboard() {
           acc[curr.category] = 0;
         // Tambah pnl
         acc[curr.category] += sumPeriodValue(curr, (per) => per.financials.pnl);
-        // Balik wadah array buat putar looping berikut
+        // Balikin wadah array buat putar looping berikut
         return acc;
       },
       {} as Record<string, number>,
@@ -408,13 +452,14 @@ export default function useDashboard() {
         createBarDataset("Total PNL (Rp)", data, bgColors),
       ],
     };
-  }, [selectedCategory]);
+    // Mantau nilai rawprograms juga
+  }, [rawPrograms, selectedCategory]);
 
   // Susun data detail program bentuk donat
   const detailProgramData = useMemo<ChartData<"doughnut">>(() => {
-    // Ambil data program pas id cocok
+    // Ambil data program pas id cocok dari raw data
     const prog =
-      MOCK_PROGRAMS.find((p) => p.id === activeProgramId) || MOCK_PROGRAMS[0];
+      rawPrograms.find((p) => p.id === activeProgramId) || rawPrograms[0];
     // Kondisional guard clause buat mastiin objek data program p emang beneran ketemu
     if (!prog)
       // Kalo program gada balikin objek kosong
@@ -430,24 +475,28 @@ export default function useDashboard() {
         {
           // Nama label potongan
           label: "Capaian Revenue",
-          // Fungsi penarik nilai kalkulasi total pendapatan tv ama digital
+          // Fungsi narik nilai kalkulasi total pendapatan tv ama digital
           getter: (data) =>
-            sumPeriodValue(
-              data,
-              (per) =>
-                per.financials.revenueActual +
-                (per.performanceDigital.revenue || 0),
-            ),
+            sumPeriodValue(data, (per) => per.financials.revenueActual || 0),
           // Kode warna biru
           color: "#1f77b4",
+        },
+        {
+          // Nama label potongan
+          label: "Digital Revenue",
+          // Fungsi narik nilai kalkulasi total pendapatan tv ama digital
+          getter: (data) =>
+            sumPeriodValue(data, (per) => per.performanceDigital.revenue || 0),
+          // Kode warna biru
+          color: "#9467bd",
         },
         // Konfigurasi potongan donat kedua buat cost direct
         {
           // Nama label potongan
           label: "Cost Direct",
-          // Fungsi penarik nilai pengeluaran modal
+          // Fungsi narik nilai pengeluaran modal
           getter: (data) =>
-            sumPeriodValue(data, (per) => per.financials.costDirect),
+            sumPeriodValue(data, (per) => per.financials.costDirect || 0),
           // Kode warna oren
           color: "#ff7f0e",
         },
@@ -455,16 +504,35 @@ export default function useDashboard() {
         {
           // Nama label potongan
           label: "Target Revenue",
-          // Fungsi penarik nilai target omset
+          // Fungsi narik nilai target omset
           getter: (data) =>
-            sumPeriodValue(data, (per) => per.financials.revenueTarget),
+            sumPeriodValue(data, (per) => per.financials.revenueTarget || 0),
           // Kode warna toska
           color: "#4bc0c0",
         },
       ],
     );
-    // Array dependensi mantau perubahan id program aktif
-  }, [activeProgramId]);
+    // Array dependensi mantau perubahan id program aktif dan raw data
+  }, [rawPrograms, activeProgramId]);
+
+  // generateDoughnutChartData
+  const topProgramsDoughnutData = useMemo(() => {
+    // Panggil fungsi buat bikin doughnut chart dari list data program disaring
+    return generateDoughnutChartData(
+      // Masukin data list program saringan
+      filteredPrograms,
+      // Callback buat ngambil metrik pnl per periode
+      (per) => per.financials.pnl,
+      // Judul label buat dataset donat
+      "Kontribusi PNL Program",
+      // Array pilihan warna buat potongan donat dashboard dibiarin kosong aja
+      undefined,
+      // Urutan dibikin dari yang paling gede ke kecil
+      true,
+      // Ambil maksimal data program sesuai totalnya
+      filteredPrograms.length,
+    );
+  }, [filteredPrograms]);
 
   // generateDoughnutChartData
   const topProgramsDoughnutData = useMemo(() => {
@@ -524,7 +592,7 @@ export default function useDashboard() {
             // Kondisional operator penentu apakah pnl di bawah nol atau tidak
             return pnl < 0 ? pnl : null;
           }),
-          "#ff0000",
+          "#d62728",
           5,
         ),
         // Dataset terendah dengan warna biru tanda pnl tipis tapi ga minus
@@ -535,7 +603,7 @@ export default function useDashboard() {
             // Kondisional operator penentu apakah pnl di atas atau sama dengan nol atau tidak
             return pnl >= 0 ? pnl : null;
           }),
-          "#1f77b4",
+          "#ff7f0e",
           5,
         ),
       ],
@@ -550,11 +618,11 @@ export default function useDashboard() {
       filteredPrograms,
       // Kolom kunci sorting berdasar besaran revenue sosmed digital
       (per) => per.performanceDigital.revenue,
-      // Array konfigurasi list objek penarik data tiap baris grafik batang
+      // Array konfigurasi list objek narik data tiap baris grafik batang
       [
         // Objek konfigurasi baris data pertama buat pendapatan digital
         {
-          // Callback penarik properti uang revenue digital sosmed
+          // Callback narik properti uang revenue digital sosmed
           getter: (per) => per.performanceDigital.revenue,
           // Label teks info tooltip buat baris pertama pendapatan
           label: "Revenue (Rp)",
@@ -563,7 +631,7 @@ export default function useDashboard() {
         },
         // Objek membuka baris data kedua buat jumlah tontonan sosmed views
         {
-          // Callback penarik properti total tontonan digital views
+          // Callback narik properti total tontonan digital views
           getter: (per) => per.performanceDigital.views,
           // Label teks keterangan info unit tontonan grafik
           label: "Views",
@@ -582,13 +650,13 @@ export default function useDashboard() {
     return generateDoubleBarChartData(
       // Masukin data list program terfilter
       filteredPrograms,
-      // Kolom kunci penarik data sort revenue digital
+      // Kolom kunci narik data sort revenue digital
       (per) => per.performanceDigital.revenue,
-      // Array konfigurasi berisi objek2 dataset bar digital terendah
+      // Array konfigurasi berisi objek dataset bar digital terendah
       [
         // Objek konfigurasi bar pendapatan digital bawah
         {
-          // Penarik nilai properti uang pendapatan revenue digital
+          // narik nilai properti uang pendapatan revenue digital
           getter: (per) => per.performanceDigital.revenue,
           // Label judul teks baris revenue
           label: "Revenue (Rp)",
@@ -597,7 +665,7 @@ export default function useDashboard() {
         },
         // Objek membuka bar jumlah tayangan tontonan views bawah
         {
-          // Penarik nilai properti total views sosmed digital
+          // narik nilai properti total views sosmed digital
           getter: (per) => per.performanceDigital.views,
           // Teks keterangan label jumlah penonton views
           label: "Views",
@@ -669,11 +737,15 @@ export default function useDashboard() {
       // Ambil nilai target angka rating tvr penonton siaran
       (per) => per.performanceTV.actualTVR,
       // Keterangan judul teks metrik rating penonton
-      "Pencapaian TVR",
+      "Capaian TVR",
       // Warna biru buat penanda grafik rating penonton tv
       "#1f77b4",
       // Urutan dibikin menurun dari rating tinggi ke bawah
       true,
+      // Limit panjang data tetap 5
+      5,
+      // Tancepin fungsi average biar ga ditotal berlebihan
+      avgPeriodValue,
     );
   }, [filteredPrograms]);
 
@@ -686,11 +758,15 @@ export default function useDashboard() {
       // Ambil nilai persentase share pemirsa tv siaran siaran
       (per) => per.performanceTV.actualShare,
       // Keterangan tulisan info share penonton di dashboard
-      "Pencapaian Share",
+      "Capaian Share",
       // Kode heksadesimal warna biru tua buat grafik share penonton tv
       "#1f77b4",
       // Urutan dibikin dari share tertinggi ke bawah
       true,
+      // Limit panjang array tetap 5
+      5,
+      // Pake rumus rata rata buat metrik share penonton
+      avgPeriodValue,
     );
   }, [filteredPrograms]);
 
@@ -703,11 +779,15 @@ export default function useDashboard() {
       // Tarik field angka rating tvr penonton tv
       (per) => per.performanceTV.actualTVR,
       // Keterangan teks info rating penonton tv siaran
-      "Pencapaian TVR",
+      "Capaian TVR",
       // Warna merah tua tanda performa rating layar tv di bawah
       "#d62728",
       // Urutan dibikin dari yang terendah naik ke atas
       false,
+      // Limit tancepin 5 angka default
+      5,
+      // Paksa pakai itungan average
+      avgPeriodValue,
     );
   }, [filteredPrograms]);
 
@@ -720,11 +800,15 @@ export default function useDashboard() {
       // Tarik field persentasecapaian share pemirsa tv
       (per) => per.performanceTV.actualShare,
       // Keterangan teks nama label persentase share siaran tv
-      "Pencapaian Share",
+      "Capaian Share",
       // Warna merah tua tanda penonton share tv kurang maksimal
       "#d62728",
       // Urutan dibikin naik dari share paling jeblok ke atas
       false,
+      // Angka bar yang tayang max 5
+      5,
+      // Tetep pake hitungan rata2
+      avgPeriodValue,
     );
   }, [filteredPrograms]);
 
@@ -738,11 +822,11 @@ export default function useDashboard() {
     selectedCategory,
     // Fungsi pengubah state kategori program aktif pilihan user
     setSelectedCategory,
-    // State buat nampung isian teks bulan awal saringan tanggal manual kustom
+    // State buat nampung isian teks bulan awal saringan tanggal manual costum
     startMonth,
     // Fungsi setter buat isi nilai string bulan awal filter custom
     setStartMonth,
-    // State buat nampung teks input bulan akhir saringan kustom
+    // State buat nampung teks input bulan akhir saringan costum
     endMonth,
     // Fungsi setter buat isi nilai batas bulan akhir filter custom
     setEndMonth,
@@ -770,7 +854,7 @@ export default function useDashboard() {
     bottomTvPerformanceDataTvr,
     // Objek data grafik bar persentase share siaran tv peringkat terendah
     bottomTvPerformanceDataShare,
-    // Objek data agregasi kpi total hitungan finansial untuk kartu statistik
+    // Objek data agregasi kpi total hitungan finansial untuk card statistik
     totalKPI,
     // Objek data grafik bar dobel omset revenue sosmed digital tertinggi
     topRevenueDigitalData,
@@ -806,5 +890,7 @@ export default function useDashboard() {
     setIsProgramDetailOpen,
     // Objek data grafik donat pnl
     topProgramsDoughnutData,
+    // Terakhir lemparin info ke ui apakah data masih dalem proses disedot apa engga
+    isLoading,
   };
 }

@@ -1,13 +1,13 @@
-// Import hook state buat kelola data
-import {
-  useState,
-  // Import hook memo buat efisiensi hitungan
-  useMemo,
-} from "react";
-// Import hook useQuery dari tanstack buat ambil data
+"use client";
+
+import { useState, useMemo } from "react";
+// Import hook usequery dari tanstack buat ambil data
 import { useQuery } from "@tanstack/react-query";
-// Import fungsi api buat ambil data program
-import { fetchProgramsByRange } from "@/services/api/programService";
+// Import fungsi api buat ambil data program sama tipe balasannya
+import {
+  fetchProgramsByRange,
+  FetchProgramsResponse,
+} from "@/services/api/programService";
 // Import interface config kolom dari smart table
 import { ColumnConfig } from "@/components/shared/SmartTable";
 // Import formatter angka biar tampilan data rapi
@@ -17,18 +17,21 @@ import { ProgramFormData } from "@/schemas/program";
 
 // Fungsi custom hook buat handle data detail program
 export function useDetailProgram() {
-  // Ambil data program pake useQuery dengan key programs
+  // Ambil data program pake usequery dengan key programs dashboard biar irit
   const {
-    // Data hasil fetching
-    data: programs = [],
+    // Data hasil fetching koper
+    data: fetchResult,
     // Status loading data
     isLoading,
-  } = useQuery({
-    // Key query buat caching
-    queryKey: ["programs"],
-    // Fungsi buat fetch data dari backend
-    queryFn: () => fetchProgramsByRange("", ""),
+  } = useQuery<FetchProgramsResponse>({
+    // Key query buat caching disamain biar bagi2 rejeki cache
+    queryKey: ["programsDashboard"],
+    // Fungsi buat fetch data dari backend tanpa param
+    queryFn: () => fetchProgramsByRange(),
   });
+
+  // Ekstrak array program dari dalem koper result atau lepehin array kosong
+  const programs = fetchResult?.data || [];
 
   // State buat simpen program yang dipilih user
   const [selectedProgram, setSelectedProgram] =
@@ -42,29 +45,39 @@ export function useDetailProgram() {
   const periodOptions = useMemo(() => {
     // Bongkar semua periode dari semua program
     const all = programs.flatMap(
+      // Map pencari wujud string
       (p: ProgramFormData) => p.periods?.map((x) => x.month) || [],
     );
     // Hapus duplikat terus urutin dari yang terbaru
     return Array.from(new Set(all)).sort().reverse();
+    // Pantau variabel
   }, [programs]);
 
   // Memo buat bikin opsi filter kategori dari data yang ada
   const categoryOptions = useMemo(() => {
     // Ambil kategori unik terus filter yang kosong
     const uniqueCategories = Array.from(
+      // Buka penampung set
       new Set(programs.map((p) => p.category)),
     ).filter(Boolean);
     // Ubah jadi format label dan value buat dropdown
-    return uniqueCategories.map((c) => ({ label: `Kategori ${c}`, value: c }));
+    return uniqueCategories.map((c) => ({
+      // Rakit string label
+      label: `${c}`,
+      // Tancepin isian aslinya
+      value: c,
+    }));
+    // Pantau
   }, [programs]);
 
   // Array konfigurasi filter untuk dropdown
   const selectFilters = [
+    // Objek laci filter pertama
     {
       // Key filter
       key: "category",
       // Label buat placeholder dropdown
-      label: "Semua Kategori",
+      label: "Pilih Kategori",
       // Daftar opsi kategori
       options: categoryOptions,
     },
@@ -77,12 +90,13 @@ export function useDetailProgram() {
     // Target bulan periode
     targetPeriod: string,
   ) => {
-    // Kalo data ga ada balikin null
+    // Kondisional gerbang nyegat balikin nihil pas kerangka emang kosong beneran, ato jalanin inspeksi pas nyata ketemu
     if (!data || !data.periods || data.periods.length === 0) return null;
-    // Kalo user milih periode tertentu, cari periodenya
+    // Kondisional cari periode spesifik nyelam nyari yang pas nargetin kecantol, ato buatin kerangka dummy pas ga nyata nemu
     if (targetPeriod) {
+      // Nyari bongkahan
       const found = data.periods.find((p) => p.month === targetPeriod);
-      // Kalo ketemu balikin
+      // Kondisional pelempar balik balikin temuan pas bener nemu, ato biarin nyari alternatif
       if (found) return found;
       // Kalo ga ketemu bikin objek periode kosong buat jaga data
       return {
@@ -92,37 +106,105 @@ export function useDetailProgram() {
         month: targetPeriod,
         // Data tv kosong
         performanceTV: {
+          // Tarjet nol
           targetTVR: 0,
+          // Porsi nol
           targetShare: 0,
+          // Asli nol
           actualTVR: 0,
+          // Nyata nol
           actualShare: 0,
         },
         // Data digital kosong
-        performanceDigital: { views: 0, revenue: 0 },
+        performanceDigital: {
+          // Penonton nol
+          views: 0,
+          // Uang nol
+          revenue: 0,
+        },
         // Data finansial kosong
         financials: {
+          // Modal kopong
           costDirect: 0,
+          // Patokan meleset
           revenueTarget: 0,
+          // Dompet kering
           revenueActual: 0,
+          // Laba ambyar
           pnl: 0,
         },
         // Data inventori kosong
-        inventory: { spot: 0, adRate: 0 },
+        inventory: {
+          // Iklan kandas
+          spot: 0,
+          // Harga lenyap
+          adRate: 0,
+        },
         // Status default
         status: "-",
       };
     }
     // Urutin periode buat dapet yang paling baru
     const sorted = [...data.periods].sort((a, b) =>
+      // Adu string
       b.month.localeCompare(a.month),
     );
     // Balikin periode pertama hasil sortir
     return sorted[0];
   };
 
+  // Memo buat rekap hitungan program cuan dan tekor
+  const programSummary = useMemo(() => {
+    // Wadah jumlah program untung
+    let profitCount = 0;
+    // Wadah duit untung
+    let profitSum = 0;
+    // Wadah jumlah program rugi
+    let lossCount = 0;
+    // Wadah duit rugi
+    let lossSum = 0;
+
+    // Loop semua program buat difilter
+    programs.forEach((p) => {
+      // Tarik periode aktifnya
+      const active = getActivePeriod(p, selectedPeriod);
+      // Kondisional cek kalo datanya ada
+      if (active && active.financials) {
+        // Ambil nominal
+        const pnl = active.financials.pnl;
+        // Kondisional pisah nasib program
+        if (pnl >= 0) {
+          // Tambah angka untung
+          profitCount++;
+          // Tambah duit untung
+          profitSum += pnl;
+        } else {
+          // Tambah angka tekor
+          lossCount++;
+          // Tambah duit tekor
+          lossSum += pnl;
+        }
+      }
+    });
+
+    // Balikin objek rekap utuh
+    return {
+      // Kirim jumlah untung
+      profitCount,
+      // Kirim duit untung
+      profitSum,
+      // Kirim jumlah rugi
+      lossCount,
+      // Kirim duit rugi
+      lossSum,
+    };
+    // Pantau array dan periode
+  }, [programs, selectedPeriod]);
+
   // Memo buat definisikan konfigurasi kolom tabel
   const columns: ColumnConfig<ProgramFormData>[] = useMemo(
     () => [
+      // Kolom nama tayangan
       {
         // Judul kolom
         header: "Nama Program",
@@ -130,7 +212,7 @@ export function useDetailProgram() {
         accessorKey: "name",
         // Render buat isi sel
         render: (item) => (
-          // Tombol buat buka detail modal
+          // Buka tombol buat buka detail modal
           <button
             // Set program yang diklik ke state
             onClick={() => setSelectedProgram(item)}
@@ -142,6 +224,7 @@ export function useDetailProgram() {
           </button>
         ),
       },
+      // Kolom pembagian bentuk
       {
         // Judul kolom
         header: "Kategori",
@@ -150,12 +233,16 @@ export function useDetailProgram() {
         // Render label kategori
         render: (item) => (
           // Span buat badge kategori
-          <span className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold">
+          <span
+            // bentuk kelas
+            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold"
+          >
             {/* Teks nama kategori */}
             {item.category}
           </span>
         ),
       },
+      // Pilar ngasih tau slot tayang
       {
         // Judul kolom
         header: "Jam Tayang",
@@ -164,36 +251,44 @@ export function useDetailProgram() {
         // Render plain text jam tayang
         render: (item) => item.broadcastTime,
       },
+      // Pilar ngasih tau sasaran nembak tontonan
       {
         // Judul kolom
         header: "Target TVR",
         // Fungsi accessor buat ambil data target tvr
         accessorFn: (item) =>
+          // Ekstrak bentuk dari laci
           getActivePeriod(item, selectedPeriod)?.performanceTV?.targetTVR,
         // Id unik buat kolom
         id: "targetTVR",
         // Render nilai target tvr
         render: (item) =>
+          // Tempelin angka
           getActivePeriod(item, selectedPeriod)?.performanceTV?.targetTVR ?? 0,
       },
+      // Pilar patokan porsi tv
       {
         // Judul kolom
         header: "Target Share",
         // Fungsi accessor buat ambil target share
         accessorFn: (item) =>
+          // Gedor lacinya
           getActivePeriod(item, selectedPeriod)?.performanceTV?.targetShare,
         // Id unik kolom
         id: "targetShare",
         // Render nilai target share
         render: (item) =>
+          // Tempelin angkanya
           getActivePeriod(item, selectedPeriod)?.performanceTV?.targetShare ??
           0,
       },
+      // Kolom ngintip berhasil kaga nutup porsi tayangan
       {
         // Judul kolom
         header: "Capaian Share",
         // Fungsi accessor buat ambilcapaian share
         accessorFn: (item) =>
+          // Cari ampe dapet
           getActivePeriod(item, selectedPeriod)?.performanceTV?.actualShare,
         // Id unik kolom
         id: "capaianShare",
@@ -207,12 +302,15 @@ export function useDetailProgram() {
           const targetShare = active?.performanceTV?.targetShare ?? 0;
           // Render span dengan kondisi warna
           return (
-            // Logic warna ijo kalo capai target, merah kalo belom
+            // Buka elemen span pembungkus
             <span
+              // Kondisional pewarnaan teks balikin kelir daun pas bener tembus di atas batas, ato sembur warna kramat pas jeblok di bawah
               className={
                 actualShare >= targetShare
-                  ? "text-green-600 font-bold"
-                  : "text-destructive font-bold"
+                  ? // Warna lolos kpi
+                    "text-green-600 font-bold"
+                  : // Warna keok kpi
+                    "text-destructive font-bold"
               }
             >
               {/* Teks nilai share */}
@@ -221,11 +319,13 @@ export function useDetailProgram() {
           );
         },
       },
+      // Kolom hitung ajaib cuan ruginya angka bener
       {
         // Judul kolom
         header: "Net PNL",
         // Fungsi accessor pnl
         accessorFn: (item) =>
+          // Cari angka duit
           getActivePeriod(item, selectedPeriod)?.financials?.pnl,
         // Id unik kolom
         id: "pnl",
@@ -233,15 +333,19 @@ export function useDetailProgram() {
         render: (item) => {
           // Ambil nilai pnl
           const pnl =
+            // Nyomot beneran
             getActivePeriod(item, selectedPeriod)?.financials?.pnl ?? 0;
           // Render span warna sesuai pnl
           return (
+            // Buka span kelir duit
             <span
-              // Warna ijo kalo untung, merah kalo rugi
+              // Kondisional pelabelan bentuk teks nempelin ijo pas dompetnya isi positif, ato tancep merah merona pas nyata isinya melompong tekor
               className={
                 pnl >= 0
-                  ? "text-green-600 font-bold"
-                  : "text-destructive font-bold"
+                  ? // Lulus
+                    "text-green-600 font-bold"
+                  : // Hancur
+                    "text-destructive font-bold"
               }
             >
               {/* Teks pnl yang diformat */}
@@ -257,14 +361,25 @@ export function useDetailProgram() {
 
   // Return semua data dan fungsi yang bakal dipake di ui
   return {
+    // Array program
     programs,
+    // Spinner boolean
     isLoading,
+    // Program terpilih
     selectedProgram,
+    // Pengubah program
     setSelectedProgram,
+    // Jajaran dropdown filter
     selectFilters,
+    // Arsitektur pilar
     columns,
+    // Simpanan periode
     selectedPeriod,
+    // Pengubah periode
     setSelectedPeriod,
+    // Rentetan pilihan bulan
     periodOptions,
+    // Rekap data cuan rugi
+    programSummary,
   };
 }
