@@ -250,7 +250,7 @@ export default function ExecutiveDashboardPage() {
           // Tipe bar
           type="bar"
           // Judul chart
-          title="PNL (Per Kategori)"
+          title="P&L (Per Kategori)"
           // Data chart pnl
           data={allProgramData}
           // Tinggi chart
@@ -317,8 +317,8 @@ export default function ExecutiveDashboardPage() {
             // Set isi string teks buat judul komponen card grafik donat
             title={
               selectedCategory
-                ? `Kontribusi PNL (${selectedCategory})`
-                : "Kontribusi PNL Seluruh Program"
+                ? `Kontribusi P&L (${selectedCategory})`
+                : "Kontribusi P&L Seluruh Program"
             }
             // Masukin properti data chart donat dari variabel hasil hook tadi
             data={topProgramsDoughnutData}
@@ -372,7 +372,7 @@ export default function ExecutiveDashboardPage() {
             // Klik buat buka detail modal
             onClick={() => {
               setChartDetailType("pnl");
-              setChartDetailTitle("Top & Bottom PNL Program");
+              setChartDetailTitle("Top & Bottom P&L Program");
               setIsChartDetailOpen(true);
             }}
             // Style tombol
@@ -389,8 +389,8 @@ export default function ExecutiveDashboardPage() {
             type="bar"
             title={
               selectedCategory
-                ? `Top PNL (${selectedCategory})`
-                : "Top 5 Program (PNL Tertinggi)"
+                ? `Top P&L (${selectedCategory})`
+                : "Top 5 Program (P&L Tertinggi)"
             }
             data={topPnlData}
             options={{ indexAxis: "y", scales: { x: axisYFormatter } }}
@@ -401,8 +401,8 @@ export default function ExecutiveDashboardPage() {
             type="bar"
             title={
               selectedCategory
-                ? `Bottom PNL (${selectedCategory})`
-                : "Bottom 5 Program (PNL Terendah)"
+                ? `Bottom P&L (${selectedCategory})`
+                : "Bottom 5 Program (P&L Terendah)"
             }
             data={bottomPnlData}
             options={{

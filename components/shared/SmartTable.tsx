@@ -280,7 +280,7 @@ export default function SmartTable<T>({
                 // Tembak daftar opsi
                 periodOptions={periodOptions}
                 // Tancepin class buat nimpa w-full bawaannya biar sejajar rapi
-                className="w-auto px-0 mb-0"
+                className="md:w-auto px-0 mb-0"
               />
             )}
             {/* Render leftHeaderContent kalo ada tambahan */}
@@ -431,7 +431,7 @@ export default function SmartTable<T>({
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
                       className={cn(
-                        "px-6 py-4 font-bold uppercase tracking-wider text-[11px]",
+                        "px-5 py-3 font-bold uppercase tracking-wider text-[17px]",
                         header.column.getCanSort()
                           ? "cursor-pointer hover:bg-muted transition-colors select-none"
                           : "",

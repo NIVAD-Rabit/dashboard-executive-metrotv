@@ -1,5 +1,5 @@
 import useDashboard from "@/hooks/useDashboard";
-import { Filter, FilterX, RefreshCcw, X } from "lucide-react";
+import { Filter, FilterX, History, RefreshCcw, X } from "lucide-react";
 import { SetStateAction, useState } from "react";
 import CustomSelect from "./CustomSelect";
 import { Dispatch } from "react";
@@ -45,17 +45,18 @@ export default function FilterControl({selectedCategory,
   return(
     
     // Box filter utama 
-      <div className="bg-card md:px-6 px-3 md:py-4 py-2 rounded-2xl flex lg:flex-row lg:items-center justify-around gap-4 shadow-sm">
+      <div className="bg-card md:px-6 px-4 md:py-4 py-3 border-border border rounded-xl flex lg:flex-row items-center justify-between shadow-sm">
       {/* Kontainer info update terakhir */}
-    <div className="flex shrink-0 items-center gap-2">
+      
+    <div className="shrink-0 hidden md:flex items-center gap-2">
       {/* Teks label update */}
-      <p className="text-sm text-muted-foreground font-medium hidden sm:block">
+      <p className="text-sm text-muted-foreground font-medium hidden md:flex">
         Pembaruan terakhir:
       </p>
       {/* Badge waktu update */}
       <span className="text-sm md:text-base bg-muted px-2 py-0.5 rounded text-muted-foreground font-semibold flex items-center gap-1">
         {/* Ikon refresh */}
-        <RefreshCcw className="md:size-[14px] size-[12px]" /> {lastUpdated}
+        <RefreshCcw className="size-[12px]" /> {lastUpdated}
       </span>
     </div>
 
@@ -71,13 +72,16 @@ export default function FilterControl({selectedCategory,
       </span>
     </div>
   
-          {/* Kontainer label periode mobile */}
-          <div className=" text-center ">
-            {/* Badge label periode aktif */}
-            <span className="md:hidden block md:text-sm text-xs text-muted-foreground font-semibold bg-muted/40 px-2 py-1 rounded-full border border-border">
-                {displayedPeriodLabel}
-              </span>
-          </div>
+    <div className="flex md:hidden flex-col gap-1 content-center">
+      <span className="text-base font-semibold text-muted-foreground">
+        {displayedPeriodLabel}
+      </span>
+      <span className="text-sm text-muted-foreground/60">
+        {lastUpdated}
+      </span>
+      
+    </div>
+          
 
        {/* Kontainer filter kategori dan periode */}
         <div className="md:flex items-center gap-4 hidden">
@@ -172,16 +176,16 @@ export default function FilterControl({selectedCategory,
         </div>
 
         {/*mobile filter button*/}
-        <div className="flex md:hidden">
+        <div className="flex h-1/2 md:hidden">
           <>
-          <div className="w-full flex flex-col items-center bg-card rounded-sm border border-border/50 transition-colors duration-200">
-            <div className="flex justify-between items-center w-full sm:w-auto">
+          <div className="w-full flex items-center bg-card rounded-sm border border-border transition-colors duration-200"> 
+            <div className="flex justify-between items-center px-2 py-2 w-full h-[50%] sm:w-auto">
               
               <button
                 onClick={() => setIsMobileModalOpen(true)}
-                className="flex items-center justify-center shadow-sm py-[4px] px-1 rounded-xl text-sm font-medium shrink-0 transition-colors"
+                className="rounded-xl text-sm font-medium shrink-0 transition-colors"
               >
-                <Filter size={16} />
+                <Filter size={18} />
               </button>
 
             </div>

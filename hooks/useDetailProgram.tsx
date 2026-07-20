@@ -224,6 +224,23 @@ export function useDetailProgram() {
           </button>
         ),
       },
+      {
+        // Judul kolom
+        header: "Publikasi",
+        // Key accessor buat mapping data
+        accessorKey: "bulletin",
+        // Render buat isi sel
+        render: (item) => (
+          // Span buat badge kategori
+          <span
+            // bentuk kelas
+            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-sm font-semibold"
+          >
+            {/* Teks nama kategori */}
+            {item.Bulletin}
+          </span>
+        ),
+      },
       // Kolom pembagian bentuk
       {
         // Judul kolom
@@ -235,7 +252,7 @@ export function useDetailProgram() {
           // Span buat badge kategori
           <span
             // bentuk kelas
-            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold"
+            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-base font-bold"
           >
             {/* Teks nama kategori */}
             {item.category}
@@ -249,7 +266,14 @@ export function useDetailProgram() {
         // Key accessor data
         accessorKey: "broadcastTime",
         // Render plain text jam tayang
-        render: (item) => item.broadcastTime,
+        render: (item) => {
+          const broadcastTime = item.broadcastTime
+          return (
+          <span className="text-base font-medium">
+            {broadcastTime}
+          </span>)
+          
+        },
       },
       // Pilar ngasih tau sasaran nembak tontonan
       {
@@ -262,9 +286,16 @@ export function useDetailProgram() {
         // Id unik buat kolom
         id: "targetTVR",
         // Render nilai target tvr
-        render: (item) =>
+        render: (item) => {
+          const activePeriod = getActivePeriod(item, selectedPeriod)?.performanceTV?.targetTVR ?? 0
+          return(
+            <span className="font-medium text-base">
+              {activePeriod}
+            </span>
+          )
+        }
           // Tempelin angka
-          getActivePeriod(item, selectedPeriod)?.performanceTV?.targetTVR ?? 0,
+          
       },
       // Pilar patokan porsi tv
       {
@@ -277,10 +308,18 @@ export function useDetailProgram() {
         // Id unik kolom
         id: "targetShare",
         // Render nilai target share
-        render: (item) =>
+        render: (item) => {
+          const activerPeriod = getActivePeriod(item, selectedPeriod)?.performanceTV?.targetShare ??
+          0;
+          return (
+          <span className="text-base font-medium">
+            {activerPeriod}
+          </span>)
+          
+        }
           // Tempelin angkanya
-          getActivePeriod(item, selectedPeriod)?.performanceTV?.targetShare ??
-          0,
+          
+          
       },
       // Kolom ngintip berhasil kaga nutup porsi tayangan
       {
@@ -308,7 +347,7 @@ export function useDetailProgram() {
               className={
                 actualShare >= targetShare
                   ? // Warna lolos kpi
-                    "text-green-600 font-bold"
+                    "text-emerald-300 font-bold"
                   : // Warna keok kpi
                     "text-destructive font-bold"
               }
@@ -343,7 +382,7 @@ export function useDetailProgram() {
               className={
                 pnl >= 0
                   ? // Lulus
-                    "text-green-600 font-bold"
+                    "text-emerald-400 font-bold"
                   : // Hancur
                     "text-destructive font-bold"
               }
