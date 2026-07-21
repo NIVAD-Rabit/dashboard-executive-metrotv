@@ -423,7 +423,7 @@ export default function useDashboard() {
     const bgColors = labels.map((label, index) => {
       // Palet warna array string kode heksadesimal
       const colors = [
-        "#3B82F6", // Blue
+        "#2575f4", // Blue
         "#06B6D4", // Cyan
         "#10B981", // Emerald
         "#F59E0B", // Amber
@@ -545,7 +545,7 @@ export default function useDashboard() {
       // String teks nama label dataset chart
       "Positif (Rp)",
       // Kode warna heksadesimal hijau buat tanda untung
-      "#2ca02c",
+      "#3ecd3e",
       // Urutan dibikin dari yang tertinggi ke terendah
       true,
     );
@@ -573,7 +573,7 @@ export default function useDashboard() {
             // Kondisional operator penentu apakah pnl di bawah nol atau tidak
             return pnl < 0 ? pnl : null;
           }),
-          "#d62728",
+          "#db3030",
           5,
         ),
         // Dataset terendah dengan warna biru tanda pnl tipis tapi ga minus
@@ -608,7 +608,7 @@ export default function useDashboard() {
           // Label teks info tooltip buat baris pertama pendapatan
           label: "Revenue (Rp)",
           // Warna heksadesimal biru tua buat bar pendapatan
-          color: "#1f77b4",
+          color: "#3B82F6",
         },
         // Objek membuka baris data kedua buat jumlah tontonan sosmed views
         {
@@ -617,7 +617,7 @@ export default function useDashboard() {
           // Label teks keterangan info unit tontonan grafik
           label: "Views",
           // Warna heksadesimal cyan muda buat bar penonton
-          color: "#17becf",
+          color: "#06B6D4",
         },
       ],
       // Diurutkan dari nilai yang paling tinggi ke bawah
