@@ -1,12 +1,4 @@
-// Import react dan kawan2
-import React, {
-  // Import hook state buat kelola data
-  useState,
-  // Import hook memo buat efisiensi hitungan
-  useMemo,
-  // Import hook ref buat akses elemen dom
-  useRef,
-} from "react";
+import React, { useState, useMemo, useRef } from "react";
 // Import hook query dari tanstack query
 import {
   // Hook utama buat narik data
@@ -206,7 +198,7 @@ export function useMasterProgram() {
   // State string periode waktu yang lagi dipilih user
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
-  // Jalankan query buat narik koper balasan dari server
+  // Jalankan query buat narik koper balesan dari server
   const {
     // Sedot objek utuh hasil balikan api terus ganti namanya jadi fetch result
     data: fetchResult,
@@ -219,8 +211,16 @@ export function useMasterProgram() {
     queryFn: () => fetchProgramsByRange("", ""),
   });
 
-  // Ekstrak array program asli dari dalem koper result atau lepehin array kosong
-  const programs = fetchResult?.data || [];
+  // Ekstrak array program asli dari dalem koper result terus urutkan berdasarkan abjad nama program
+  const programs = useMemo(() => {
+    // Sedot barisan laci aslinya atau balikin hampa kosong
+    const rawData = fetchResult?.data || [];
+    // Sebarkan bentuk salinannya terus adu komparasi abjad namanya urut lokal
+    return [...rawData].sort((a, b) =>
+      (a.name || "").localeCompare(b.name || ""),
+    );
+    // Awasi gerak perubahan koper res
+  }, [fetchResult?.data]);
 
   // Memo buat nyusun daftar string periode unik yang ada
   const periodOptions = useMemo(() => {
@@ -417,7 +417,7 @@ export function useMasterProgram() {
       }
     });
 
-    // Siapin wadah array penampung payload lolos verifikasi zod
+    // Siapin wadah array tampungan payload lolos verifikasi zod
     const validPayload: ProgramFormData[] = [];
     // Siapin wadah ember kumpulan pesan string error yang numpuk
     const errors: string[] = [];
@@ -530,14 +530,16 @@ export function useMasterProgram() {
         accessorKey: "category",
         // Fungsi perakit elemen ui
         render: (item) => (
-          // Bungkus pake span wujud lencana
-          <span
-            // Aturan styling warna bentuk kotak kecil lencana
-            className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold"
-          >
-            {/* Coretan isi nilai kategori */}
-            {item.category}
-          </span>
+          // Bungkus pake span polosan aja tanpa badge
+          <span>{item.category}</span>
+          // // Bungkus pake span wujud lencana
+          // // <span
+          // //   // Aturan styling warna bentuk kotak kecil lencana
+          // //   className="bg-secondary text-secondary-foreground px-2.5 py-1 rounded-md text-[11px] font-bold"
+          // // >
+          // //   {/* Coretan isi nilai kategori */}
+          // //   {item.category}
+          // // </span>
         ),
       },
       // Kolom penunjuk waktu tayang layar tv
@@ -674,8 +676,15 @@ export function useMasterProgram() {
   );
 
   // Memo racikan konfigurasi deret seleksi list kategori dropdown luar
-  const selectFilters = useMemo<FilterSelectConfig[]>(
-    () => [
+  const selectFilters = useMemo<FilterSelectConfig[]>(() => {
+    // Ambil kategori unik terus filter yang kosong biar dinamis kaya tabel laen
+    const uniqueCategories = Array.from(
+      // Buka tampungan set nyaring kategori
+      new Set(programs.map((p) => p.category)),
+    ).filter(Boolean);
+
+    // Balikin wujud array konfigurasinya
+    return [
       // Konfigurasi laci dropdown kategori
       {
         // Nama field sasaran jaring
@@ -684,22 +693,20 @@ export function useMasterProgram() {
         label: "Pilih Kategori",
         // Kumpulan bentuk jajaran nilai dalam menu list pilihan
         options: [
-          // Item pertama
-          { label: "A", value: "A" },
-          // Item kedua
-          { label: "B", value: "B" },
-          // Item ketiiga
-          { label: "C", value: "C" },
-          // Item eksklusif khusus
-          { label: "Signature", value: "Signature" },
-          // Item buangan luar biasa
-          { label: "Others", value: "Others" },
+          // Item netral semua buat nampilin seisi tabel
+          { label: "Semua", value: "" },
+          // Nyambungin urutan map kategori hasil serokan data aslinya
+          ...uniqueCategories.map((c) => ({
+            // Rakit string label
+            label: `${c}`,
+            // Tancepin isian aslinya
+            value: c,
+          })),
         ],
       },
-    ],
-    // Pengawas mati memori sekali pancang jalan
-    [],
-  );
+    ];
+    // Pengawas memori nyambung ke array program
+  }, [programs]);
 
   // Fungsi pengubah format ketikan text angka ganti balikan bentuk number js, cegah nan
   const numberParser = (
@@ -791,7 +798,7 @@ export function useMasterProgram() {
           getActivePeriod(params.data, selectedPeriod)?.month ?? "",
         // Penusuk modifikasi data baru ngeganti wujud asal
         valueSetter: (
-          // Penampung kiriman ketikan jarinya user
+          // tampungan kiriman ketikan jarinya user
           params: ValueSetterParams<ProgramFormData, string>,
         ) => {
           // Ekstrak ditarik bentuk bulannya dulu buat siap ditiban
@@ -1260,7 +1267,7 @@ export function useMasterProgram() {
         valueParser: numberParser,
         // Kerek narik nyedot bongkahan harta properti tarif dari laci
         valueGetter: (
-          // Penampung jaring bawaan
+          // tampungan jaring bawaan
           params: ValueGetterParams<ProgramFormData, number>,
         ) =>
           // Ekstrak dalam ampe ketemu besaran angka ratenya nol pelindung
@@ -1341,7 +1348,7 @@ export function useMasterProgram() {
     [editingId, rowData, selectedPeriod],
   );
 
-  // Lempar semua senjata balikin bentuk fungsi turunan dan kotak kotak penampung state siap dirakit nempel dimari laci ui kodingan tempel depan komponen luar biasa rapi
+  // Lempar semua senjata balikin bentuk fungsi turunan dan kotak kotak tampungan state siap dirakit nempel dimari laci ui kodingan tempel depan komponen luar biasa rapi
   return {
     // Array wadah tumpukan program data suci hasil cidukan server backend
     programs,
@@ -1353,9 +1360,9 @@ export function useMasterProgram() {
     isModalOpen,
     // Wadah khusus ngunci baris nyimpen ktp id dari program yang lagi operasi ketok mejik edit form
     editingId,
-    // Kantong penampung id inceran korban hapus buang sisa abu
+    // Kantong tampungan id inceran korban hapus buang sisa abu
     deleteConfirmId,
-    // Array penampung tumpukan bentuk baris pengisi slot laci tabel edit ag grid
+    // Array tampungan tumpukan bentuk baris pengisi slot laci tabel edit ag grid
     rowData,
     // Cetakan racikan kerangka pilar kolom tabel biasa mode baca read
     tableColumns,
@@ -1363,7 +1370,7 @@ export function useMasterProgram() {
     selectFilters,
     // Cetakan arsitektur monster mutan pilar baris super komplit edit massal bentuk ui nimpah form
     colDefs,
-    // Wadah penampung teks filter angka kombinasi bulan bentuk aktif
+    // Wadah tampungan teks filter angka kombinasi bulan bentuk aktif
     selectedPeriod,
     // Saklar pengubah state fungsi setter tuang lempar filter bentuk bulan
     setSelectedPeriod,

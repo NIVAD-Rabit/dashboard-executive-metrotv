@@ -30,7 +30,7 @@ import {
 
 // Fungsi komponen custom hook buat logic dashboard
 export default function useDashboard() {
-  // Eksekusi hook usequery buat narik bongkahan balasan asli dari server
+  // Eksekusi hook usequery buat narik bongkahan balesan asli dari server
   const {
     // Tarik properti data terus ganti namanya jadi fetch result
     data: fetchResult,
@@ -156,7 +156,7 @@ export default function useDashboard() {
   const programCategories = useMemo(() => {
     // Jalankan reduce buat filter nama kategori dari objek program asli
     return rawPrograms.reduce((acc, curr) => {
-      // Kondisi cek buat mastiin nama kategori belum masuk ke wadah penampung
+      // Kondisi cek buat mastiin nama kategori belum masuk ke wadah tampungan
       if (!acc.includes(curr.category))
         // Masukin nama kategori ke wadah array kalo emang belum ada
         acc.push(curr.category);
@@ -563,7 +563,7 @@ export default function useDashboard() {
     return {
       // Urai nama program terurut jadi array label x axis chart
       labels: sorted.map((p) => p.name),
-      // Array penampung kumpulan dataset grafik bar chart
+      // Array tampungan kumpulan dataset grafik bar chart
       datasets: [
         // Dataset minus dengan warna merah tanda rugi keuangan
         createBarDataset(
@@ -688,9 +688,9 @@ export default function useDashboard() {
     return {
       // Map daftar nama program jadi label sumbu horizontal chart
       labels: sorted.map((p) => p.name),
-      // Array penampung list dataset bar chart omset bawah siaran
+      // Array tampungan list dataset bar chart omset bawah siaran
       datasets: [
-        // Panggil fungsi create penampung dataset bar chart omset siaran tv
+        // Panggil fungsi create tampungan dataset bar chart omset siaran tv
         createBarDataset(
           "Capaian Revenue (Rp)",
           sorted.map((p) =>
@@ -861,7 +861,7 @@ export default function useDashboard() {
     chartDetailType,
     // Fungsi setter penentu string jenis metrik detail chart modal
     setChartDetailType,
-    // State string penampung teks judul dinamis buat dipasang di modal detail
+    // State string tampungan teks judul dinamis buat dipasang di modal detail
     chartDetailTitle,
     // Fungsi setter pengubah isi teks judul jendela modal detail chart
     setChartDetailTitle,

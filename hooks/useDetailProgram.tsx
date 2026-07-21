@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 // Import hook usequery dari tanstack buat ambil data
 import { useQuery } from "@tanstack/react-query";
-// Import fungsi api buat ambil data program sama tipe balasannya
+// Import fungsi api buat ambil data program sama tipe balesannya
 import {
   fetchProgramsByRange,
   FetchProgramsResponse,
@@ -30,8 +30,14 @@ export function useDetailProgram() {
     queryFn: () => fetchProgramsByRange(),
   });
 
-  // Ekstrak array program dari dalem koper result atau lepehin array kosong
-  const programs = fetchResult?.data || [];
+  // Ekstrak array program dari dalem koper result terus urutin abjad namanya
+  const programs = useMemo(() => {
+    // Tarik data mentah atau lepehin array kosong
+    const raw = fetchResult?.data || [];
+    // Salin array terus adu string namanya pake localecompare
+    return [...raw].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    // Pantau balasan fetch
+  }, [fetchResult?.data]);
 
   // State buat simpen program yang dipilih user
   const [selectedProgram, setSelectedProgram] =
@@ -57,16 +63,21 @@ export function useDetailProgram() {
   const categoryOptions = useMemo(() => {
     // Ambil kategori unik terus filter yang kosong
     const uniqueCategories = Array.from(
-      // Buka penampung set
+      // Buka tampungan set
       new Set(programs.map((p) => p.category)),
     ).filter(Boolean);
-    // Ubah jadi format label dan value buat dropdown
-    return uniqueCategories.map((c) => ({
-      // Rakit string label
-      label: `${c}`,
-      // Tancepin isian aslinya
-      value: c,
-    }));
+    // Ubah jadi format label dan value buat dropdown ditambahin opsi netral buat liat semua
+    return [
+      // Rakit opsi semua buat reset filter kategori
+      { label: "Semua", value: "" },
+      // Nyambungin urutan map aslinya
+      ...uniqueCategories.map((c) => ({
+        // Rakit string label
+        label: `${c}`,
+        // Tancepin isian aslinya
+        value: c,
+      })),
+    ];
     // Pantau
   }, [programs]);
 
@@ -247,7 +258,7 @@ export function useDetailProgram() {
         header: "Kategori",
         // Key accessor data
         accessorKey: "category",
-        // Render label kategori
+        // Render label kategori teks biasa
         render: (item) => (
           // Span buat badge kategori
           <span
@@ -296,6 +307,21 @@ export function useDetailProgram() {
         }
           // Tempelin angka
           
+      },
+      // Pilar ngasih tau hasil tvr nyata
+      {
+        // Judul kolom
+        header: "Capaian TVR",
+        // Fungsi accessor buat ambil data
+        accessorFn: (item) =>
+          // Ekstrak wujud
+          getActivePeriod(item, selectedPeriod)?.performanceTV?.actualTVR,
+        // Id unik kolom
+        id: "actualTVR",
+        // Render nilai capaian tvr
+        render: (item) =>
+          // Tempelin angka
+          getActivePeriod(item, selectedPeriod)?.performanceTV?.actualTVR ?? 0,
       },
       // Pilar patokan porsi tv
       {
@@ -358,6 +384,105 @@ export function useDetailProgram() {
           );
         },
       },
+      // Kolom nampilin jumlah penonton internet
+      {
+        // Judul kolom
+        header: "Digital Views",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Nyari bongkahan
+          getActivePeriod(item, selectedPeriod)?.performanceDigital?.views,
+        // Id unik kolom
+        id: "digitalViews",
+        // Render format angka
+        render: (item) => {
+          // Tarik isian
+          const val =
+            getActivePeriod(item, selectedPeriod)?.performanceDigital?.views ??
+            0;
+          // Tempelin pake format cantik
+          return formatNumberIndo(val);
+        },
+      },
+      // Kolom setor hasil uang jejaring
+      {
+        // Judul kolom
+        header: "Digital Revenue",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Gali data
+          getActivePeriod(item, selectedPeriod)?.performanceDigital?.revenue,
+        // Id unik kolom
+        id: "digitalRevenue",
+        // Render mata uang
+        render: (item) => {
+          // Tarik duitnya
+          const val =
+            getActivePeriod(item, selectedPeriod)?.performanceDigital
+              ?.revenue ?? 0;
+          // Tempelin embel-embel rupiah
+          return `Rp ${formatNumberIndo(val)}`;
+        },
+      },
+      // Kolom bongkar modal ongkos
+      {
+        // Judul kolom
+        header: "Cost Direct",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Buka laci finansial
+          getActivePeriod(item, selectedPeriod)?.financials?.costDirect,
+        // Id unik kolom
+        id: "costDirect",
+        // Render mata uang
+        render: (item) => {
+          // Tarik biaya
+          const val =
+            getActivePeriod(item, selectedPeriod)?.financials?.costDirect ?? 0;
+          // Tempelin wujud rupiah
+          return `Rp ${formatNumberIndo(val)}`;
+        },
+      },
+      // Kolom incaran patokan pemasukan
+      {
+        // Judul kolom
+        header: "Target Revenue",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Ekstrak laci
+          getActivePeriod(item, selectedPeriod)?.financials?.revenueTarget,
+        // Id unik kolom
+        id: "revenueTarget",
+        // Render angka
+        render: (item) => {
+          // Tarik angka patokan
+          const val =
+            getActivePeriod(item, selectedPeriod)?.financials?.revenueTarget ??
+            0;
+          // Cetak format
+          return `Rp ${formatNumberIndo(val)}`;
+        },
+      },
+      // Kolom kuitansi masuk duit asli
+      {
+        // Judul kolom
+        header: "Capaian Revenue",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Ekstrak duit masuk
+          getActivePeriod(item, selectedPeriod)?.financials?.revenueActual,
+        // Id unik
+        id: "revenueActual",
+        // Render duit
+        render: (item) => {
+          // Tarik nilai
+          const val =
+            getActivePeriod(item, selectedPeriod)?.financials?.revenueActual ??
+            0;
+          // Cetak rupiahan
+          return `Rp ${formatNumberIndo(val)}`;
+        },
+      },
       // Kolom hitung ajaib cuan ruginya angka bener
       {
         // Judul kolom
@@ -392,6 +517,55 @@ export function useDetailProgram() {
             </span>
           );
         },
+      },
+      // Kolom sisa slot inventori iklan
+      {
+        // Judul kolom
+        header: "Inventory Spot",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Buka simpenan slot
+          getActivePeriod(item, selectedPeriod)?.inventory?.spot,
+        // Id unik kolom
+        id: "inventorySpot",
+        // Render polosan angka
+        render: (item) =>
+          // Tembakin wujud asli
+          getActivePeriod(item, selectedPeriod)?.inventory?.spot ?? 0,
+      },
+      // Kolom daftar harga slot tonton
+      {
+        // Judul kolom
+        header: "Ad Rate",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Bongkar brankas harga
+          getActivePeriod(item, selectedPeriod)?.inventory?.adRate,
+        // Id unik kolom
+        id: "adRate",
+        // Render rupiah
+        render: (item) => {
+          // Nyomot nominal
+          const val =
+            getActivePeriod(item, selectedPeriod)?.inventory?.adRate ?? 0;
+          // Rapihin cetakan
+          return `Rp ${formatNumberIndo(val)}`;
+        },
+      },
+      // Kolom ngasih tau status tayang
+      {
+        // Judul kolom
+        header: "Status",
+        // Fungsi accessor
+        accessorFn: (item) =>
+          // Tarik capnya
+          getActivePeriod(item, selectedPeriod)?.status,
+        // Id unik kolom
+        id: "status",
+        // Render embel-embel
+        render: (item) =>
+          // Tempelin label ato strip kalo kopong
+          getActivePeriod(item, selectedPeriod)?.status || "-",
       },
     ],
     // Dependency update kolom

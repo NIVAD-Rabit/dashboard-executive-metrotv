@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 // Perintah tambahan buat mastiin umur cache beneran nol detik
 export const revalidate = 0;
 
-// Import fungsi balasan server dari bawaan next js
+// Import fungsi balesan server dari bawaan next js
 import { NextResponse } from "next/server";
 // Import sistem otentikasi token dari library resmi google auth
 import { JWT } from "google-auth-library";
@@ -88,7 +88,7 @@ export async function GET(
 
     // Cegat proses kalo ternyata id dokumen belom didaftarin di env
     if (!sheetId) {
-      // Lempar balasan error json ngasih tau dokumen ga ketemu
+      // Lempar balesan error json ngasih tau dokumen ga ketemu
       return NextResponse.json(
         // Pesan error spesifik ngasih tau konfigurasi kosong
         { message: `Database sheet tahun ${year} belum disetting di env` },
@@ -197,7 +197,7 @@ export async function GET(
             id: `${programName}-${monthName}`,
             // Tancepin nama bulan langsung dari teks judul tab
             month: monthName,
-            // Buka objek khusus penampung metrik performa tv
+            // Buka objek khusus tampungan metrik performa tv
             performanceTV: {
               // Ubah teks target tvr pake helper pintar
               targetTVR: safeParseNumber(row.get("Target TVR")),
@@ -240,7 +240,7 @@ export async function GET(
       });
     }
 
-    // Siapin array penampung data akhir yang udah terbukti valid ngelewatin zod
+    // Siapin array tampungan data akhir yang udah terbukti valid ngelewatin zod
     const validPrograms: ProgramFormData[] = [];
     // Siapin wadah array penyimpan teks error yang bakal dilempar ke ui
     const syncErrors: string[] = [];

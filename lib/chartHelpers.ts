@@ -113,7 +113,7 @@ export const createDoughnutDataset = (
 export const createLineDataset = (
   // Teks string penanda nama label metrik garis
   label: string,
-  // Array penampung list angka dalem titik garis chart
+  // Array tampungan list angka dalem titik garis chart
   data: (number | null)[],
   // Teks string warna pinggiran garis yang dibikin opsional aja
   borderColor?: string,
@@ -203,7 +203,7 @@ export const generateLineChartData = (
   return {
     // Map deretan objek program hasil filter buat dijadiin tulisan alas
     labels: sorted.map((p) => p.name),
-    // Array penampung list dataset grafik garisnya doang
+    // Array tampungan list dataset grafik garisnya doang
     datasets: [
       // Jalankan fungsi otomatis perakit dataset line
       createLineDataset(

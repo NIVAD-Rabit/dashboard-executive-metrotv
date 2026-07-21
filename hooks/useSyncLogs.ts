@@ -1,6 +1,6 @@
 // Import hook dari react query buat nyedot data
 import { useQuery } from "@tanstack/react-query";
-// Import service penarik data dari api dan tipe antarmuka balasannya
+// Import service penarik data dari api dan tipe antarmuka balesannya
 import {
   fetchProgramsByRange,
   FetchProgramsResponse,
@@ -8,7 +8,7 @@ import {
 
 // Fungsi hook costum khusus buat narik log error sinkronisasi
 export default function useSyncLogs() {
-  // Eksekusi hook usequery bawa tipe balasan antarmuka biar ga kena any
+  // Eksekusi hook usequery bawa tipe balesan antarmuka biar ga kena any
   const {
     // Tarik properti data terus ganti namanya jadi fetch result
     data: fetchResult,

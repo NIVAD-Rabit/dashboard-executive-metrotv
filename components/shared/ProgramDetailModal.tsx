@@ -436,6 +436,66 @@ export default function ProgramDetailModal({
                   </div>
                 </div>
 
+                {/* Card profitabilitas */}
+                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
+                    <TrendingUp size={16} /> Profitabilitas & Anggaran
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">
+                        Cost Direct (Modal):
+                      </span>
+                      <span className="text-sm font-bold text-foreground">
+                        Rp{" "}
+                        {formatNumberIndo(
+                          currentPeriodData?.financials?.costDirect ?? 0,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-border pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Net PNL Akhir:
+                      </span>
+                      <span
+                        className={`text-base font-bold ${pnlAkhir >= 0 ? "text-green-600" : "text-destructive"}`}
+                      >
+                        Rp {formatNumberIndo(pnlAkhir)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-border pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Return on Investment (ROI):
+                      </span>
+                      <span
+                        className={`text-sm font-bold ${roi >= 0 ? "text-green-600" : "text-destructive"}`}
+                      >
+                        {roi.toFixed(1)}%
+                      </span>
+                    </div>
+                    {/* Baris Net Profit Margin */}
+                    <div className="flex justify-between items-center border-t border-border pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Net Profit Margin (NPM):
+                      </span>
+                      <span
+                        className={`text-sm font-bold ${npm >= 0 ? "text-green-600" : "text-destructive"}`}
+                      >
+                        {npm.toFixed(1)}%
+                      </span>
+                    </div>
+                    {/* <div className="flex justify-between items-center border-t border-border pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        Status:
+                      </span>
+                      <span
+                        className={`text-sm font-bold ${pnlAkhir >= 0 ? "text-green-600" : "text-destructive"}`}
+                      >
+                        {currentPeriodData?.status ?? "Normal"}
+                      </span>
+                    </div> */}
+                  </div>
+                </div>
               </div>
 
               {/* Grid 2 grafik */}

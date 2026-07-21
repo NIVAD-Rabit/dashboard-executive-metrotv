@@ -1,35 +1,15 @@
-import axios from "axios";
-// Import tipe data program dari skema validasi
+// Import instance axios dari library
+import { apiClient } from "@/lib/axios";
+// Import tipe data program dari skema validasi zod
 import { ProgramFormData, programFormSchema } from "@/schemas/program";
 
-// Bikin instance khusus axios biar konfigurasinya rapi dan terpusat
-const apiClient = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.backend-mtv.com",
-
-  // Setel batas waktu request maksimal sepuluh detik
-  timeout: 10000,
-  // Pastiin header kiriman berformat json
-  headers: {
-    // Definisi tipe konten json
-    "Content-Type": "application/json",
-  },
-});
-
-// Bikin interface buat nangkep respons mentah dari json yang strukturnya beda
-export interface RawDashboardResponse {
-  // Properti master data buat relasi
-  masterData: Record<string, unknown>;
-  // Properti payload data buat rincian metrik
-  payloadData: Record<string, unknown>;
-}
-
-// Bikin interface balasan yang dipake hook
+// Bikin interface balesan yang dipake hook
 export interface FetchProgramsResponse {
   // Array nampung data program asli siap pake
   data: ProgramFormData[];
-  // Objek penampung parameter filter yang aktif digunakan saat fetch
+  // Objek tampungan parameter filter yang aktif dipake pas fetch
   params: {
-    // Properti opsional karena boleh bernilai undefined atau string
+    // Properti opsional, boleh bernilai undefined atau string
     startPeriod?: string;
     // Parameter bulan akhir batasan filter opsional
     endPeriod?: string;
@@ -38,6 +18,14 @@ export interface FetchProgramsResponse {
   };
   // Array nampung pesan error kalo ada
   errors: string[];
+}
+
+// Bikin interface kerangka standar balesan dari api biar bebas dari any
+export interface StandardApiResponse {
+  // Properti opsional data array program
+  data?: ProgramFormData[];
+  // Properti opsional data array string error
+  errors?: string[];
 }
 
 // Fungsi fetch list program buat ditarik ama react query
@@ -49,36 +37,89 @@ export const fetchProgramsByRange = async (
   // Parameter string tahun dokumen opsional
   year: string = "2026",
 ): Promise<FetchProgramsResponse> => {
-  
-  // Pipa keran buat bacend pak Lukman atau mas Ismail nanti
-  // Pas backend idup, ganti url "/data.json" jadi endpoint, misal "/api/v1/programs"
-  const response = await apiClient.get<unknown>(
-    // Tembak langsung file json di folder public
-    `/data.json`,
-  );
+  // Tarik posisi tuas keran dari env, kalo kosong pasang default ke sheet
+  const dataSource = process.env.NEXT_PUBLIC_DATA_SOURCE || "sheet";
 
-  // Ambil data mentahnya
-  const rawData = response.data;
-  const mappedData: ProgramFormData[] = [];
-  const validationErrors: string[] = [];
+  // Siapin dua ember kosong buat nampung balesan
+  let mappedData: ProgramFormData[] = [];
+  let validationErrors: string[] = [];
 
-  if (Array.isArray(rawData)) {
-    rawData.forEach((item, index) => {
-      const parsedData = programFormSchema.safeParse(item);
+  // Buka blok tangkapan antisipasi error pas nembak keran
+  try {
+    // Percabangan logika ala keran hotel buat nentuin kemana data ditembak
+    if (dataSource === "json") {
+      // Keran diputer ke lokal, tembak langsung file json di folder public
+      const response = await apiClient.get<unknown>(`/data.json`);
+      // Ambil data mentahnya
+      const rawData = response.data;
 
-      if (parsedData.success) {
-        mappedData.push(parsedData.data);
-      } else {
-        validationErrors.push(`Baris ${index + 1} gagal divalidasi`);
-        console.error(
-          `Baris ${index + 1} gagal divalidasi`,
-          parsedData.error.format(),
-        );
+      // Bongkar balesan json dan saring pake zod
+      if (Array.isArray(rawData)) {
+        rawData.forEach((item, index) => {
+          const parsedData = programFormSchema.safeParse(item);
+          if (parsedData.success) {
+            mappedData.push(parsedData.data);
+          } else {
+            validationErrors.push(`Baris ${index + 1} gagal divalidasi`);
+            console.error(
+              `Baris ${index + 1} gagal divalidasi`,
+              parsedData.error.format(),
+            );
+          }
+        });
       }
-    });
+    } else if (dataSource === "backend") {
+      // Keran diputer ke server asli pak Lukman atau mas Ismail
+      // Tarik alamat dasar dari env
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+
+      // Tembak api backend pake tipe standar bebas any
+      const response = await apiClient.get<StandardApiResponse>(
+        `${baseUrl}/api/v1/programs?year=${year}`,
+      );
+
+      // Tarik list program siap pakai dari payload data responsenya
+      const backendData = response.data?.data;
+      // Tarik list string error hasil tangkepan backend
+      const backendErrors = response.data?.errors;
+
+      // Kalo data array beneran ada isinya, langsung sembur dan gabungin ke ember utama
+      if (Array.isArray(backendData)) {
+        mappedData = [...backendData];
+      }
+
+      // Kalo ada laporan error, sembur sekalian ke dalem ember error
+      if (Array.isArray(backendErrors)) {
+        validationErrors = [...backendErrors];
+      }
+    } else {
+      // Keran diputer ke sheet, nembak ke server endpoint google sheet bawaan next js
+      // Tembak api sheet lokal pake tipe standar tanpa any
+      const sheetResponse = await apiClient.get<StandardApiResponse>(
+        `/api/programs?year=${year}`,
+      );
+
+      // Tarik list program siap pakai dari payload data responsenya
+      const sheetData = sheetResponse.data?.data;
+      // Tarik list string error hasil zod tracking sheetnya
+      const sheetErrors = sheetResponse.data?.errors;
+
+      // Kalo data array siap pake beneran ada, sembur dan gabungin ke ember data utama
+      if (Array.isArray(sheetData)) {
+        mappedData = [...sheetData];
+      }
+
+      // Kalo ada laporan error, sembur sekalian ke dalem ember error utama
+      if (Array.isArray(sheetErrors)) {
+        validationErrors = [...sheetErrors];
+      }
+    }
+  } catch (error) {
+    // Catet error kalo gagal ngubungin server sesuai nama kerannya
+    validationErrors.push(`Gagal narik data dari keran ${dataSource}`);
   }
 
-  // Balikin hasil data bongkahan utuh yang udah dipetain
+  // Balikin hasil data bongkahan utuh dari keran yang lagi nyala
   return {
     // Isi data
     data: mappedData,
@@ -89,62 +130,10 @@ export const fetchProgramsByRange = async (
       endPeriod: endPeriod,
       year: year,
     },
-    // Isi error kosong
+    // Isi rekap error
     errors: validationErrors,
   };
-}  
-
-  // Buka/tutup keran
-  // Sekarang keran "data.json" udah ditutup, sistem cuma nembak ke Google Sheet aja pake try-catch di bawah ini.
-  // Kalo nanti mau buka 2 keran lagi (json + sheet), komen blok try-catch di bawah, terus ganti pake kode "Promise.allSettled" yang sebelumnya.
-  // Kalo mau full balik ke "data.json", hapus komen di blok diatas terus komen sesianya
-
-//   // Siapin dua ember kosong buat nampung balasan
-//   let mappedData: ProgramFormData[] = [];
-//   let validationErrors: string[] = [];
-
-//   // Tembak keran server endpoint google sheet aja (keran lokal ditutup)
-//   try {
-//     // Disable any sementara biar ga bawel tscnya, karena format response google sheet beda
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     const sheetResponse = await apiClient.get<any>(
-//       `/api/v1/programs?year=${year}`,
-//     );
-
-//     // Tarik list program siap pakai dari payload data responsenya
-//     const sheetData = sheetResponse.data?.data || [];
-//     // Tarik list string error hasil zod tracking sheetnya
-//     const sheetErrors = sheetResponse.data?.errors || [];
-
-//     // Kalo data array siap pake, langsung sembur dan gabungin ke ember data utama
-//     if (Array.isArray(sheetData)) {
-//       mappedData = [...mappedData, ...sheetData];
-//     }
-
-//     // Kalo ada laporan error, sembur sekalian ke dalem ember error utama
-//     if (Array.isArray(sheetErrors)) {
-//       validationErrors = [...validationErrors, ...sheetErrors];
-//     }
-//   } catch (error) {
-//     // Catet error kalo gagal ngubungin server API sheet
-//     validationErrors.push("Gagal narik data dari Google Sheet API");
-//   }
-
-//   // Balikin hasil data bongkahan utuh gabungan yang udah dipetain
-//   return {
-//     // Isi data cuma dari keran sheet doang
-//     data: mappedData,
-//     params: {
-//       // Berikan nilai variabel aslinya secara langsung tanpa tanda tanya
-//       startPeriod: startPeriod,
-//       // Parameter bulan akhir batasan filter opsional
-//       endPeriod: endPeriod,
-//       year: year,
-//     },
-//     // Isi rekap error
-//     errors: validationErrors,
-//   };
-// };
+};
 
 // Fungsi buat nyuntik data program baru ke server
 export const createProgram = async (
@@ -153,12 +142,6 @@ export const createProgram = async (
 ): Promise<ProgramFormData> => {
   // Kalo backend udah jadi, hapus promise timer
   await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // const response = await apiClient.post<ProgramFormData>(
-  //   `/api/v1/programs`,
-  //   data,
-  // );
-  // return response.data;
 
   // Balikin data bohongan sisa simulasi
   return { ...data, id: `PRG-NEW-${Date.now()}` };
@@ -174,19 +157,11 @@ export const updateProgram = async (
   // Hapus timer pas backend asli udah ada
   await new Promise((resolve) => setTimeout(resolve, 800));
 
-  // const response = await apiClient.put<ProgramFormData>(
-  //   `/api/v1/programs/${id}`,
-  //   data,
-  // );
-  // return response.data;
-
-  // Balikin simulasi balasan
+  // Balikin simulasi balesan
   return data;
 };
 
 // Fungsi sakti buat ngehapus data dari peredaran
 export const deleteProgram = async (id: string): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // await apiClient.delete(`/api/v1/programs/${id}`);
 };
