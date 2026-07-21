@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 // Import hook query dari tanstack buat manage data server
 import { useQuery } from "@tanstack/react-query";
-// Import fungsi api buat ambil data program sama tipe balasannya
+// Import fungsi api buat ambil data program sama tipe balesannya
 import {
   fetchProgramsByRange,
   FetchProgramsResponse,
@@ -66,7 +66,7 @@ const emptyPeriod = (
 export function useCompare() {
   // Ambil koper data program dari api pake usequery
   const {
-    // Koper balasan dari api
+    // Koper balesan dari api
     data: fetchResult,
     // Status loading
     isLoading,
@@ -159,14 +159,15 @@ export function useCompare() {
       0;
 
   // Hitung roi program pertama
-  // Kondisional nentuin hitungan roi a balikin wujud pembagian persenan pas nyata nemu data, ato lepehin nol pas palsu
-  const roiA = pA
-    ? // Hitungan jalan pas beneran ada
-      ((totalRevA - (pA.financials?.costDirect ?? 0)) /
-        ((pA.financials?.costDirect ?? 0) || 1)) *
-      100
-    : // Tolakan gagal
-      0;
+  // Kondisional nentuin hitungan roi a balikin wujud pembagian persenan pas nyata nemu data dan modal ga nol, ato lepehin nol pas palsu
+  const roiA =
+    pA && (pA.financials?.costDirect ?? 0) > 0
+      ? // Hitungan jalan pas beneran ada dan modal nyata
+        ((totalRevA - (pA.financials?.costDirect ?? 0)) /
+          (pA.financials?.costDirect ?? 0)) *
+        100
+      : // Tolakan gagal ato modal kosong biar persenan ga meledak
+        0;
 
   // Hitung total revenue program kedua
   // Kondisional nyari cuan b balikin tambeman omset dobel pas data ada, ato kasih nol pas nyatanya kopong
@@ -178,14 +179,15 @@ export function useCompare() {
       0;
 
   // Hitung roi program kedua
-  // Kondisional perakit roi b balikin ulikan matematika persen pas komplit, ato sembur angka nol pas kosong
-  const roiB = pB
-    ? // Rakitan jalan
-      ((totalRevB - (pB.financials?.costDirect ?? 0)) /
-        ((pB.financials?.costDirect ?? 0) || 1)) *
-      100
-    : // Rakitan mati
-      0;
+  // Kondisional perakit roi b balikin ulikan matematika persen pas komplit dan modal ada, ato sembur angka nol pas kosong
+  const roiB =
+    pB && (pB.financials?.costDirect ?? 0) > 0
+      ? // Rakitan jalan pas modal aman
+        ((totalRevB - (pB.financials?.costDirect ?? 0)) /
+          (pB.financials?.costDirect ?? 0)) *
+        100
+      : // Rakitan mati ato ongkos nol biar angka ga bengkak
+        0;
 
   // Fungsi buat swap posisi program dan periodenya
   const handleSwap = () => {

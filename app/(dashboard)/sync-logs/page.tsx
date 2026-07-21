@@ -150,7 +150,7 @@ export default function SyncLogsPage() {
                 >
                   {/* Teks angka nomer */}#{idx + 1}
                 </strong>
-                {/* Buka span penampung pesan utuh */}
+                {/* Buka span tampungan pesan utuh */}
                 <span>
                   {/* Cetak teks pesan error aslinya ke layar */}
                   {err}

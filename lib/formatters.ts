@@ -46,7 +46,7 @@ export const formatBigNumber = function (
   }
   // Kalo tembus Ribu kasih label Ribu
   if (absValue >= 1_000) {
-    return (numValue / 1_000).toLocaleString("id-ID", formatIndo) + " Ribu";
+    return (numValue / 1_000).toLocaleString("id-ID", formatIndo) + " Rb";
   }
 
   // Balikin angka desimal normal kalo kecil banget

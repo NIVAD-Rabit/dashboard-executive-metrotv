@@ -177,7 +177,7 @@ export default function ChartDetailModal({
               );
               return pnl >= 0 ? "#16a34a" : "#d62728";
             }),
-            minBarLength: 60,
+            minBarLength: 80,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -211,7 +211,7 @@ export default function ChartDetailModal({
               ),
             ),
             backgroundColor: "#1f77b4",
-            minBarLength: 60,
+            minBarLength: 80,
           },
           {
             label: "Digital Views",
@@ -219,7 +219,7 @@ export default function ChartDetailModal({
               p.periods.reduce((s, per) => s + per.performanceDigital.views, 0),
             ),
             backgroundColor: "#17becf",
-            minBarLength: 60,
+            minBarLength: 80,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -250,7 +250,7 @@ export default function ChartDetailModal({
               p.periods.reduce((s, per) => s + per.financials.revenueTarget, 0),
             ),
             backgroundColor: "#4bc0c0",
-            minBarLength: 60,
+            minBarLength: 80,
           },
           {
             label: "Capaian Revenue (Rp)",
@@ -259,7 +259,7 @@ export default function ChartDetailModal({
             ),
             // Warna hijau buat revenue
             backgroundColor: "#2ca02c",
-            minBarLength: 60,
+            minBarLength: 80,
           },
         ],
       } as ChartData<ModalChartType, number[], unknown>;
@@ -295,7 +295,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#1f77b4",
-              minBarLength: 60,
+              minBarLength: 80,
             },
             {
               label: "Capaian TVR",
@@ -306,7 +306,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#ff7f0e",
-              minBarLength: 60,
+              minBarLength: 80,
             },
           ],
         } as ChartData<ModalChartType, number[], unknown>;
@@ -337,7 +337,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#1f77b4",
-              minBarLength: 60,
+              minBarLength: 80,
             },
             {
               label: "Capaian Share (%)",
@@ -348,7 +348,7 @@ export default function ChartDetailModal({
                 ),
               ),
               backgroundColor: "#ff7f0e",
-              minBarLength: 60,
+              minBarLength: 80,
             },
           ],
         } as ChartData<ModalChartType, number[], unknown>;
@@ -431,13 +431,8 @@ export default function ChartDetailModal({
                 className="appearance-none border border-border bg-muted/40 text-foreground text-sm font-medium rounded-full px-4 py-2 h-10 outline-none cursor-pointer w-full lg:w-auto"
               >
                 {/* Opsi kategori */}
-                <option
-                  value=""
-                  className="bg-background text-foreground"
-                  disabled
-                  hidden
-                >
-                  Pilih Kategori
+                <option value="" className="bg-background text-foreground">
+                  Semua
                 </option>
                 {programCategories.map((c, i) => (
                   <option
@@ -534,6 +529,7 @@ export default function ChartDetailModal({
               )}
 
               {/* Tombol reset */}
+              {/*
               {(startMonth ||
                 endMonth ||
                 selectedCategory ||
@@ -549,9 +545,11 @@ export default function ChartDetailModal({
                   }}
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >
+                  { // Icon filter x }
                   <FilterX size={14} /> Reset
                 </button>
               )}
+              */}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-// Import icon filter x buat reset
+// Import icon
 import {
   ChevronLeft,
   ChevronRight,
@@ -27,6 +27,8 @@ import {
 import { cn } from "@/lib/utils";
 // Import komponen filter box buat ditaro sejajar
 import PeriodFilterBox from "@/components/shared/PeriodFilterBox";
+// Import komponen select custom biar tampilannya ga belang
+import CustomSelect from "@/components/shared/CustomSelect";
 
 // Interface buat konfigurasi kolom tabel
 export interface ColumnConfig<T> {
@@ -53,11 +55,10 @@ export interface FilterOption {
 // Interface buat konfigurasi dropdown filter
 export interface FilterSelectConfig {
   // Key buat identifikasi filter
-  key: string;
-  // Label judul filter
   label: string;
   // Array pilihan opsi filter
   options: FilterOption[];
+  key: string;
 }
 
 // Interface buat props komponen smart table
@@ -207,7 +208,8 @@ export default function SmartTable<T>({
       header: col.header,
       cell: (info: CellContext<T, unknown>) => col.render(info.row.original),
       // Aktifin fitur sortir
-      enableSorting: !!col.accessorKey || !!col.accessorFn,
+      // enableSorting: !!col.accessorKey || !!col.accessorFn,
+      enableSorting: false,
       meta: {
         // Simpen class costum di meta
         className: col.className,
@@ -309,39 +311,21 @@ export default function SmartTable<T>({
             {/* Mapping filter dropdown */}
             {selectFilters.map((filter) => (
               <div key={filter.key} className="w-full sm:w-[150px]">
-                {/* Select filter dropdown */}
-                <select
+                {/* Panggil select custom pengganti bawaan html biar ga belang */}
+                <CustomSelect
                   value={dynamicFilters[filter.key] || ""}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     setDynamicFilters((prev) => ({
                       ...prev,
-                      [filter.key]: e.target.value,
+                      [filter.key]: val || "",
                     }));
                     // Reset page pertama tiap ada perubahan filter
                     table.setPageIndex(0);
                   }}
-                  className="w-full bg-muted/40 border border-border text-foreground rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-                >
-                  {/* Opsi default filter */}
-                  <option
-                    value=""
-                    className="bg-card text-foreground"
-                    disabled
-                    hidden
-                  >
-                    {filter.label}
-                  </option>
-                  {/* Mapping pilihan opsi filter */}
-                  {filter.options.map((opt) => (
-                    <option
-                      key={opt.value}
-                      value={opt.value}
-                      className="bg-background text-foreground"
-                    >
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  options={filter.options}
+                  placeholder={filter.label}
+                  className="w-full"
+                />
               </div>
             ))}
 
@@ -373,14 +357,17 @@ export default function SmartTable<T>({
             )}
 
             {/* Tombol reset kalo ada filter aktif */}
+            {/*
             {isFiltered && (
               <button
                 onClick={handleClearFilters}
                 className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
               >
+                { // Icon filter x }
                 <FilterX size={14} /> Reset
               </button>
             )}
+            */}
 
             {/* Kontainer baris per page dipindah kesini biar sebaris */}
             {!hidePagination && (
@@ -429,12 +416,12 @@ export default function SmartTable<T>({
                     // Header sel
                     <th
                       key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
+                      // onClick={header.column.getToggleSortingHandler()}
                       className={cn(
                         "px-6 py-4 font-bold uppercase tracking-wider text-[11px]",
-                        header.column.getCanSort()
-                          ? "cursor-pointer hover:bg-muted transition-colors select-none"
-                          : "",
+                        // header.column.getCanSort()
+                        //   ? "cursor-pointer hover:bg-muted transition-colors select-none"
+                        //   : "",
                         (header.column.columnDef.meta as Record<string, string>)
                           ?.className,
                       )}
@@ -446,7 +433,7 @@ export default function SmartTable<T>({
                           header.getContext(),
                         )}
                         {/* Cek fitur sort aktif */}
-                        {header.column.getCanSort() && (
+                        {/* {header.column.getCanSort() && (
                           <ArrowUpDown
                             size={12}
                             className={`transition-colors ${
@@ -455,7 +442,7 @@ export default function SmartTable<T>({
                                 : "text-muted-foreground/70"
                             }`}
                           />
-                        )}
+                        )} */}
                       </div>
                     </th>
                   ))}

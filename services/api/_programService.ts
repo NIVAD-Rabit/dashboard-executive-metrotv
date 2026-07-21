@@ -23,11 +23,11 @@ export interface RawDashboardResponse {
   payloadData: Record<string, unknown>;
 }
 
-// Bikin interface balasan yang dipake hook
+// Bikin interface balesan yang dipake hook
 export interface FetchProgramsResponse {
   // Array nampung data program asli siap pake
   data: ProgramFormData[];
-  // Objek penampung parameter filter yang aktif digunakan saat fetch
+  // Objek tampungan parameter filter yang aktif dipake pas fetch
   params: {
     // Properti opsional karena boleh bernilai undefined atau string
     startPeriod?: string;
@@ -126,7 +126,7 @@ export const updateProgram = async (
   // );
   // return response.data;
 
-  // Balikin simulasi balasan
+  // Balikin simulasi balesan
   return data;
 };
 

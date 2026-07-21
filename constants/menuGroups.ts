@@ -19,7 +19,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 
-// Variabel penampung konfigurasi grup menu aplikasi
+// Variabel tampungan konfigurasi grup menu aplikasi
 export const menuGroups = [
   {
     // Nama grup menu utama

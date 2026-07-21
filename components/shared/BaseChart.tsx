@@ -93,7 +93,7 @@ interface BaseChartProps<T extends ChartType> {
   // Opsi konfigurasi tambahan
   options?: ChartOptions<T>;
   // Judul grafik
-  title?: string;
+  title?: React.ReactNode;
   // Tinggi area grafik
   height?: number;
   // Fungsi buat expand grafik ke modal

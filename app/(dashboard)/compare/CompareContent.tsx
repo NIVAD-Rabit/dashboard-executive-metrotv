@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
+  LucideIcon,
 } from "lucide-react";
 // Import komponen pembungkus chart
 import ChartCard from "@/components/shared/ChartCard";
@@ -34,8 +35,18 @@ import SmartTable from "@/components/shared/SmartTable";
 // Import kang excel buat export
 import * as XLSX from "xlsx";
 
+interface CompareTableRow {
+  id: string;
+  icon: LucideIcon;
+  label: string;
+  valA: React.ReactNode;
+  valB: React.ReactNode;
+  analysis: React.ReactNode;
+  isHighlight: boolean;
+}
+
 // Helper kang ekstrak teks polosan dari daleman node react
-const extractText = (node: any): string => {
+const extractText = (node: React.ReactNode): string => {
   // Kalo kosong balikin string hampa
   if (node == null) return "";
   // Kalo wujudnya udah string ato angka langsung balikin
@@ -43,8 +54,12 @@ const extractText = (node: any): string => {
   // Kalo bentuknya array, urai terus gabungin
   if (Array.isArray(node)) return node.map(extractText).join("");
   // Kalo bentuknya objek react (ada props.children), gali terus ke dalem
-  if (node.props && node.props.children)
-    return extractText(node.props.children);
+  if (React.isValidElement(node)) {
+    const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+    if (element.props && element.props.children) {
+      return extractText(element.props.children);
+    }
+  }
   // Sisanya balikin kosong aja
   return "";
 };
@@ -246,29 +261,37 @@ export default function CompareContent() {
         ),
         isHighlight: false,
       },
-      {
-        id: "roi",
-        icon: Percent,
-        label: "ROI (Efisiensi Modal)",
-        valA: <span className="font-bold">{roiA.toFixed(1)}%</span>,
-        valB: <span className="font-bold">{roiB.toFixed(1)}%</span>,
-        analysis: (
-          <div className="text-center">
-            {roiA > roiB ? (
-              <span className="text-[#1f77b4] font-bold">
-                {progA.name} persentase untungnya lebih gede
-              </span>
-            ) : roiB > roiA ? (
-              <span className="text-[#ff7f0e] font-bold">
-                {progB.name} persentase untungnya lebih gede
-              </span>
-            ) : (
-              "Untungnya seimbang"
-            )}
-          </div>
-        ),
-        isHighlight: false,
-      },
+      // {
+      //   id: "roi",
+      //   icon: Percent,
+      //   label: "ROI (Efisiensi Modal)",
+      //   valA: (
+      //     <span className="font-bold">
+      //       {formatBigNumber(Number(roiA.toFixed(1)))}%
+      //     </span>
+      //   ),
+      //   valB: (
+      //     <span className="font-bold">
+      //       {formatBigNumber(Number(roiB.toFixed(1)))}%
+      //     </span>
+      //   ),
+      //   analysis: (
+      //     <div className="text-center">
+      //       {roiA > roiB ? (
+      //         <span className="text-[#1f77b4] font-bold">
+      //           {progA.name} persentase untungnya lebih gede
+      //         </span>
+      //       ) : roiB > roiA ? (
+      //         <span className="text-[#ff7f0e] font-bold">
+      //           {progB.name} persentase untungnya lebih gede
+      //         </span>
+      //       ) : (
+      //         "Untungnya seimbang"
+      //       )}
+      //     </div>
+      //   ),
+      //   isHighlight: false,
+      // },
       {
         id: "pnl",
         icon: GitCompare,
@@ -322,12 +345,24 @@ export default function CompareContent() {
     // Balikin array tiang kolom
     return [
       {
+        // Judul
+        header: "Analisis",
+        // Key id data analisis
+        accessorKey: "analysis",
+        enableSorting: false,
+        // enableSorting: true,
+        // Render utuh analisa
+        render: (item: CompareTableRow) => item.analysis,
+      },
+      {
         // Judul th
         header: "Parameter Spesifik",
         // Key id data
         accessorKey: "label",
+        enableSorting: false,
+        // enableSorting: true,
         // Render custom biar icon ikut nampil
-        render: (item: any) => (
+        render: (item: CompareTableRow) => (
           // Flex row buat icon ama teks
           <div className="font-medium flex items-center gap-2">
             {/* Panggil icon dari data baris */}
@@ -345,27 +380,27 @@ export default function CompareContent() {
       },
       {
         // Tulis dinamis nama program a
-        header: progA.name,
+        header: (
+          <span className="text-[#1fb0cf]">{progA.name}</span>
+        ) as unknown as string,
         // Key id data val a
         accessorKey: "valA",
+        enableSorting: false,
+        // enableSorting: true,
         // Render utuh val a
-        render: (item: any) => item.valA,
+        render: (item: CompareTableRow) => item.valA,
       },
       {
         // Tulis dinamis b
-        header: progB.name,
+        header: (
+          <span className="text-[#ff7f0e]">{progB.name}</span>
+        ) as unknown as string,
         // Key id data val b
         accessorKey: "valB",
+        enableSorting: false,
+        // enableSorting: true,
         // Render utuh val b
-        render: (item: any) => item.valB,
-      },
-      {
-        // Judul
-        header: "Analisis",
-        // Key id data analisis
-        accessorKey: "analysis",
-        // Render utuh analisa
-        render: (item: any) => item.analysis,
+        render: (item: CompareTableRow) => item.valB,
       },
     ];
     // Pantau program a ama b
@@ -435,60 +470,6 @@ export default function CompareContent() {
             </button>
           }
         />
-
-        {/* Sisi kanan, summery card pnl ala page detail disembunyikan pakai komentar
-        <div className="flex flex-col items-start lg:items-end gap-2 w-full lg:w-auto">
-          <div className="flex flex-col items-start lg:items-end">
-            <span className="text-[11px] font-bold text-muted-foreground tracking-widest uppercase">
-              Ringkasan PNL Komparasi
-            </span>
-          </div>
-          <div className="flex w-full lg:w-auto bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-            <div
-              className={`flex flex-col flex-1 lg:flex-none p-3 px-5 border-r border-border min-w-[170px] transition-colors ${!progA ? "bg-muted/10" : (pA?.financials?.pnl ?? 0) >= 0 ? "bg-green-500/5 hover:bg-green-500/10" : "bg-destructive/5 hover:bg-destructive/10"}`}
-            >
-              <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1 mb-1 truncate max-w-[150px]">
-                {progA ? progA.name : "Program Pertama"}
-                {progA &&
-                  ((pA?.financials?.pnl ?? 0) >= 0 ? (
-                    <ArrowUpRight size={14} className="text-green-600" />
-                  ) : (
-                    <ArrowDownRight size={14} className="text-destructive" />
-                  ))}
-              </span>
-              <span
-                className={`text-base font-bold tracking-tight ${!progA ? "text-muted-foreground" : (pA?.financials?.pnl ?? 0) >= 0 ? "text-green-600" : "text-destructive"}`}
-              >
-                {progA
-                  ? ((pA?.financials?.pnl ?? 0) >= 0 ? "+ Rp " : "- Rp ") +
-                    formatBigNumber(Math.abs(pA?.financials?.pnl ?? 0))
-                  : "-"}
-              </span>
-            </div>
-            <div
-              className={`flex flex-col flex-1 lg:flex-none p-3 px-5 min-w-[170px] transition-colors ${!progB ? "bg-muted/10" : (pB?.financials?.pnl ?? 0) >= 0 ? "bg-green-500/5 hover:bg-green-500/10" : "bg-destructive/5 hover:bg-destructive/10"}`}
-            >
-              <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1 mb-1 truncate max-w-[150px]">
-                {progB ? progB.name : "Program Kedua"}
-                {progB &&
-                  ((pB?.financials?.pnl ?? 0) >= 0 ? (
-                    <ArrowUpRight size={14} className="text-green-600" />
-                  ) : (
-                    <ArrowDownRight size={14} className="text-destructive" />
-                  ))}
-              </span>
-              <span
-                className={`text-base font-bold tracking-tight ${!progB ? "text-muted-foreground" : (pB?.financials?.pnl ?? 0) >= 0 ? "text-green-600" : "text-destructive"}`}
-              >
-                {progB
-                  ? ((pB?.financials?.pnl ?? 0) >= 0 ? "+ Rp " : "- Rp ") +
-                    formatBigNumber(Math.abs(pB?.financials?.pnl ?? 0))
-                  : "-"}
-              </span>
-            </div>
-          </div>
-        </div>
-        */}
       </div>
 
       {/* Box khusus filter dropdown di pucuk atas */}
@@ -626,7 +607,13 @@ export default function CompareContent() {
             // Batang
             type="bar"
             // Judul dinamis ngikut nama
-            title={`Komparasi Finansial: ${progA.name} vs ${progB.name}`}
+            title={
+              <div className="flex items-center gap-2">
+                <span className="text-[#1fb0cf]">{progA.name}</span>
+                <span className="text-muted-foreground">vs</span>
+                <span className="text-[#ff7f0e]">{progB.name}</span>
+              </div>
+            }
             // Masukin data perbandingan dari hook
             data={comparisonData}
             options={{

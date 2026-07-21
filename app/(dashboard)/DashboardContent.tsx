@@ -161,7 +161,10 @@ export default function DashboardContent() {
             // Update state kategori
             onChange={setSelectedCategory}
             // List opsi kategori
-            options={programCategories.map((c) => ({ label: c, value: c }))}
+            options={[
+              { label: "Semua", value: "" },
+              ...programCategories.map((c) => ({ label: c, value: c })),
+            ]}
             // Teks placeholder
             placeholder="Pilih Kategori"
             // Atur lebar fit
@@ -220,6 +223,7 @@ export default function DashboardContent() {
                 </div>
               )}
               {/* Kondisional buat tampilin tombol reset filter */}
+              {/*
               {(startMonth ||
                 endMonth ||
                 selectedCategory ||
@@ -236,10 +240,11 @@ export default function DashboardContent() {
                   // Styling tombol reset
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"
                 >
-                  {/* Icon filter x */}
+                  { // Icon filter x }
                   <FilterX size={14} /> Reset
                 </button>
               )}
+              */}
             </div>
           </div>
         </div>

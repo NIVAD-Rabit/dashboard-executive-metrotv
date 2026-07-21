@@ -11,7 +11,7 @@ interface ChartCardProps<T extends ChartType> {
   // Tipe grafik yang bakal dipake, contohnya bar, line, atau pie
   type: T;
   // Judul opsional buat nampilin nama grafik di atas
-  title?: string;
+  title?: React.ReactNode;
   // Data utama grafik yang disesuaiin sama tipe grafik
   data: ChartData<T, DefaultDataPoint<T>, unknown>;
   // Opsi konfigurasi tambahan buat ngebentuk tampilan chart

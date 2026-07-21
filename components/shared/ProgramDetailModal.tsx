@@ -401,7 +401,7 @@ export default function ProgramDetailModal({
                         {npm.toFixed(1)}%
                       </span>
                     </div>
-                    <div className="flex justify-between items-center border-t border-border pt-2">
+                    {/* <div className="flex justify-between items-center border-t border-border pt-2">
                       <span className="text-xs text-muted-foreground">
                         Status:
                       </span>
@@ -410,7 +410,7 @@ export default function ProgramDetailModal({
                       >
                         {currentPeriodData?.status ?? "Normal"}
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
