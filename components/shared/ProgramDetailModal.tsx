@@ -360,90 +360,15 @@ export default function ProgramDetailModal({
 
 
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Card revenue */}
-                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
-                    <Banknote size={16} /> Revenue Finansial
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <span className="text-sm text-muted-foreground block">
-                        Target Revenue
-                      </span>
-                      <span className="text-lg font-bold text-foreground">
-                        Rp {formatNumberIndo(targetRev)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground block">
-                        Capaian Revenue
-                      </span>
-                      <span className="text-base font-bold text-primary">
-                        Rp {formatNumberIndo(actualRev)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground block">
-                        Digital Revenue
-                      </span>
-                      <span className="text-base font-bold text-yellow-600">
-                        Rp {formatNumberIndo(digiRev)}
-                      </span>
-                    </div>
-
-                    {/* Ringkasan gabungan revenue */}
-                    <div className="col-span-2 border-t border-border pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">
-                          Total (TV + Digital):
-                        </span>
-                        <span
-                          className={`text-sm font-bold ${totalActualRev >= targetRev ? "text-green-600" : "text-destructive"}`}
-                        >
-                          Rp {formatNumberIndo(totalActualRev)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center mt-0.5">
-                        <span className="text-sm text-muted-foreground">
-                          Persentase & Selisih:
-                        </span>
-                        <span
-                          className={`text-sm font-bold ${totalActualRev >= targetRev ? "text-green-600" : "text-destructive"}`}
-                        >
-                          {pctRev.toFixed(1)}% (
-                          {selisihRev >= 0 ? "+Rp " : "-Rp "}
-                          {formatNumberIndo(Math.abs(selisihRev))})
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Target Eevenue */}
-                <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
-                    <Banknote size={16} /> Target Revenue
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <span className="text-lg font-semibold text-muted-foreground block">
-                        Target Capaian
-                      </span>
-                      <span className="text-2xl font-bold text-foreground">
-                        Rp {formatNumberIndo(targetRev)}
-                      </span>
-                    </div>
-                    
-
-                    
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 border-b border-border pb-2">
                     <Banknote size={16} /> Capaian Revenue
                   </h3>
+                  
+                  <div className="flex flex-row gap-24">
+                    {/* Capaian TV */}
                   <div className="grid grid-cols-1 gap-6">
                     <div>
                       <span className="text-lg font-semibold text-muted-foreground block">
@@ -453,6 +378,7 @@ export default function ProgramDetailModal({
                         Rp {formatNumberIndo(actualRev)}
                       </span>
                     </div>
+                    {/* Capaian Digital */}
                     <div>
                       <span className="text-lg font-semibold text-muted-foreground block">
                         Capaian Digital
@@ -461,9 +387,19 @@ export default function ProgramDetailModal({
                         Rp {formatNumberIndo(digiRev)}
                       </span>
                     </div>
-
-                    
                   </div>
+                  {/* Target Capaian TV */}
+                    <div className="col-span-2">
+                      <span className="text-lg font-semibold text-muted-foreground block">
+                        Target Capaian
+                      </span>
+                      <span className="text-2xl font-bold text-foreground">
+                        Rp {formatNumberIndo(targetRev)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  
                 </div>
 
                 <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-4">

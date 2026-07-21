@@ -154,7 +154,7 @@ export default function FilterControl({selectedCategory,
               {(startMonth ||
                 endMonth ||
                 selectedCategory ||
-                (selectedPeriod && selectedPeriod !== "all")) && (
+                (selectedPeriod && selectedPeriod !== "ytd")) && (
                 // Tombol reset filter
                 <button
                   // Fungsi buat kosongin semua state filter
@@ -162,7 +162,7 @@ export default function FilterControl({selectedCategory,
                     setStartMonth("");
                     setEndMonth("");
                     setSelectedCategory(null);
-                    setSelectedPeriod("all");
+                    setSelectedPeriod("ytd");
                   }}
                   // Styling tombol reset
                   className="flex items-center gap-1.5 text-xs bg-destructive/10 text-destructive px-3 py-2 rounded-xl font-bold hover:bg-destructive/20 transition-colors cursor-pointer"

@@ -423,16 +423,16 @@ export default function useDashboard() {
     const bgColors = labels.map((label, index) => {
       // Palet warna array string kode heksadesimal
       const colors = [
-        "#1f77b4",
-        "#ff7f0e",
-        "#2ca02c",
-        "#d62728",
-        "#9467bd",
-        "#8c564b",
-        "#e377c2",
-        "#7f7f7f",
-        "#bcbd22",
-        "#17becf",
+        "#3B82F6", // Blue
+        "#06B6D4", // Cyan
+        "#10B981", // Emerald
+        "#F59E0B", // Amber
+        "#8B5CF6", // Violet
+        "#EC4899", // Pink
+        "#14B8A6", // Teal
+        "#84CC16", // Lime
+        "#F97316", // Orange
+        "#64748B", // Slate
       ];
       // Ambil indeks warna sisa bagi panjang array
       const baseColor = colors[index % colors.length];
